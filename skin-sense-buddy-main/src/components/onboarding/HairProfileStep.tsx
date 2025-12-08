@@ -152,6 +152,8 @@ const HAIR_CONCERNS = [
 ];
 
 export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
+  const isChemicallyTreated = form.watch("is_chemically_treated");
+
   if (subStep === 'type') {
     return (
       <div className="space-y-6 animate-fade-in">
@@ -513,7 +515,7 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
         />
 
         {/* Chemical Treatments Selection */}
-        {form.watch("is_chemically_treated") && (
+        {isChemicallyTreated && (
           <div className="space-y-4 animate-fade-in">
             <FormField
               control={form.control}
