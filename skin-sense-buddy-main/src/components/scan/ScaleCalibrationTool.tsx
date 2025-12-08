@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Ruler, CheckCircle2, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Ruler, CheckCircle2, AlertCircle, Hand } from "lucide-react";
 import { detectCircles, REFERENCE_OBJECTS, calculatePixelsPerMM, drawCalibrationOverlay } from "@/lib/scaleCalibration";
 
 interface Props {
@@ -122,6 +124,9 @@ export const ScaleCalibrationTool = ({ imageDataUrl, onCalibrationComplete }: Pr
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="ngn_1">₦1 Naira Coin (22mm)</SelectItem>
+              <SelectItem value="ngn_2">₦2 Naira Coin (24mm)</SelectItem>
+              <SelectItem value="ngn_50k">50 Kobo Coin (19.5mm)</SelectItem>
               <SelectItem value="us_quarter">US Quarter (24.26mm)</SelectItem>
               <SelectItem value="us_penny">US Penny (19.05mm)</SelectItem>
               <SelectItem value="euro_1">1 Euro Coin (23.25mm)</SelectItem>

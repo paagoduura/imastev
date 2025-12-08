@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft } from "lucide-react";
+import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,8 @@ import { MultiAngleCapture } from "@/components/scan/MultiAngleCapture";
 import { ScaleCalibrationTool } from "@/components/scan/ScaleCalibrationTool";
 import { AnalysisTypeSelector } from "@/components/scan/AnalysisTypeSelector";
 import { HairCaptureGuidelines, HAIR_REQUIRED_ANGLES, HAIR_OPTIONAL_ANGLES, HAIR_ANGLE_DESCRIPTIONS } from "@/components/scan/HairCaptureGuidelines";
+import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
+import { PorosityTest } from "@/components/scan/PorosityTest";
 
 interface CapturedAngle {
   angle: string;
@@ -32,13 +34,15 @@ const SKIN_REQUIRED_ANGLES = ['front', 'close'];
 const SKIN_OPTIONAL_ANGLES = ['left', 'right'];
 
 const Scan = () => {
-  const [step, setStep] = useState<'type' | 'capture' | 'review' | 'calibrate' | 'analyze'>('type');
+  const [step, setStep] = useState<'type' | 'porosity' | 'capture' | 'review' | 'calibrate' | 'analyze'>('type');
   const [analysisType, setAnalysisType] = useState<'skin' | 'hair'>('skin');
   const [currentAngle, setCurrentAngle] = useState<string>('front');
   const [captures, setCaptures] = useState<CapturedAngle[]>([]);
   const [processing, setProcessing] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [calibrationData, setCalibrationData] = useState<{ pixelsPerMM: number; referenceType: string } | null>(null);
+  const [showLiveCamera, setShowLiveCamera] = useState(false);
+  const [porosityResult, setPorosityResult] = useState<any>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -56,7 +60,83 @@ const Scan = () => {
   };
 
   const handleProceedToCapture = () => {
+    if (analysisType === 'hair') {
+      setStep('porosity');
+    } else {
+      setStep('capture');
+    }
+  };
+
+  const handlePorosityComplete = (result: any) => {
+    setPorosityResult(result);
     setStep('capture');
+    toast({
+      title: "Porosity test complete",
+      description: `Your hair has ${result.level} porosity`,
+    });
+  };
+
+  const handlePorositySkip = () => {
+    setStep('capture');
+  };
+
+  const handleLiveCameraCapture = async (blob: Blob, dataUrl: string) => {
+    setShowLiveCamera(false);
+    setProcessing(true);
+
+    try {
+      const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+      const preprocessed = await preprocessImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.92,
+        applyEnhancements: true
+      });
+
+      if (!preprocessed.quality.isAcceptable) {
+        toast({
+          title: "Image quality issues detected",
+          description: "We'll proceed but recommend retaking for best results",
+          variant: "default",
+        });
+      }
+
+      const newCapture: CapturedAngle = {
+        angle: currentAngle,
+        dataUrl: preprocessed.dataUrl,
+        blob: preprocessed.blob,
+        quality: preprocessed.quality,
+        metadata: preprocessed.metadata
+      };
+
+      setCaptures(prev => {
+        const filtered = prev.filter(c => c.angle !== currentAngle);
+        return [...filtered, newCapture];
+      });
+
+      toast({
+        title: "Image captured!",
+        description: `${currentAngle.replace(/_/g, ' ')} view added successfully`,
+      });
+
+      const capturedAngles = [...captures.map(c => c.angle), currentAngle];
+      const nextRequired = REQUIRED_ANGLES.find(a => !capturedAngles.includes(a));
+      
+      if (nextRequired) {
+        setCurrentAngle(nextRequired);
+      } else {
+        setStep('review');
+      }
+    } catch (error) {
+      console.error('Camera capture error:', error);
+      toast({
+        title: "Capture failed",
+        description: "Failed to process image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,10 +501,10 @@ const Scan = () => {
             className="hidden"
           />
 
-          <div className="flex gap-4">
+          <div className="flex gap-2 flex-wrap">
             <Button
               size="lg"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setShowLiveCamera(true)}
               disabled={processing}
               className="flex-1"
             >
@@ -435,10 +515,19 @@ const Scan = () => {
                 </>
               ) : (
                 <>
-                  <Camera className="mr-2 h-5 w-5" />
-                  Capture {currentAngle.replace(/_/g, ' ')} View
+                  <Video className="mr-2 h-5 w-5" />
+                  Live Camera
                 </>
               )}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={processing}
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              Take Photo
             </Button>
             <Button
               size="lg"
@@ -450,6 +539,14 @@ const Scan = () => {
               Upload
             </Button>
           </div>
+
+          {showLiveCamera && (
+            <LiveCameraCapture
+              onCapture={handleLiveCameraCapture}
+              onClose={() => setShowLiveCamera(false)}
+              captureLabel={`Capture ${currentAngle.replace(/_/g, ' ')}`}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -637,6 +734,7 @@ const Scan = () => {
           </h1>
           <p className="text-muted-foreground">
             {step === 'type' && 'Select the type of analysis you need'}
+            {step === 'porosity' && 'Test your hair porosity for personalized recommendations'}
             {step === 'capture' && 'Capture high-quality images for accurate AI analysis'}
             {step === 'review' && 'Review your images before analysis'}
             {step === 'calibrate' && 'Optional: Calibrate for precise measurements'}
@@ -646,11 +744,14 @@ const Scan = () => {
 
         {/* Progress indicator */}
         <div className="flex justify-center gap-2 mb-8">
-          {['type', 'capture', 'review', 'calibrate', 'analyze'].map((s, i) => (
+          {(analysisType === 'hair' 
+            ? ['type', 'porosity', 'capture', 'review', 'calibrate', 'analyze'] 
+            : ['type', 'capture', 'review', 'calibrate', 'analyze']
+          ).map((s, i, arr) => (
             <div
               key={s}
-              className={`h-2 w-12 rounded-full transition-colors ${
-                ['type', 'capture', 'review', 'calibrate', 'analyze'].indexOf(step) >= i
+              className={`h-2 w-10 rounded-full transition-colors ${
+                arr.indexOf(step) >= i
                   ? 'bg-primary'
                   : 'bg-muted'
               }`}
@@ -659,6 +760,12 @@ const Scan = () => {
         </div>
 
         {step === 'type' && renderTypeStep()}
+        {step === 'porosity' && (
+          <PorosityTest 
+            onComplete={handlePorosityComplete}
+            onSkip={handlePorositySkip}
+          />
+        )}
         {step === 'capture' && renderCaptureStep()}
         {step === 'review' && renderReviewStep()}
         {step === 'calibrate' && renderCalibrateStep()}

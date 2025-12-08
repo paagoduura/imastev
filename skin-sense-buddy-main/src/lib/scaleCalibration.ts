@@ -13,6 +13,9 @@ interface ReferenceObject {
 
 // Common reference objects with known dimensions
 export const REFERENCE_OBJECTS: Record<string, ReferenceObject> = {
+  'ngn_1': { type: 'coin', name: '₦1 Naira Coin', diameter_mm: 22.0 },
+  'ngn_2': { type: 'coin', name: '₦2 Naira Coin', diameter_mm: 24.0 },
+  'ngn_50k': { type: 'coin', name: '50 Kobo Coin', diameter_mm: 19.5 },
   'us_quarter': { type: 'coin', name: 'US Quarter', diameter_mm: 24.26 },
   'us_penny': { type: 'coin', name: 'US Penny', diameter_mm: 19.05 },
   'us_nickel': { type: 'coin', name: 'US Nickel', diameter_mm: 21.21 },
