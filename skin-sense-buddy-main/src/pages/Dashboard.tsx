@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Camera, History, User, LogOut, TrendingUp, Crown, Video, Users, Sparkles, Stethoscope, ShoppingBag, Package, Scan } from "lucide-react";
+import { Camera, History, User, LogOut, TrendingUp, Crown, Video, Users, Sparkles, Stethoscope, ShoppingBag, Package, Scan, ChevronRight, Calendar, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Navbar } from "@/components/layout/Navbar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -92,338 +93,374 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center">
+      <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your dashboard...</p>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Sparkles className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-muted-foreground font-medium">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome back, {profile?.full_name || user?.email}
-            </p>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="gradient-mesh min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
+                <span className="text-white text-xl sm:text-2xl font-bold">
+                  {profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+                  Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  Ready to continue your glow journey?
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" onClick={handleLogout} className="hidden sm:flex rounded-xl border-slate-200 dark:border-slate-700">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
 
-        {/* Quick Actions - Scan Options */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Start New Analysis</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card 
-              className="cursor-pointer hover:border-rose-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-rose-500/10 group overflow-hidden relative" 
-              onClick={() => navigate('/scan')}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg sm:text-xl font-display font-semibold">Start New Analysis</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+              <div 
+                className="group card-interactive p-5 sm:p-6 cursor-pointer" 
+                onClick={() => navigate('/scan')}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/25 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <Scan className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-display font-semibold text-lg">Skin Analysis</h3>
+                      <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs">Popular</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Analyze skin conditions, acne, pigmentation & aging signs</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-rose-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                </div>
+              </div>
+
+              <div 
+                className="group card-interactive p-5 sm:p-6 cursor-pointer" 
+                onClick={() => navigate('/scan')}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-display font-semibold text-lg">Hair Analysis</h3>
+                      <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">4A-4C</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Texture, porosity & scalp health for Nigerian hair</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-amber-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-lg sm:text-xl font-display font-semibold mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <QuickActionCard 
+                icon={<History className="h-5 w-5" />}
+                title="Timeline"
+                subtitle="View progress"
+                gradient="from-teal-500 to-cyan-500"
+                onClick={() => navigate('/timeline')}
+              />
+              <QuickActionCard 
+                icon={<Video className="h-5 w-5" />}
+                title="Telehealth"
+                subtitle="Book consult"
+                gradient="from-blue-500 to-indigo-500"
+                onClick={() => navigate('/telehealth')}
+              />
+              <QuickActionCard 
+                icon={<ShoppingBag className="h-5 w-5" />}
+                title="Shop"
+                subtitle="Products"
+                gradient="from-pink-500 to-rose-500"
+                onClick={() => navigate('/shop')}
+              />
+              <QuickActionCard 
+                icon={<User className="h-5 w-5" />}
+                title="Profile"
+                subtitle="Settings"
+                gradient="from-violet-500 to-purple-500"
+                onClick={() => navigate('/profile')}
+              />
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-lg sm:text-xl font-display font-semibold mb-4">Premium Features</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              <PremiumCard 
+                icon={<Crown className="h-5 w-5" />}
+                title="Subscription"
+                value={subscription?.subscription_plans?.name || 'Free'}
+                gradient="from-amber-400 to-orange-500"
+                onClick={() => navigate('/subscription')}
+              />
+              <PremiumCard 
+                icon={<Users className="h-5 w-5" />}
+                title="Family"
+                value="Manage"
+                gradient="from-green-400 to-emerald-500"
+                onClick={() => navigate('/family')}
+              />
+              <PremiumCard 
+                icon={<Sparkles className="h-5 w-5" />}
+                title="Custom Formula"
+                value="AI-made"
+                gradient="from-purple-400 to-violet-500"
+                onClick={() => navigate('/formulation')}
+              />
+              <PremiumCard 
+                icon={<Package className="h-5 w-5" />}
+                title="Orders"
+                value="History"
+                gradient="from-pink-400 to-rose-500"
+                onClick={() => navigate('/orders')}
+              />
+              <PremiumCard 
+                icon={<Calendar className="h-5 w-5" />}
+                title="Appointments"
+                value="Schedule"
+                gradient="from-sky-400 to-blue-500"
+                onClick={() => navigate('/telehealth')}
+              />
+            </div>
+          </div>
+
+          {isClinician && (
+            <div 
+              className="mb-8 card-premium p-5 sm:p-6 cursor-pointer border-teal-500/30 bg-gradient-to-r from-teal-500/5 to-emerald-500/5" 
+              onClick={() => navigate('/clinician')}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CardContent className="p-6 relative">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Scan className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">Skin Analysis</h3>
-                    <p className="text-sm text-muted-foreground">Analyze skin conditions, acne, pigmentation & more</p>
-                  </div>
-                  <Badge className="bg-rose-500/10 text-rose-600 hover:bg-rose-500/20">Popular</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="cursor-pointer hover:border-amber-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 group overflow-hidden relative" 
-              onClick={() => navigate('/scan')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CardContent className="p-6 relative">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Sparkles className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">Hair Analysis</h3>
-                    <p className="text-sm text-muted-foreground">Texture, porosity, scalp health for Nigerian hair</p>
-                  </div>
-                  <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20">New</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Secondary Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/timeline')}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
-                  <History className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Progress Timeline</h3>
-                  <p className="text-sm text-muted-foreground">View your journey</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/profile')}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
-                  <User className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Profile Settings</h3>
-                  <p className="text-sm text-muted-foreground">Update your info</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/shop')}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
-                  <ShoppingBag className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Shop Products</h3>
-                  <p className="text-sm text-muted-foreground">Hair & skin care</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Premium Features */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Premium Features</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors relative" onClick={() => navigate('/subscription')}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-                    <Crown className="h-6 w-6 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Subscription</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {subscription ? subscription.subscription_plans.name : 'Upgrade plan'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/telehealth')}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center">
-                    <Video className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Telehealth</h3>
-                    <p className="text-sm text-muted-foreground">Book consultation</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/family')}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Family</h3>
-                    <p className="text-sm text-muted-foreground">Manage accounts</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/formulation')}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-400 flex items-center justify-center">
-                    <Sparkles className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Custom Formula</h3>
-                    <p className="text-sm text-muted-foreground">AI-generated</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/orders')}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-pink-400 flex items-center justify-center">
-                    <Package className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Orders</h3>
-                    <p className="text-sm text-muted-foreground">View history</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Clinician Dashboard Link */}
-        {isClinician && (
-          <Card className="mb-8 border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5 cursor-pointer hover:border-primary transition-colors" onClick={() => navigate('/clinician')}>
-            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                    <Stethoscope className="h-6 w-6 text-primary-foreground" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                    <Stethoscope className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Clinician Dashboard</h3>
+                    <h3 className="font-display font-semibold text-lg">Clinician Dashboard</h3>
                     <p className="text-sm text-muted-foreground">Manage your appointments and patients</p>
                   </div>
                 </div>
-                <Button>
+                <Button className="btn-premium hidden sm:flex">
                   Access Dashboard
+                  <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
 
-        {/* Profile Completion */}
-        {(!profile?.age || !profile?.skin_type) && (
-          <Card className="mb-8 border-warning/50 bg-warning/10">
-            <CardHeader>
-              <CardTitle className="text-lg">Complete Your Profile</CardTitle>
-              <CardDescription>
-                Add more details to get personalized recommendations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate('/onboarding')}>Complete Profile</Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Recent Scans */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Analyses</CardTitle>
-            <CardDescription>Your latest skin and hair assessments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {scans.length === 0 ? (
-              <div className="text-center py-12">
-                <Camera className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No scans yet</h3>
-                <p className="text-muted-foreground mb-6">
-                  Start your health journey with your first analysis
-                </p>
-                <Button onClick={() => navigate('/scan')}>
-                  <Camera className="mr-2 h-4 w-4" />
-                  Start First Analysis
+          {(!profile?.age || !profile?.skin_type) && (
+            <div className="mb-8 card-premium p-5 sm:p-6 border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-display font-semibold text-lg mb-1">Complete Your Profile</h3>
+                  <p className="text-sm text-muted-foreground">Add more details to get personalized recommendations</p>
+                </div>
+                <Button onClick={() => navigate('/onboarding')} className="btn-premium">
+                  Complete Profile
                 </Button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {scans.map((scan) => {
-                  const isHairScan = scan.scan_type === 'hair' || scan.diagnoses?.[0]?.analysis_type === 'hair';
-                  return (
-                    <div
-                      key={scan.id}
-                      className="flex items-center gap-4 p-4 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/results/${scan.id}`)}
-                    >
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative">
-                        {scan.image_url && (
-                          <img
-                            src={scan.image_url}
-                            alt="Scan"
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                        <div className={`absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center ${
-                          isHairScan 
-                            ? 'bg-gradient-to-br from-amber-500 to-yellow-500' 
-                            : 'bg-gradient-to-br from-rose-500 to-orange-500'
-                        }`}>
-                          {isHairScan ? (
-                            <Sparkles className="w-3 h-3 text-white" />
+            </div>
+          )}
+
+          <div className="card-premium overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-display font-semibold text-lg">Recent Analyses</h2>
+                  <p className="text-sm text-muted-foreground">Your latest skin and hair assessments</p>
+                </div>
+                {scans.length > 0 && (
+                  <Button variant="ghost" onClick={() => navigate('/timeline')} className="text-teal-600 hover:text-teal-700">
+                    View All
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="p-5 sm:p-6">
+              {scans.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                    <Camera className="w-10 h-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-lg font-display font-semibold mb-2">No scans yet</h3>
+                  <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                    Start your health journey with your first AI-powered analysis
+                  </p>
+                  <Button onClick={() => navigate('/scan')} className="btn-premium">
+                    <Camera className="mr-2 h-4 w-4" />
+                    Start First Analysis
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {scans.map((scan) => {
+                    const isHairScan = scan.scan_type === 'hair' || scan.diagnoses?.[0]?.analysis_type === 'hair';
+                    return (
+                      <div
+                        key={scan.id}
+                        className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-teal-500/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group"
+                        onClick={() => navigate(`/results/${scan.id}`)}
+                      >
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 relative">
+                          {scan.image_url ? (
+                            <img
+                              src={scan.image_url}
+                              alt="Scan"
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
-                            <Scan className="w-3 h-3 text-white" />
+                            <div className="w-full h-full flex items-center justify-center">
+                              {isHairScan ? (
+                                <Sparkles className="w-8 h-8 text-amber-400" />
+                              ) : (
+                                <Scan className="w-8 h-8 text-rose-400" />
+                              )}
+                            </div>
                           )}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold">
-                            {scan.diagnoses?.[0]?.primary_condition || 'Analysis Pending'}
-                          </h4>
-                          <Badge 
-                            variant="secondary" 
-                            className={isHairScan 
-                              ? 'bg-amber-500/10 text-amber-600' 
-                              : 'bg-rose-500/10 text-rose-600'
-                            }
-                          >
-                            {isHairScan ? 'Hair' : 'Skin'}
-                          </Badge>
-                          {scan.status === 'completed' && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-success/20 text-success">
-                              Completed
-                            </span>
-                          )}
-                          {scan.status === 'analyzing' && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-warning/20 text-warning">
-                              Analyzing...
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(scan.created_at).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                        {scan.diagnoses?.[0]?.confidence_score && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <TrendingUp className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium text-primary">
-                              {scan.diagnoses[0].confidence_score}% Confidence
-                            </span>
+                          <div className={`absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-md ${
+                            isHairScan 
+                              ? 'bg-gradient-to-br from-amber-500 to-yellow-500' 
+                              : 'bg-gradient-to-br from-rose-500 to-orange-500'
+                          }`}>
+                            {isHairScan ? (
+                              <Sparkles className="w-3 h-3 text-white" />
+                            ) : (
+                              <Scan className="w-3 h-3 text-white" />
+                            )}
                           </div>
-                        )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 className="font-semibold truncate">
+                              {scan.diagnoses?.[0]?.primary_condition || 'Analysis Pending'}
+                            </h4>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs ${isHairScan 
+                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' 
+                                : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+                              }`}
+                            >
+                              {isHairScan ? 'Hair' : 'Skin'}
+                            </Badge>
+                            {scan.status === 'completed' && (
+                              <span className="badge-success text-xs">Completed</span>
+                            )}
+                            {scan.status === 'analyzing' && (
+                              <span className="badge-warning text-xs">Analyzing...</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(scan.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </p>
+                          {scan.diagnoses?.[0]?.confidence_score && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full" 
+                                  style={{ width: `${scan.diagnoses[0].confidence_score}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium text-teal-600">
+                                {scan.diagnoses[0].confidence_score}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-teal-500 group-hover:translate-x-1 transition-all flex-shrink-0 hidden sm:block" />
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+const QuickActionCard = ({ 
+  icon, 
+  title, 
+  subtitle, 
+  gradient, 
+  onClick 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  subtitle: string; 
+  gradient: string;
+  onClick: () => void;
+}) => (
+  <div 
+    className="card-interactive p-4 cursor-pointer group"
+    onClick={onClick}
+  >
+    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mb-3 group-hover:scale-110 transition-transform`}>
+      {icon}
+    </div>
+    <h3 className="font-semibold text-sm sm:text-base">{title}</h3>
+    <p className="text-xs sm:text-sm text-muted-foreground">{subtitle}</p>
+  </div>
+);
+
+const PremiumCard = ({ 
+  icon, 
+  title, 
+  value, 
+  gradient, 
+  onClick 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  value: string; 
+  gradient: string;
+  onClick: () => void;
+}) => (
+  <div 
+    className="card-interactive p-4 cursor-pointer group text-center"
+    onClick={onClick}
+  >
+    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mx-auto mb-2 group-hover:scale-110 transition-transform`}>
+      {icon}
+    </div>
+    <h3 className="font-medium text-xs sm:text-sm">{title}</h3>
+    <p className="text-xs text-muted-foreground truncate">{value}</p>
+  </div>
+);
 
 export default Dashboard;

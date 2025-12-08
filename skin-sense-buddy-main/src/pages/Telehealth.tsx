@@ -12,6 +12,7 @@ import { ArrowLeft, Calendar as CalendarIcon, Clock, Star, Video, Loader2 } from
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { VideoCall } from "@/components/telehealth/VideoCall";
+import { Navbar } from "@/components/layout/Navbar";
 
 interface Clinician {
   id: string;
@@ -202,55 +203,57 @@ export default function Telehealth() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+        </div>
       </div>
     );
   }
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <Card className="text-center p-12">
-            <Video className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-2">Upgrade to Access Telehealth</h2>
-            <p className="text-muted-foreground mb-6">
-              Telehealth consultations are available with Premium, Family, and Professional plans
-            </p>
-            <Button onClick={() => navigate("/subscription")}>
-              View Subscription Plans
-            </Button>
-          </Card>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="gradient-mesh min-h-[calc(100vh-80px)]">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-4xl">
+            <Card className="text-center p-8 sm:p-12 premium-card">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+                <Video className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">Upgrade to Access Telehealth</h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Connect with verified dermatologists from the comfort of your home with our Premium plans
+              </p>
+              <Button onClick={() => navigate("/subscription")} className="btn-premium">
+                View Subscription Plans
+              </Button>
+            </Card>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="gradient-mesh">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium mb-2">Telehealth Consultations</h1>
+            <p className="text-muted-foreground">
+              Connect with verified dermatologists from the comfort of your home
+            </p>
+          </div>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Telehealth Consultations</h1>
-          <p className="text-muted-foreground">
-            Connect with verified dermatologists from the comfort of your home
-          </p>
-        </div>
-
-        <Tabs defaultValue="clinicians" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="clinicians">Find a Clinician</TabsTrigger>
-            <TabsTrigger value="appointments">My Appointments</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="clinicians" className="space-y-6">
+            <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <TabsTrigger value="clinicians" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">Find a Clinician</TabsTrigger>
+              <TabsTrigger value="appointments" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">My Appointments</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="clinicians" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -424,6 +427,7 @@ export default function Telehealth() {
             )}
           </TabsContent>
         </Tabs>
+        </div>
       </div>
 
       {activeCall && (

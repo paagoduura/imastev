@@ -23,7 +23,13 @@ Preferred communication style: Simple, everyday language.
 - **shadcn/ui** components built on Radix UI primitives for accessible, customizable interface elements
 - **Tailwind CSS** for utility-first styling with custom design tokens defined in CSS variables
 - **Class Variance Authority** for managing component variants
-- Medical-grade color palette featuring calming teals and professional blues for trustworthy healthcare aesthetic
+- Premium design system with:
+  - Glassmorphism navbar with backdrop blur effects
+  - Gradient mesh backgrounds across all pages
+  - Premium color palette: slate tones, teal/emerald accents, sand highlights
+  - Custom typography with display fonts for headings
+  - Premium button styles with gradients and hover effects
+  - Mobile-first responsive design with breakpoints (320px, 375px, 768px, 1024px, 1280px)
 
 **State Management**
 - **TanStack Query (React Query)** for server state management, data fetching, and caching

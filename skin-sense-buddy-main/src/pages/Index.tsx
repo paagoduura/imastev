@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Camera, Sparkles, TrendingUp, Shield, Users } from "lucide-react";
+import { Camera, Sparkles, TrendingUp, Shield, Users, Star, ChevronRight, Heart, Zap, CheckCircle2, ArrowRight, Video, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 
@@ -7,125 +7,321 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-primary-light/10 to-background">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      {/* Hero Section */}
+      
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+        <div className="absolute inset-0 gradient-mesh" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl animate-pulse-soft" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse-soft animate-delay-300" />
         
-        <div className="container mx-auto px-4 py-20 relative">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            {/* Trust Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-light/50 border border-primary/20">
-              <Shield className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Clinical-Grade AI Analysis</span>
-            </div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28 relative">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div className="space-y-8 text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 animate-fade-in">
+                  <Shield className="w-4 h-4 text-teal-600" />
+                  <span className="text-sm font-medium text-teal-700 dark:text-teal-300">Clinical-Grade AI Analysis</span>
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                  </span>
+                </div>
 
-            {/* Main Headline */}
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-              Your Hair & Skin's
-              <span className="block bg-gradient-to-r from-primary via-primary-glow to-secondary bg-clip-text text-transparent">
-                Personal AI Expert
-              </span>
-            </h1>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-[1.1] tracking-tight animate-fade-in-up">
+                  Your Hair & Skin's
+                  <span className="block text-gradient-premium mt-2">
+                    Personal AI Expert
+                  </span>
+                </h1>
 
-            {/* Subheadline */}
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Get instant, accurate hair and skin analysis powered by medical-grade AI. Specialized expertise for 4A-4C hair types with personalized treatment plans.
-            </p>
+                <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed animate-fade-in-up animate-delay-100">
+                  Get instant, accurate hair and skin analysis powered by medical-grade AI. 
+                  <span className="font-semibold text-slate-800 dark:text-white"> Specialized expertise for 4A-4C hair types</span> with personalized treatment plans.
+                </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary-glow text-primary-foreground text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => navigate('/scan')}
-              >
-                <Camera className="mr-2 h-5 w-5" />
-                Start Free Scan
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-primary text-primary hover:bg-primary-light text-lg px-8 py-6"
-                onClick={() => navigate('/auth')}
-              >
-                Sign In
-              </Button>
-            </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up animate-delay-200">
+                  <Button 
+                    size="lg" 
+                    className="btn-premium text-base sm:text-lg px-8 py-6 h-auto"
+                    onClick={() => navigate('/scan')}
+                  >
+                    <Camera className="mr-2 h-5 w-5" />
+                    Start Free Scan
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-base sm:text-lg px-8 py-6 h-auto rounded-xl"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Sign In
+                  </Button>
+                </div>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center gap-8 pt-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" />
-                <span>100K+ Users Trust Us</span>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-6 pt-4 animate-fade-in-up animate-delay-300">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="flex -space-x-2">
+                      {[1,2,3,4].map((i) => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center">
+                          <span className="text-white text-xs font-medium">{['A','B','C','D'][i-1]}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <span className="font-medium">100K+ Users</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {[1,2,3,4,5].map((i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 ml-1">4.9/5</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span>95% Accuracy Rate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span>HIPAA Compliant</span>
+
+              <div className="relative hidden lg:block animate-fade-in animate-delay-200">
+                <div className="relative w-full aspect-square max-w-md mx-auto">
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl rotate-6 opacity-20 blur-2xl" />
+                  <div className="absolute inset-4 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl rotate-3 opacity-30" />
+                  <div className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-2xl shadow-teal-500/20 p-8 border border-slate-200/50 dark:border-slate-700/50">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
+                          <Sparkles className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-display font-bold text-xl">AI Analysis</h3>
+                          <p className="text-sm text-slate-500">Scanning complete</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                          <span className="text-sm font-medium">Hair Type</span>
+                          <span className="badge-premium">4C Natural</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                          <span className="text-sm font-medium">Porosity</span>
+                          <span className="badge-success">Normal</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                          <span className="text-sm font-medium">Scalp Health</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="w-[85%] h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full" />
+                            </div>
+                            <span className="text-sm font-semibold text-teal-600">85%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 rounded-xl border border-teal-500/20">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-sm">Recommendation</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Deep conditioning with shea butter treatment weekly</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Advanced Hair & Skin Analysis
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Combining cutting-edge AI with dermatological and trichological expertise for comprehensive care
-          </p>
-        </div>
+      <section className="section-padding bg-slate-50 dark:bg-slate-900/50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="badge-premium mb-4">Features</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
+              Advanced Hair & Skin Analysis
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Combining cutting-edge AI with dermatological expertise for comprehensive care
+            </p>
+          </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <FeatureCard
-            icon={<Camera className="w-8 h-8" />}
-            title="Dual Analysis System"
-            description="Analyze both hair and skin with specialized AI models. Get detailed assessments for 4A-4C hair types and all skin tones"
-          />
-          <FeatureCard
-            icon={<Sparkles className="w-8 h-8" />}
-            title="Nigerian Hair Expertise"
-            description="Specialized care for natural, relaxed, and transitioning hair with Nigerian-sourced organic treatments"
-          />
-          <FeatureCard
-            icon={<TrendingUp className="w-8 h-8" />}
-            title="Track Your Journey"
-            description="Monitor your hair growth and skin healing with before/after comparisons and AI-measured progress"
-          />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+            <FeatureCard
+              icon={<Camera className="w-6 h-6" />}
+              title="Dual Analysis System"
+              description="Analyze both hair and skin with specialized AI models. Get detailed assessments for 4A-4C hair types and all skin tones."
+              gradient="from-teal-500 to-cyan-500"
+            />
+            <FeatureCard
+              icon={<Sparkles className="w-6 h-6" />}
+              title="Nigerian Hair Expertise"
+              description="Specialized care for natural, relaxed, and transitioning hair with Nigerian-sourced organic treatment recommendations."
+              gradient="from-amber-500 to-orange-500"
+            />
+            <FeatureCard
+              icon={<TrendingUp className="w-6 h-6" />}
+              title="Track Your Journey"
+              description="Monitor your hair growth and skin healing with before/after comparisons and AI-measured progress tracking."
+              gradient="from-violet-500 to-purple-500"
+            />
+            <FeatureCard
+              icon={<Video className="w-6 h-6" />}
+              title="Telehealth Consultations"
+              description="Book video appointments with certified dermatologists and trichologists for personalized expert guidance."
+              gradient="from-blue-500 to-indigo-500"
+            />
+            <FeatureCard
+              icon={<ShoppingBag className="w-6 h-6" />}
+              title="Curated Products"
+              description="Shop recommended hair and skincare products specifically selected for your unique profile and needs."
+              gradient="from-pink-500 to-rose-500"
+            />
+            <FeatureCard
+              icon={<Heart className="w-6 h-6" />}
+              title="Custom Formulations"
+              description="Get personalized treatment formulas created based on your AI analysis results and specific concerns."
+              gradient="from-emerald-500 to-green-500"
+            />
+          </div>
         </div>
       </section>
 
-      {/* Medical Disclaimer */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="max-w-3xl mx-auto bg-muted/50 border border-border rounded-lg p-6">
-          <p className="text-sm text-muted-foreground text-center">
-            <strong className="text-foreground">Medical Disclaimer:</strong> GlowSense AI is a clinical decision-support tool and wellness assistant. 
-            It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for serious concerns.
-          </p>
+      <section className="section-padding">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <div className="card-premium p-6 animate-fade-in-up">
+                      <Zap className="w-10 h-10 text-amber-500 mb-4" />
+                      <h4 className="font-semibold text-2xl">95%</h4>
+                      <p className="text-sm text-muted-foreground">Accuracy Rate</p>
+                    </div>
+                    <div className="card-premium p-6 animate-fade-in-up animate-delay-100">
+                      <Users className="w-10 h-10 text-blue-500 mb-4" />
+                      <h4 className="font-semibold text-2xl">100K+</h4>
+                      <p className="text-sm text-muted-foreground">Happy Users</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4 mt-8">
+                    <div className="card-premium p-6 animate-fade-in-up animate-delay-200">
+                      <Shield className="w-10 h-10 text-teal-500 mb-4" />
+                      <h4 className="font-semibold text-2xl">HIPAA</h4>
+                      <p className="text-sm text-muted-foreground">Compliant</p>
+                    </div>
+                    <div className="card-premium p-6 animate-fade-in-up animate-delay-300">
+                      <Star className="w-10 h-10 text-amber-400 mb-4" />
+                      <h4 className="font-semibold text-2xl">4.9/5</h4>
+                      <p className="text-sm text-muted-foreground">User Rating</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="order-1 lg:order-2 space-y-6">
+                <span className="badge-premium">Why GlowSense?</span>
+                <h2 className="text-3xl sm:text-4xl font-display font-bold">
+                  Trusted by Thousands for{" "}
+                  <span className="text-gradient">Accurate Results</span>
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Our AI is trained on diverse datasets specifically including African hair types and skin tones, ensuring accurate analysis for everyone.
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    "Medical-grade AI trained by dermatologists",
+                    "Specialized for 4A-4C hair textures",
+                    "Nigerian hair care expertise built-in",
+                    "Secure & private - your data stays yours"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-teal-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                      </div>
+                      <span className="text-slate-700 dark:text-slate-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  size="lg"
+                  onClick={() => navigate('/scan')}
+                  className="btn-premium mt-4"
+                >
+                  Try It Free
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-gradient-to-br from-teal-600 via-emerald-600 to-cyan-600 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold">
+              Ready to Start Your Glow Journey?
+            </h2>
+            <p className="text-lg sm:text-xl text-white/80">
+              Join thousands who have transformed their hair and skin with AI-powered insights.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button 
+                size="lg"
+                onClick={() => navigate('/scan')}
+                className="bg-white text-teal-600 hover:bg-white/90 shadow-xl shadow-black/10 text-lg px-8 py-6 h-auto rounded-xl font-semibold"
+              >
+                <Camera className="mr-2 h-5 w-5" />
+                Get Your Free Analysis
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                onClick={() => navigate('/telehealth')}
+                className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur text-lg px-8 py-6 h-auto rounded-xl"
+              >
+                <Video className="mr-2 h-5 w-5" />
+                Book Consultation
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-8 sm:py-12 border-t border-slate-200 dark:border-slate-800">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-6">
+            <p className="text-sm text-muted-foreground text-center">
+              <strong className="text-foreground">Medical Disclaimer:</strong> GlowSense AI is a clinical decision-support tool and wellness assistant. 
+              It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for serious concerns.
+            </p>
+          </div>
         </div>
       </section>
     </div>
   );
 };
 
-const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
-  <div className="group relative bg-card rounded-2xl p-8 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-    <div className="relative space-y-4">
-      <div className="w-16 h-16 rounded-xl bg-primary-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
-        {icon}
-      </div>
-      <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed">{description}</p>
+const FeatureCard = ({ 
+  icon, 
+  title, 
+  description, 
+  gradient 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string;
+  gradient: string;
+}) => (
+  <div className="group card-interactive p-6 sm:p-8">
+    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+      {icon}
     </div>
+    <h3 className="text-xl font-display font-semibold text-foreground mb-3">{title}</h3>
+    <p className="text-muted-foreground leading-relaxed">{description}</p>
   </div>
 );
 

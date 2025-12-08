@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Search, Package, Sparkles, Scan } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Navbar } from "@/components/layout/Navbar";
 
 interface Product {
   id: string;
@@ -179,61 +180,58 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center mb-6">
+      <Navbar />
+      
+      <div className="gradient-mesh">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2">DermaCare Shop</h1>
-              <p className="text-muted-foreground">Premium hair & skin care products for your needs</p>
+              <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium mb-2">GlowSense Shop</h1>
+              <p className="text-muted-foreground">Premium hair & skin care products curated for you</p>
             </div>
             <Button
-              variant="outline"
-              size="lg"
               onClick={() => navigate("/cart")}
-              className="relative"
+              className="btn-premium relative"
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
               Cart
               {cartCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0">
+                <Badge className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 bg-white text-teal-600 shadow-lg">
                   {cartCount}
                 </Badge>
               )}
             </Button>
           </div>
 
-          {/* Product Type Tabs */}
           <Tabs value={productTypeFilter} onValueChange={(v) => { setProductTypeFilter(v); setSelectedCategory("all"); }} className="mb-6">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="all" className="flex items-center gap-2">
+            <TabsList className="grid w-full max-w-md grid-cols-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <TabsTrigger value="all" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <Package className="w-4 h-4" />
-                All Products
+                <span className="hidden sm:inline">All</span>
               </TabsTrigger>
-              <TabsTrigger value="skin" className="flex items-center gap-2">
+              <TabsTrigger value="skin" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <Scan className="w-4 h-4" />
-                Skin Care
+                <span className="hidden sm:inline">Skin Care</span>
               </TabsTrigger>
-              <TabsTrigger value="hair" className="flex items-center gap-2">
+              <TabsTrigger value="hair" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <Sparkles className="w-4 h-4" />
-                Hair Care
+                <span className="hidden sm:inline">Hair Care</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-11 h-12 rounded-xl border-slate-200 dark:border-slate-700"
               />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="w-full sm:w-48 h-12 rounded-xl border-slate-200 dark:border-slate-700">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>

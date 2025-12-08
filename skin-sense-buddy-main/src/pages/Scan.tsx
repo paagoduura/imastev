@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video } from "lucide-react";
+import { Navbar } from "@/components/layout/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -408,6 +409,19 @@ const Scan = () => {
     }
   };
 
+  const stepLabels: Record<string, string> = {
+    type: 'Select the type of analysis you need',
+    porosity: 'Test your hair porosity for personalized recommendations',
+    capture: 'Capture high-quality images for accurate AI analysis',
+    review: 'Review your images before analysis',
+    calibrate: 'Optional: Calibrate for precise measurements',
+    analyze: 'Ready to analyze your images'
+  };
+
+  const steps = analysisType === 'hair' 
+    ? ['type', 'porosity', 'capture', 'review', 'calibrate', 'analyze'] 
+    : ['type', 'capture', 'review', 'calibrate', 'analyze'];
+
   const renderTypeStep = () => (
     <div className="space-y-6">
       <AnalysisTypeSelector 
@@ -719,57 +733,58 @@ const Scan = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background p-4">
-      <div className="container mx-auto max-w-3xl py-8">
-        <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="gradient-mesh min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8">
+          <div className="mb-6 sm:mb-8">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/dashboard')}
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white -ml-2"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-            {analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis
-          </h1>
-          <p className="text-muted-foreground">
-            {step === 'type' && 'Select the type of analysis you need'}
-            {step === 'porosity' && 'Test your hair porosity for personalized recommendations'}
-            {step === 'capture' && 'Capture high-quality images for accurate AI analysis'}
-            {step === 'review' && 'Review your images before analysis'}
-            {step === 'calibrate' && 'Optional: Calibrate for precise measurements'}
-            {step === 'analyze' && 'Ready to analyze your images'}
-          </p>
-        </div>
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-3 text-gradient-premium">
+              {analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
+              {stepLabels[step]}
+            </p>
+          </div>
 
-        {/* Progress indicator */}
-        <div className="flex justify-center gap-2 mb-8">
-          {(analysisType === 'hair' 
-            ? ['type', 'porosity', 'capture', 'review', 'calibrate', 'analyze'] 
-            : ['type', 'capture', 'review', 'calibrate', 'analyze']
-          ).map((s, i, arr) => (
-            <div
-              key={s}
-              className={`h-2 w-10 rounded-full transition-colors ${
-                arr.indexOf(step) >= i
-                  ? 'bg-primary'
-                  : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
+          <div className="flex justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-10">
+            {steps.map((s, i) => (
+              <div
+                key={s}
+                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                  steps.indexOf(step) >= i
+                    ? 'w-10 sm:w-12 bg-gradient-to-r from-teal-500 to-emerald-500'
+                    : 'w-6 sm:w-8 bg-slate-200 dark:bg-slate-700'
+                }`}
+              />
+            ))}
+          </div>
 
-        {step === 'type' && renderTypeStep()}
-        {step === 'porosity' && (
-          <PorosityTest 
-            onComplete={handlePorosityComplete}
-            onSkip={handlePorositySkip}
-          />
-        )}
-        {step === 'capture' && renderCaptureStep()}
-        {step === 'review' && renderReviewStep()}
-        {step === 'calibrate' && renderCalibrateStep()}
-        {step === 'analyze' && renderAnalyzeStep()}
+          <div className="animate-fade-in">
+            {step === 'type' && renderTypeStep()}
+            {step === 'porosity' && (
+              <PorosityTest 
+                onComplete={handlePorosityComplete}
+                onSkip={handlePorositySkip}
+              />
+            )}
+            {step === 'capture' && renderCaptureStep()}
+            {step === 'review' && renderReviewStep()}
+            {step === 'calibrate' && renderCalibrateStep()}
+            {step === 'analyze' && renderAnalyzeStep()}
+          </div>
+        </div>
       </div>
     </div>
   );

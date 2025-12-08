@@ -16,6 +16,7 @@ import { StatCard } from "@/components/timeline/StatCard";
 import { HairMetricsCard } from "@/components/timeline/HairMetricsCard";
 import { HairProgressChart } from "@/components/timeline/HairProgressChart";
 import { JourneyEmptyState } from "@/components/timeline/JourneyEmptyState";
+import { Navbar } from "@/components/layout/Navbar";
 
 interface Scan {
   id: string;
@@ -233,74 +234,69 @@ export default function Timeline() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary-light/10 to-background">
-        <div className="text-center space-y-4 animate-in fade-in duration-500">
-          <div className="relative">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-            <div className="absolute inset-0 blur-xl bg-primary/20 animate-pulse" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+          <div className="text-center space-y-4 animate-in fade-in duration-500">
+            <div className="relative">
+              <Loader2 className="w-12 h-12 animate-spin text-teal-500 mx-auto" />
+              <div className="absolute inset-0 blur-xl bg-teal-500/20 animate-pulse" />
+            </div>
+            <p className="text-muted-foreground font-medium">Analyzing your journey...</p>
           </div>
-          <p className="text-muted-foreground font-medium">Analyzing your journey...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/5 to-background">
-      <div className="container max-w-7xl py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => navigate("/dashboard")}
-              className="hover:bg-primary/10 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="gradient-mesh">
+        <div className="container max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium">
                   Your Journey
                 </h1>
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                <Sparkles className="w-5 h-5 text-teal-500 animate-pulse" />
               </div>
               <p className="text-muted-foreground mt-1">Track your hair & skin health over time</p>
             </div>
-          </div>
-          <Button 
-            onClick={() => navigate("/scan")}
-            className="shadow-medium hover:shadow-strong transition-all duration-300"
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            New Scan
-          </Button>
-        </div>
-
-        {/* Journey Type Tabs */}
-        <div className="flex justify-center">
-          <div className="inline-flex p-1 rounded-xl bg-muted/50 border border-border">
-            <button
-              onClick={() => { setJourneyTab("skin"); setSelectedCondition("all"); }}
-              className={`relative px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                journeyTab === "skin" 
-                  ? "bg-gradient-to-r from-primary to-primary-glow text-white shadow-lg" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+            <Button 
+              onClick={() => navigate("/scan")}
+              className="btn-premium"
             >
-              <div className="flex items-center gap-2">
-                <Leaf className="w-4 h-4" />
-                <span>Skin Journey</span>
-                {skinScans.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {skinScans.length}
-                  </Badge>
-                )}
-              </div>
-            </button>
-            <button
-              onClick={() => { setJourneyTab("hair"); setSelectedCondition("all"); }}
+              <Camera className="w-4 h-4 mr-2" />
+              New Scan
+            </Button>
+          </div>
+
+          <div className="flex justify-center">
+            <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+              <button
+                onClick={() => { setJourneyTab("skin"); setSelectedCondition("all"); }}
+                className={`relative px-4 sm:px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  journeyTab === "skin" 
+                    ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg" 
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Leaf className="w-4 h-4" />
+                  <span className="hidden sm:inline">Skin Journey</span>
+                  <span className="sm:hidden">Skin</span>
+                  {skinScans.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 text-xs">
+                      {skinScans.length}
+                    </Badge>
+                  )}
+                </div>
+              </button>
+              <button
+                onClick={() => { setJourneyTab("hair"); setSelectedCondition("all"); }}
               className={`relative px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                 journeyTab === "hair" 
                   ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg" 
@@ -600,6 +596,7 @@ export default function Timeline() {
             </Tabs>
           </>
         )}
+        </div>
       </div>
     </div>
   );
