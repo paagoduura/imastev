@@ -58,11 +58,16 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage & Backend
 
-**Supabase Integration**
-- **Authentication**: Email/password auth with role-based access control
-- **Database**: PostgreSQL via Supabase for storing user profiles, scans, diagnoses, treatment plans, and e-commerce data
-- **Storage**: Image and file storage for scan images, thumbnails, and product images
-- **Real-time subscriptions**: Auth state changes monitored client-side
+**Local Express Backend** (server/index.ts)
+- **Authentication**: JWT-based email/password auth with role-based access control
+- **Database**: PostgreSQL for storing user profiles, scans, diagnoses, treatment plans, and e-commerce data
+- **Storage**: Local file storage for scan images in /uploads directory
+- **Stripe Integration**: Payment processing via Stripe with stripe-replit-sync for webhooks
+
+**API Server Architecture**
+- Express.js server running on port 3001
+- Vite frontend dev server on port 5000 with API proxy to backend
+- Supabase compatibility layer (skin-sense-buddy-main/src/integrations/supabase/client.ts) for minimal frontend changes
 
 **Data Schema Design**
 - Users → Profiles (demographic, skin/hair type, medical history)
