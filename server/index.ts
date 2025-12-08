@@ -11,6 +11,7 @@ import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync, getUncachableStripeClient, getStripePublishableKey } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
 import { createDailyRoom, createMeetingToken } from './dailyClient';
+import { analyzeWithAI } from './aiAnalysis';
 
 const app = express();
 const PORT = 3001;
@@ -443,21 +444,29 @@ app.get('/api/scans/:id', authenticateToken, async (req: any, res) => {
 app.post('/api/analyze/:type', authenticateToken, async (req: any, res) => {
   try {
     const { scanId } = req.body;
-    const analysisType = req.params.type; // 'skin' or 'hair'
+    const analysisType = req.params.type as 'skin' | 'hair';
     
-    // Update scan status
     await pool.query("UPDATE scans SET status = 'analyzing' WHERE id = $1", [scanId]);
     
-    // Get scan details
     const scanResult = await pool.query('SELECT * FROM scans WHERE id = $1', [scanId]);
     const scan = scanResult.rows[0];
     
-    // Get user profile
     const profileResult = await pool.query('SELECT * FROM profiles WHERE user_id = $1', [req.user.id]);
     const profile = profileResult.rows[0];
     
-    // Generate AI analysis (simulated for now - can integrate with OpenAI/Claude later)
-    const analysis = generateAnalysis(analysisType, profile, scan);
+    const imagePaths: string[] = [];
+    if (scan.image_urls && Array.isArray(scan.image_urls)) {
+      for (const url of scan.image_urls) {
+        const localPath = url.replace(/^\//, './');
+        imagePaths.push(localPath);
+      }
+    } else if (scan.image_url) {
+      imagePaths.push(scan.image_url.replace(/^\//, './'));
+    }
+    
+    console.log(`Starting AI analysis for ${analysisType} with ${imagePaths.length} images`);
+    const analysis = await analyzeWithAI(analysisType, profile, imagePaths);
+    console.log(`AI analysis complete in ${analysis.processing_time_ms}ms`);
     
     // Save diagnosis
     const diagnosisResult = await pool.query(
@@ -468,7 +477,7 @@ app.post('/api/analyze/:type', authenticateToken, async (req: any, res) => {
       [scanId, req.user.id, analysisType, JSON.stringify(analysis.conditions), 
        analysis.primary_condition, analysis.confidence_score, analysis.severity,
        analysis.triage_level, JSON.stringify(analysis.skin_profile || null),
-       JSON.stringify(analysis.hair_profile || null), 'local-v1', analysis.processing_time_ms]
+       JSON.stringify(analysis.hair_profile || null), 'gpt-4o', analysis.processing_time_ms]
     );
     
     // Create treatment plan
@@ -500,68 +509,6 @@ app.post('/api/analyze/:type', authenticateToken, async (req: any, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// AI Analysis Generator (simulated - can be replaced with real AI)
-function generateAnalysis(type: string, profile: any, scan: any) {
-  const startTime = Date.now();
-  
-  if (type === 'hair') {
-    const hairTypes = ['4A', '4B', '4C'];
-    const porosityLevels = ['low', 'normal', 'high'];
-    const conditions = [
-      { condition: 'Dry Scalp', confidence: 85, severity: 'moderate', explanation: 'Signs of dryness and flaking observed' },
-      { condition: 'Product Buildup', confidence: 78, severity: 'mild', explanation: 'Light residue detected on strands' },
-      { condition: 'Breakage Prone Areas', confidence: 72, severity: 'moderate', explanation: 'Weak points observed at mid-shaft' }
-    ];
-    
-    return {
-      conditions,
-      primary_condition: 'Dry Scalp with Product Buildup',
-      confidence_score: 82,
-      severity: 'moderate',
-      triage_level: 'self_care',
-      hair_profile: {
-        hair_texture: { type: profile?.hair_type || '4C', confidence: 88 },
-        porosity: { level: profile?.hair_porosity || 'high', confidence: 85 },
-        density: { level: profile?.hair_density || 'thick' },
-        scalp_health: { overall_score: 72 },
-        strand_health: { overall_score: 68, breakage_level: 'moderate' },
-        moisture_protein_balance: { status: 'moisture_deficient' }
-      },
-      recommendations: 'Based on your hair analysis, focus on deep moisture treatments and gentle clarifying.',
-      ingredients_to_use: ['Shea Butter', 'Coconut Oil', 'Glycerin', 'Aloe Vera'],
-      ingredients_to_avoid: ['Sulfates', 'Silicones', 'Alcohol'],
-      lifestyle_tips: ['Sleep with satin bonnet', 'Deep condition weekly', 'Avoid tight styles'],
-      follow_up_days: 14,
-      processing_time_ms: Date.now() - startTime
-    };
-  } else {
-    const conditions = [
-      { condition: 'Hyperpigmentation', confidence: 88, severity: 'moderate', explanation: 'Dark patches observed in affected areas' },
-      { condition: 'Uneven Skin Tone', confidence: 82, severity: 'mild', explanation: 'Variations in skin color detected' },
-      { condition: 'Mild Acne', confidence: 75, severity: 'mild', explanation: 'Few active breakouts visible' }
-    ];
-    
-    return {
-      conditions,
-      primary_condition: 'Hyperpigmentation with Uneven Tone',
-      confidence_score: 85,
-      severity: 'moderate',
-      triage_level: 'self_care',
-      skin_profile: {
-        skin_type: profile?.skin_type || 'combination',
-        fitzpatrick_scale: profile?.fitzpatrick_scale || 'IV',
-        detected_features: ['hyperpigmentation', 'mild acne', 'uneven texture']
-      },
-      recommendations: 'Focus on brightening treatments and consistent sun protection.',
-      ingredients_to_use: ['Vitamin C', 'Niacinamide', 'Alpha Arbutin', 'Sunscreen'],
-      ingredients_to_avoid: ['Harsh scrubs', 'Strong acids without guidance'],
-      lifestyle_tips: ['Apply SPF daily', 'Stay hydrated', 'Avoid picking at skin'],
-      follow_up_days: 14,
-      processing_time_ms: Date.now() - startTime
-    };
-  }
-}
 
 // ==================== CLINICIAN ROUTES ====================
 
