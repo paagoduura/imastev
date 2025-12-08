@@ -82,8 +82,8 @@ const Auth = () => {
             <Shield className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Secure Authentication</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to SkinSense</h1>
-          <p className="text-muted-foreground">Your journey to healthier skin starts here</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to GlowSense</h1>
+          <p className="text-muted-foreground">Your journey to healthier hair & skin starts here</p>
         </div>
 
         <Card className="border-2 shadow-lg">

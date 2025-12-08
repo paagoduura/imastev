@@ -77,7 +77,7 @@ export function Navbar() {
             <div className="absolute inset-0 rounded-xl bg-primary/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            SkinSense
+            GlowSense
           </span>
         </button>
 
@@ -147,7 +147,7 @@ export function Navbar() {
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xl font-bold">SkinSense</span>
+                  <span className="text-xl font-bold">GlowSense</span>
                 </div>
               </div>
 
