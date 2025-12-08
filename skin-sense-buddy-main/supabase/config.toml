@@ -1,0 +1,13 @@
+project_id = "hebroahptlnoqwzoydoi"
+
+[functions.analyze-skin]
+verify_jwt = true
+
+[functions.analyze-hair]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.generate-formulation]
+verify_jwt = true
