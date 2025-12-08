@@ -7,6 +7,9 @@ import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
+import { runMigrations } from 'stripe-replit-sync';
+import { getStripeSync, getUncachableStripeClient, getStripePublishableKey } from './stripeClient';
+import { WebhookHandlers } from './webhookHandlers';
 
 const app = express();
 const PORT = 3001;
@@ -19,8 +22,76 @@ const pool = new Pool({
 // JWT Secret
 const JWT_SECRET = process.env.SESSION_SECRET || 'glowsense-secret-key-2024';
 
-// Middleware
+// Initialize Stripe
+async function initStripe() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    console.log('DATABASE_URL not set, skipping Stripe initialization');
+    return;
+  }
+
+  try {
+    console.log('Initializing Stripe schema...');
+    await runMigrations({ databaseUrl, schema: 'stripe' });
+    console.log('Stripe schema ready');
+
+    const stripeSync = await getStripeSync();
+
+    console.log('Setting up managed webhook...');
+    const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
+    if (domain) {
+      const webhookBaseUrl = `https://${domain}`;
+      try {
+        const result = await stripeSync.findOrCreateManagedWebhook(
+          `${webhookBaseUrl}/api/stripe/webhook`,
+          { enabled_events: ['*'], description: 'GlowSense webhook' }
+        );
+        const webhookUuid = result?.uuid;
+        if (webhookUuid) {
+          console.log(`Webhook configured with UUID: ${webhookUuid}`);
+          (global as any).stripeWebhookUuid = webhookUuid;
+        }
+      } catch (err: any) {
+        console.log('Webhook setup skipped:', err.message);
+      }
+    } else {
+      console.log('Skipping webhook setup - no domain available');
+    }
+
+    console.log('Syncing Stripe data...');
+    stripeSync.syncBackfill().then(() => console.log('Stripe data synced')).catch(console.error);
+  } catch (error) {
+    console.error('Stripe init error:', error);
+  }
+}
+
+// Initialize Stripe on startup
+initStripe();
+
+// Middleware - CORS first
 app.use(cors());
+
+// CRITICAL: Stripe webhook must be registered BEFORE express.json()
+// Support both /api/stripe/webhook and /api/stripe/webhook/:uuid patterns
+const webhookHandler = async (req: any, res: any) => {
+  const signature = req.headers['stripe-signature'];
+  if (!signature) return res.status(400).json({ error: 'Missing signature' });
+
+  try {
+    const sig = Array.isArray(signature) ? signature[0] : signature;
+    const uuid = req.params.uuid || (global as any).stripeWebhookUuid || '';
+    await WebhookHandlers.processWebhook(req.body as Buffer, sig, uuid);
+    res.status(200).json({ received: true });
+  } catch (error: any) {
+    console.error('Webhook error:', error.message);
+    res.status(400).json({ error: 'Webhook error' });
+  }
+};
+
+app.post('/api/stripe/webhook/:uuid', express.raw({ type: 'application/json' }), webhookHandler);
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), webhookHandler);
+
+// Now apply JSON middleware
 app.use(express.json({ limit: '50mb' }));
 app.use('/uploads', express.static('uploads'));
 
@@ -705,6 +776,118 @@ app.get('/api/diagnoses', authenticateToken, async (req: any, res) => {
       [req.user.id]
     );
     res.json(result.rows);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== STRIPE CHECKOUT ROUTES ====================
+
+app.get('/api/stripe/publishable-key', async (req, res) => {
+  try {
+    const publishableKey = await getStripePublishableKey();
+    res.json({ publishableKey });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to get Stripe key' });
+  }
+});
+
+app.post('/api/checkout/create-session', authenticateToken, async (req: any, res) => {
+  try {
+    const stripe = await getUncachableStripeClient();
+    
+    const cartResult = await pool.query(
+      `SELECT ci.*, p.name, p.price_ngn, p.image_url
+       FROM cart_items ci
+       JOIN products p ON ci.product_id = p.id
+       WHERE ci.user_id = $1`,
+      [req.user.id]
+    );
+    
+    if (cartResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Cart is empty' });
+    }
+    
+    const lineItems = cartResult.rows.map(item => ({
+      price_data: {
+        currency: 'ngn',
+        product_data: {
+          name: item.name,
+          images: item.image_url ? [item.image_url] : [],
+        },
+        unit_amount: Math.round(parseFloat(item.price_ngn) * 100),
+      },
+      quantity: item.quantity,
+    }));
+    
+    const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+    
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/checkout/cancel`,
+      metadata: {
+        user_id: req.user.id,
+      },
+    });
+    
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error: any) {
+    console.error('Checkout error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/subscription/create-session', authenticateToken, async (req: any, res) => {
+  try {
+    const { planId } = req.body;
+    const stripe = await getUncachableStripeClient();
+    
+    const planResult = await pool.query('SELECT * FROM subscription_plans WHERE id = $1', [planId]);
+    if (planResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Plan not found' });
+    }
+    
+    const plan = planResult.rows[0];
+    const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+    
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'ngn',
+          product_data: {
+            name: `${plan.name} Subscription`,
+            description: `GlowSense ${plan.name} Plan - Monthly`,
+          },
+          unit_amount: Math.round(parseFloat(plan.price_ngn) * 100),
+          recurring: { interval: 'month' },
+        },
+        quantity: 1,
+      }],
+      mode: 'subscription',
+      success_url: `${baseUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/subscription/cancel`,
+      metadata: {
+        user_id: req.user.id,
+        plan_id: planId,
+      },
+    });
+    
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error: any) {
+    console.error('Subscription checkout error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/checkout/session/:sessionId', authenticateToken, async (req: any, res) => {
+  try {
+    const stripe = await getUncachableStripeClient();
+    const session = await stripe.checkout.sessions.retrieve(req.params.sessionId);
+    res.json({ session });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

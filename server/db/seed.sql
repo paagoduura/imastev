@@ -43,7 +43,8 @@ INSERT INTO products (sku, name, description, price_ngn, category, product_type,
 ('SKN-006', 'Neem & Tea Tree Acne Treatment', 'Powerful anti-acne formula with neem and tea tree oil.', 5500, 'Treatments', 'skin', 80,
  ARRAY['Neem Extract', 'Tea Tree Oil', 'Salicylic Acid', 'Zinc'],
  ARRAY['acne', 'oily skin', 'blackheads'],
- ARRAY['dry skin', 'eczema']);
+ ARRAY['dry skin', 'eczema'])
+ON CONFLICT (sku) DO NOTHING;
 
 -- Hair Care Products
 INSERT INTO products (sku, name, description, price_ngn, category, product_type, stock_quantity, ingredients, suitable_for_conditions, suitable_hair_types, suitable_hair_concerns) VALUES
@@ -93,7 +94,8 @@ INSERT INTO products (sku, name, description, price_ngn, category, product_type,
  ARRAY['Olaplex-like Bond Repair', 'Keratin', 'Argan Oil', 'Avocado Oil'],
  ARRAY['transitioning hair', 'line of demarcation'],
  ARRAY['transitioning'],
- ARRAY['breakage', 'weak hair', 'transitioning']);
+ ARRAY['breakage', 'weak hair', 'transitioning'])
+ON CONFLICT (sku) DO NOTHING;
 
 -- Sample Clinicians (with user accounts)
 -- Note: These will be linked to user accounts once users register as clinicians
