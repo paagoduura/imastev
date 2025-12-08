@@ -496,19 +496,40 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
           control={form.control}
           name="is_chemically_treated"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 p-4 bg-gradient-to-r from-purple-500/5 to-pink-500/5">
-              <div className="space-y-0.5">
+            <FormItem className="space-y-4">
+              <div className="space-y-2">
                 <FormLabel className="text-base font-semibold">Is your hair chemically treated?</FormLabel>
                 <FormDescription>
                   This includes relaxers, texturizers, permanent color, or keratin treatments
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="data-[state=checked]:bg-purple-500"
-                />
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(false)}
+                    className={cn(
+                      "flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all",
+                      !field.value
+                        ? "border-purple-500 bg-purple-500/10 text-purple-700"
+                        : "border-border hover:border-purple-500/50"
+                    )}
+                  >
+                    No
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(true)}
+                    className={cn(
+                      "flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all",
+                      field.value
+                        ? "border-purple-500 bg-purple-500/10 text-purple-700"
+                        : "border-border hover:border-purple-500/50"
+                    )}
+                  >
+                    Yes
+                  </button>
+                </div>
               </FormControl>
             </FormItem>
           )}
