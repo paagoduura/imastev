@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar as CalendarIcon, Clock, Star, Video, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { VideoCall } from "@/components/telehealth/VideoCall";
 
 interface Clinician {
   id: string;
@@ -46,6 +47,8 @@ export default function Telehealth() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [booking, setBooking] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
+  const [activeCall, setActiveCall] = useState<{ meetingUrl: string; token: string } | null>(null);
+  const [joiningCall, setJoiningCall] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -158,6 +161,36 @@ export default function Telehealth() {
       });
     } finally {
       setBooking(false);
+    }
+  };
+
+  const joinAppointmentCall = async (appointmentId: string) => {
+    setJoiningCall(appointmentId);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/appointments/${appointmentId}/join`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to join appointment');
+      
+      const data = await response.json();
+      setActiveCall({
+        meetingUrl: data.meeting_url,
+        token: data.token
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to join call",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningCall(null);
     }
   };
 
@@ -369,12 +402,18 @@ export default function Telehealth() {
                         >
                           {appointment.status}
                         </Badge>
-                        {appointment.meeting_url && appointment.status === "confirmed" && (
-                          <Button size="sm" asChild>
-                            <a href={appointment.meeting_url} target="_blank" rel="noopener noreferrer">
+                        {appointment.meeting_url && (appointment.status === "confirmed" || appointment.status === "scheduled") && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => joinAppointmentCall(appointment.id)}
+                            disabled={joiningCall === appointment.id}
+                          >
+                            {joiningCall === appointment.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
                               <Video className="mr-2 h-4 w-4" />
-                              Join Meeting
-                            </a>
+                            )}
+                            Join Meeting
                           </Button>
                         )}
                       </div>
@@ -386,6 +425,14 @@ export default function Telehealth() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {activeCall && (
+        <VideoCall
+          meetingUrl={activeCall.meetingUrl}
+          token={activeCall.token}
+          onLeave={() => setActiveCall(null)}
+        />
+      )}
     </div>
   );
 }

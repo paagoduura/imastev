@@ -10,6 +10,7 @@ import fs from 'fs';
 import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync, getUncachableStripeClient, getStripePublishableKey } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
+import { createDailyRoom, createMeetingToken } from './dailyClient';
 
 const app = express();
 const PORT = 3001;
@@ -602,18 +603,76 @@ app.post('/api/appointments', authenticateToken, async (req: any, res) => {
   try {
     const { clinician_id, scheduled_at, duration_minutes = 30 } = req.body;
     
-    // Generate meeting URL (placeholder - integrate with actual video service)
-    const meetingUrl = `https://meet.glowsense.ng/${uuidv4()}`;
+    const appointmentId = uuidv4().slice(0, 8);
+    const room = await createDailyRoom({
+      name: `glowsense-${appointmentId}`,
+      privacy: 'private',
+      properties: {
+        enable_chat: true,
+        enable_screenshare: true,
+        max_participants: 2,
+        exp: Math.floor(new Date(scheduled_at).getTime() / 1000) + (duration_minutes * 60) + 3600
+      }
+    });
     
     const result = await pool.query(
       `INSERT INTO appointments (patient_user_id, clinician_id, scheduled_at, duration_minutes, meeting_url, status)
        VALUES ($1, $2, $3, $4, $5, 'scheduled')
        RETURNING *`,
-      [req.user.id, clinician_id, scheduled_at, duration_minutes, meetingUrl]
+      [req.user.id, clinician_id, scheduled_at, duration_minutes, room.url]
     );
     
     res.json(result.rows[0]);
   } catch (error: any) {
+    console.error('Appointment creation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/appointments/:id/join', authenticateToken, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    
+    const apptResult = await pool.query(
+      `SELECT a.*, p.full_name as patient_name
+       FROM appointments a
+       JOIN profiles p ON a.patient_user_id = p.user_id
+       WHERE a.id = $1`,
+      [id]
+    );
+    
+    if (apptResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+    
+    const appointment = apptResult.rows[0];
+    
+    if (appointment.patient_user_id !== req.user.id) {
+      const clinicianCheck = await pool.query(
+        'SELECT * FROM clinicians WHERE user_id = $1 AND id = $2',
+        [req.user.id, appointment.clinician_id]
+      );
+      if (clinicianCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Not authorized to join this appointment' });
+      }
+    }
+    
+    const profileResult = await pool.query('SELECT full_name FROM profiles WHERE user_id = $1', [req.user.id]);
+    const userName = profileResult.rows[0]?.full_name || req.user.email;
+    
+    const roomName = appointment.meeting_url.split('/').pop();
+    const isOwner = appointment.patient_user_id !== req.user.id;
+    
+    const token = await createMeetingToken(roomName, userName, isOwner);
+    
+    res.json({
+      meeting_url: appointment.meeting_url,
+      token,
+      room_name: roomName,
+      appointment
+    });
+  } catch (error: any) {
+    console.error('Join appointment error:', error);
     res.status(500).json({ error: error.message });
   }
 });
