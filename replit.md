@@ -63,10 +63,13 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL for storing user profiles, scans, diagnoses, treatment plans, and e-commerce data
 - **Storage**: Local file storage for scan images in /uploads directory
 - **Stripe Integration**: Payment processing via Stripe with stripe-replit-sync for webhooks
+- **AI Analysis**: OpenAI GPT-4o integration for real image analysis (server/aiAnalysis.ts)
+- **Video Meetings**: Daily.co integration for telehealth consultations (server/dailyClient.ts)
 
 **API Server Architecture**
-- Express.js server running on port 3001
+- Express.js server running on port 3001 (development) or port 5000 (production)
 - Vite frontend dev server on port 5000 with API proxy to backend
+- Production: Server serves built frontend from skin-sense-buddy-main/dist
 - Supabase compatibility layer (skin-sense-buddy-main/src/integrations/supabase/client.ts) for minimal frontend changes
 
 **Data Schema Design**

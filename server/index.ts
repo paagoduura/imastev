@@ -14,7 +14,7 @@ import { createDailyRoom, createMeetingToken } from './dailyClient';
 import { analyzeWithAI } from './aiAnalysis';
 
 const app = express();
-const PORT = 3001;
+const PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Database connection
 const pool = new Pool({
@@ -903,6 +903,19 @@ app.get('/api/checkout/session/:sessionId', authenticateToken, async (req: any, 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Serve static frontend in production
+const frontendDistPath = path.join(__dirname, '..', 'skin-sense-buddy-main', 'dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.sendFile(path.join(frontendDistPath, 'index.html'));
+    } else {
+      next();
+    }
+  });
+}
 
 // Initialize database and start server
 async function initializeDatabase() {
