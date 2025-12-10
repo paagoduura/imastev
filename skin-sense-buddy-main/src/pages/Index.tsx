@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Sparkles, TrendingUp, Shield, Users, Star, ChevronRight, Heart, Zap, CheckCircle2, ArrowRight, Video, ShoppingBag, Calendar, Scissors, Leaf, MapPin, Clock, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -519,6 +520,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

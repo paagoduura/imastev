@@ -17,6 +17,7 @@ import { HairMetricsCard } from "@/components/timeline/HairMetricsCard";
 import { HairProgressChart } from "@/components/timeline/HairProgressChart";
 import { JourneyEmptyState } from "@/components/timeline/JourneyEmptyState";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 interface Scan {
   id: string;
@@ -598,6 +599,8 @@ export default function Timeline() {
         )}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

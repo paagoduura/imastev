@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { VideoCall } from "@/components/telehealth/VideoCall";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 interface Clinician {
   id: string;
@@ -437,6 +438,8 @@ export default function Telehealth() {
           onLeave={() => setActiveCall(null)}
         />
       )}
+
+      <Footer />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { HeatmapVisualization } from "@/components/results/HeatmapVisualization";
 import { HairResultsDisplay } from "@/components/results/HairResultsDisplay";
+import { Footer } from "@/components/layout/Footer";
 
 const Results = () => {
   const navigate = useNavigate();
@@ -444,6 +445,8 @@ const Results = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Footer />
     </div>
   );
 };

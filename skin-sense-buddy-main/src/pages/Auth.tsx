@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Shield } from "lucide-react";
+import { Footer } from "@/components/layout/Footer";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -162,6 +163,8 @@ const Auth = () => {
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
+
+      <Footer />
     </div>
   );
 };

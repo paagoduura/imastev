@@ -11,6 +11,7 @@ import { ShoppingCart, Search, Package, Sparkles, Scan } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 interface Product {
   id: string;
@@ -349,6 +350,8 @@ const Shop = () => {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };
