@@ -10,8 +10,9 @@ The platform operates "IMSTEV NATURALS HAIR SPECIALIST SALON" with appointment-b
 - **Brand Name**: IMSTEV NATURALS
 - **Tagline**: "Home of Nature's Beauty"
 - **Color Palette**: Purple/Amber gradient (`from-purple-600 to-amber-500`) for active states and CTAs
-- **Logo**: `/public/logo.png`
-- **Product Image**: `/public/products.jpg`
+- **Logo**: `/public/imstev-logo.png`
+- **Product Image**: `/public/imstev-products.jpg`
+- **Footer**: Premium dark footer component (`Footer.tsx`) with IMSTEV branding, contact info, and social links
 
 ## User Preferences
 
