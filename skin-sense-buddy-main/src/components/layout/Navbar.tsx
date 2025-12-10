@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Scan", href: "/scan", icon: Camera },
   { label: "Timeline", href: "/timeline", icon: TrendingUp },
-  { label: "Telehealth", href: "/telehealth", icon: Video },
+  { label: "Salon", href: "/telehealth", icon: Video },
   { label: "Shop", href: "/shop", icon: ShoppingBag },
 ];
 
@@ -57,7 +57,7 @@ export function Navbar() {
           relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 no-tap-highlight
           ${mobile ? "w-full justify-start text-base" : "text-sm"}
           ${isActive 
-            ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg shadow-teal-500/25" 
+            ? "bg-gradient-to-r from-purple-600 to-amber-500 text-white shadow-lg shadow-purple-500/25" 
             : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
           }
         `}
@@ -84,17 +84,21 @@ export function Navbar() {
               className="flex items-center gap-2.5 group no-tap-highlight"
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/30 group-hover:shadow-xl group-hover:shadow-teal-500/40 transition-all duration-300 group-hover:scale-105">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className="w-11 h-11 rounded-full overflow-hidden shadow-lg shadow-purple-500/20 group-hover:shadow-xl group-hover:shadow-purple-500/30 transition-all duration-300 group-hover:scale-105 ring-2 ring-purple-100 dark:ring-purple-900/30">
+                  <img 
+                    src="/imstev-logo.png" 
+                    alt="IMSTEV NATURALS" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <div className="absolute inset-0 rounded-xl bg-teal-400 blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-300" />
+                <div className="absolute inset-0 rounded-full bg-purple-400 blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-display font-bold text-gradient">
-                  GlowSense
+                <span className="text-lg font-display font-bold bg-gradient-to-r from-purple-700 via-purple-600 to-amber-700 bg-clip-text text-transparent">
+                  IMSTEV NATURALS
                 </span>
-                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 -mt-1 tracking-wider uppercase">
-                  AI Dermatology
+                <span className="text-[9px] font-medium text-purple-500/70 dark:text-purple-400/70 -mt-0.5 tracking-wider">
+                  Home of Nature's Beauty
                 </span>
               </div>
             </button>
@@ -142,7 +146,7 @@ export function Navbar() {
                   <Button
                     size="sm"
                     onClick={() => navigate("/scan")}
-                    className="btn-premium gap-2 px-5"
+                    className="bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white shadow-lg shadow-purple-500/25 gap-2 px-5"
                   >
                     <Camera className="w-4 h-4" />
                     Start Scan
@@ -162,12 +166,16 @@ export function Navbar() {
                   <div className="p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
-                          <Sparkles className="w-5 h-5 text-white" />
+                        <div className="w-11 h-11 rounded-full overflow-hidden shadow-lg shadow-purple-500/20 ring-2 ring-purple-100 dark:ring-purple-900/30">
+                          <img 
+                            src="/imstev-logo.png" 
+                            alt="IMSTEV NATURALS" 
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-xl font-display font-bold text-gradient">GlowSense</span>
-                          <span className="text-[10px] font-medium text-slate-500 -mt-1 tracking-wider uppercase">AI Dermatology</span>
+                          <span className="text-lg font-display font-bold bg-gradient-to-r from-purple-700 via-purple-600 to-amber-700 bg-clip-text text-transparent">IMSTEV NATURALS</span>
+                          <span className="text-[9px] font-medium text-purple-500/70 -mt-0.5 tracking-wider">Home of Nature's Beauty</span>
                         </div>
                       </div>
                     </div>
@@ -220,7 +228,7 @@ export function Navbar() {
                           Sign In
                         </Button>
                         <Button
-                          className="w-full h-12 btn-premium rounded-xl"
+                          className="w-full h-12 bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white shadow-lg shadow-purple-500/25 rounded-xl"
                           onClick={() => {
                             navigate("/scan");
                             setIsOpen(false);

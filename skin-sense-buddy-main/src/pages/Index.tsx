@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Camera, Sparkles, TrendingUp, Shield, Users, Star, ChevronRight, Heart, Zap, CheckCircle2, ArrowRight, Video, ShoppingBag } from "lucide-react";
+import { Camera, Sparkles, TrendingUp, Shield, Users, Star, ChevronRight, Heart, Zap, CheckCircle2, ArrowRight, Video, ShoppingBag, Calendar, Scissors, Leaf, MapPin, Clock, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 
@@ -168,55 +168,221 @@ const Index = () => {
         </div>
       </section>
 
+      <section className="section-padding bg-gradient-to-b from-purple-50 to-white dark:from-purple-950/20 dark:to-slate-900 relative overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-amber-300/20 rounded-full blur-3xl" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium mb-4">
+              <Leaf className="w-4 h-4" />
+              100% Organic Products
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
+              IMSTEV NATURALS <span className="text-gradient-premium">Organic Collection</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Premium handcrafted organic hair care products made with love in Nigeria. Nourish your natural beauty with nature's finest ingredients.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div className="relative order-2 lg:order-1">
+              <div className="absolute -inset-4 bg-gradient-to-br from-purple-500/20 to-amber-500/20 rounded-[2.5rem] blur-2xl" />
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-purple-500/20 border-4 border-white/50 dark:border-purple-900/30">
+                <img 
+                  src="/imstev-products.jpg" 
+                  alt="IMSTEV NATURALS Organic Products" 
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/60 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center shadow-lg">
+                        <Leaf className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-display font-bold">Complete Hair Care Range</p>
+                        <p className="text-sm text-slate-500">Shampoo, Conditioner, Oils & More</p>
+                      </div>
+                      <Button 
+                        onClick={() => navigate('/shop')}
+                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg"
+                      >
+                        Shop Now
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="order-1 lg:order-2 space-y-6">
+              <div className="grid gap-4">
+                {[
+                  { name: "Deep Cleanse Shampoo", desc: "African Black Soap with Tea Tree Oil", price: "₦4,500" },
+                  { name: "Deep Conditioner", desc: "Protein & Moisture Rich Formula", price: "₦5,200" },
+                  { name: "Scalp & Hair Growth Oil", desc: "Argan, Jojoba & Castor Oil Infused", price: "₦3,800" },
+                  { name: "Leave-In Conditioner", desc: "Clove Oil & Goat Milk Extract", price: "₦4,000" },
+                  { name: "Hair Softening Butter", desc: "For Strong & Healthy Roots", price: "₦3,500" },
+                  { name: "Organic Coconut Oil", desc: "Pure Cold-Pressed Formula", price: "₦2,800" }
+                ].map((product, i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-purple-100 dark:border-purple-900/30">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-foreground">{product.name}</h4>
+                      <p className="text-sm text-muted-foreground">{product.desc}</p>
+                    </div>
+                    <span className="font-bold text-purple-600 dark:text-purple-400">{product.price}</span>
+                  </div>
+                ))}
+              </div>
+              <Button 
+                size="lg"
+                onClick={() => navigate('/shop')}
+                className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white shadow-xl shadow-purple-500/25 h-14 text-lg font-semibold rounded-xl"
+              >
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                View All Products
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="section-padding bg-slate-50 dark:bg-slate-900/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <span className="badge-premium mb-4">Features</span>
+            <span className="badge-premium mb-4">Our Services</span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
-              Advanced Hair & Skin Analysis
+              What We Offer
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Combining cutting-edge AI with dermatological expertise for comprehensive care
+              From AI-powered analysis to premium salon services and organic products
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
             <FeatureCard
               icon={<Camera className="w-6 h-6" />}
-              title="Dual Analysis System"
-              description="Analyze both hair and skin with specialized AI models. Get detailed assessments for 4A-4C hair types and all skin tones."
-              gradient="from-teal-500 to-cyan-500"
+              title="AI Hair Analysis"
+              description="Advanced AI technology to analyze your hair type, porosity, and health. Get personalized recommendations for 4A-4C hair types."
+              gradient="from-purple-500 to-violet-500"
             />
             <FeatureCard
-              icon={<Sparkles className="w-6 h-6" />}
-              title="Nigerian Hair Expertise"
-              description="Specialized care for natural, relaxed, and transitioning hair with Nigerian-sourced organic treatment recommendations."
+              icon={<Scissors className="w-6 h-6" />}
+              title="Specialist Salon"
+              description="Book appointments at our Hair Specialist Salon for professional styling, treatments, and personalized hair care services."
               gradient="from-amber-500 to-orange-500"
+            />
+            <FeatureCard
+              icon={<Leaf className="w-6 h-6" />}
+              title="Organic Products"
+              description="Shop our premium range of handcrafted organic hair care products made with natural Nigerian ingredients."
+              gradient="from-emerald-500 to-green-500"
+            />
+            <FeatureCard
+              icon={<Calendar className="w-6 h-6" />}
+              title="Appointment Booking"
+              description="Easy online booking system. Request an appointment and receive a confirmed date for your salon visit."
+              gradient="from-blue-500 to-indigo-500"
             />
             <FeatureCard
               icon={<TrendingUp className="w-6 h-6" />}
               title="Track Your Journey"
-              description="Monitor your hair growth and skin healing with before/after comparisons and AI-measured progress tracking."
-              gradient="from-violet-500 to-purple-500"
-            />
-            <FeatureCard
-              icon={<Video className="w-6 h-6" />}
-              title="Telehealth Consultations"
-              description="Book video appointments with certified dermatologists and trichologists for personalized expert guidance."
-              gradient="from-blue-500 to-indigo-500"
-            />
-            <FeatureCard
-              icon={<ShoppingBag className="w-6 h-6" />}
-              title="Curated Products"
-              description="Shop recommended hair and skincare products specifically selected for your unique profile and needs."
-              gradient="from-pink-500 to-rose-500"
+              description="Monitor your hair growth and health progress with before/after comparisons and AI-measured tracking."
+              gradient="from-teal-500 to-cyan-500"
             />
             <FeatureCard
               icon={<Heart className="w-6 h-6" />}
-              title="Custom Formulations"
-              description="Get personalized treatment formulas created based on your AI analysis results and specific concerns."
-              gradient="from-emerald-500 to-green-500"
+              title="Custom Treatments"
+              description="Get personalized treatment formulas and regimens based on your AI analysis results and specific hair concerns."
+              gradient="from-pink-500 to-rose-500"
             />
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white/90 text-sm font-medium mb-4 backdrop-blur-sm">
+              <Scissors className="w-4 h-4" />
+              Hair Specialist Salon
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4">
+              IMSTEV NATURALS <span className="text-amber-300">Hair Specialist Salon</span>
+            </h2>
+            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+              Experience premium hair care services by our expert stylists. Book an appointment today and let us transform your natural beauty.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="relative rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gradient-to-br from-purple-700/50 to-amber-700/50 backdrop-blur-sm border border-white/10">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <Scissors className="w-10 h-10 text-white/60 mx-auto mb-2" />
+                      <p className="text-white/80 text-sm font-medium">Salon Gallery</p>
+                      <p className="text-white/50 text-xs">Coming Soon</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <h3 className="text-xl font-display font-bold mb-4 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-amber-300" />
+                  How Booking Works
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    { step: "1", title: "Request Appointment", desc: "Fill out our booking form with your preferred dates and services" },
+                    { step: "2", title: "Confirmation Call", desc: "Our team will contact you to confirm your appointment slot" },
+                    { step: "3", title: "Visit Our Salon", desc: "Come in on your scheduled date and enjoy our premium services" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {item.step}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white">{item.title}</h4>
+                        <p className="text-sm text-white/70">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+                  <Clock className="w-6 h-6 text-amber-300 mx-auto mb-2" />
+                  <p className="text-sm text-white/70">Opening Hours</p>
+                  <p className="font-semibold text-white">9AM - 7PM</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+                  <Phone className="w-6 h-6 text-amber-300 mx-auto mb-2" />
+                  <p className="text-sm text-white/70">Call Us</p>
+                  <p className="font-semibold text-white">Contact</p>
+                </div>
+              </div>
+
+              <Button 
+                size="lg"
+                onClick={() => navigate('/telehealth')}
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-xl shadow-amber-500/25 h-14 text-lg font-semibold rounded-xl"
+              >
+                <Calendar className="mr-2 h-5 w-5" />
+                Book Appointment
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -255,24 +421,24 @@ const Index = () => {
               </div>
 
               <div className="order-1 lg:order-2 space-y-6">
-                <span className="badge-premium">Why GlowSense?</span>
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium">Why IMSTEV NATURALS?</span>
                 <h2 className="text-3xl sm:text-4xl font-display font-bold">
                   Trusted by Thousands for{" "}
-                  <span className="text-gradient">Accurate Results</span>
+                  <span className="bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">Natural Beauty</span>
                 </h2>
                 <p className="text-lg text-muted-foreground">
                   Our AI is trained on diverse datasets specifically including African hair types and skin tones, ensuring accurate analysis for everyone.
                 </p>
                 <ul className="space-y-4">
                   {[
-                    "Medical-grade AI trained by dermatologists",
-                    "Specialized for 4A-4C hair textures",
-                    "Nigerian hair care expertise built-in",
-                    "Secure & private - your data stays yours"
+                    "Expert AI trained for African hair types",
+                    "Premium organic products made in Nigeria",
+                    "Professional salon with certified stylists",
+                    "Personalized hair care recommendations"
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-teal-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                      <div className="w-6 h-6 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-4 h-4 text-purple-600" />
                       </div>
                       <span className="text-slate-700 dark:text-slate-300">{item}</span>
                     </li>
@@ -281,7 +447,7 @@ const Index = () => {
                 <Button 
                   size="lg"
                   onClick={() => navigate('/scan')}
-                  className="btn-premium mt-4"
+                  className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white shadow-lg mt-4"
                 >
                   Try It Free
                   <ChevronRight className="ml-2 h-5 w-5" />
@@ -292,21 +458,21 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="section-padding bg-gradient-to-br from-teal-600 via-emerald-600 to-cyan-600 text-white relative overflow-hidden">
+      <section className="section-padding bg-gradient-to-br from-purple-600 via-purple-700 to-amber-600 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold">
-              Ready to Start Your Glow Journey?
+              Start Your Natural Beauty Journey
             </h2>
             <p className="text-lg sm:text-xl text-white/80">
-              Join thousands who have transformed their hair and skin with AI-powered insights.
+              Join thousands who trust IMSTEV NATURALS for their hair care needs. From AI analysis to organic products and expert salon services.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button 
                 size="lg"
                 onClick={() => navigate('/scan')}
-                className="bg-white text-teal-600 hover:bg-white/90 shadow-xl shadow-black/10 text-lg px-8 py-6 h-auto rounded-xl font-semibold"
+                className="bg-white text-purple-700 hover:bg-white/90 shadow-xl shadow-black/10 text-lg px-8 py-6 h-auto rounded-xl font-semibold"
               >
                 <Camera className="mr-2 h-5 w-5" />
                 Get Your Free Analysis
@@ -317,8 +483,8 @@ const Index = () => {
                 onClick={() => navigate('/telehealth')}
                 className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur text-lg px-8 py-6 h-auto rounded-xl"
               >
-                <Video className="mr-2 h-5 w-5" />
-                Book Consultation
+                <Calendar className="mr-2 h-5 w-5" />
+                Book Salon Appointment
               </Button>
             </div>
           </div>
@@ -327,11 +493,29 @@ const Index = () => {
 
       <section className="py-8 sm:py-12 border-t border-slate-200 dark:border-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-6">
-            <p className="text-sm text-muted-foreground text-center">
-              <strong className="text-foreground">Medical Disclaimer:</strong> GlowSense AI is a clinical decision-support tool and wellness assistant. 
-              It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for serious concerns.
-            </p>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-purple-100 dark:ring-purple-900/30">
+                  <img src="/imstev-logo.png" alt="IMSTEV NATURALS" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <span className="font-display font-bold text-lg bg-gradient-to-r from-purple-700 to-amber-700 bg-clip-text text-transparent">IMSTEV NATURALS</span>
+                  <p className="text-xs text-muted-foreground">Home of Nature's Beauty</p>
+                </div>
+              </div>
+              <div className="flex gap-6 text-sm text-muted-foreground">
+                <span>Organic Products</span>
+                <span>Hair Specialist Salon</span>
+                <span>AI Analysis</span>
+              </div>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-900/30">
+              <p className="text-sm text-muted-foreground text-center">
+                <strong className="text-foreground">Disclaimer:</strong> IMSTEV NATURALS AI is a hair care guidance tool and wellness assistant. 
+                It is not a substitute for professional medical advice. For serious scalp or skin conditions, please consult a licensed dermatologist.
+              </p>
+            </div>
           </div>
         </div>
       </section>

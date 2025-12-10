@@ -218,15 +218,15 @@ export default function Telehealth() {
         <Navbar />
         <div className="gradient-mesh min-h-[calc(100vh-80px)]">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-4xl">
-            <Card className="text-center p-8 sm:p-12 premium-card">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+            <Card className="text-center p-8 sm:p-12 premium-card border-purple-100 dark:border-purple-900/30">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-600 to-amber-500 rounded-2xl flex items-center justify-center">
                 <Video className="h-10 w-10 text-white" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">Upgrade to Access Telehealth</h2>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">Upgrade for Salon Booking</h2>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Connect with verified dermatologists from the comfort of your home with our Premium plans
+                Get priority access to our Hair Specialist Salon appointments with Premium membership
               </p>
-              <Button onClick={() => navigate("/subscription")} className="btn-premium">
+              <Button onClick={() => navigate("/subscription")} className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white">
                 View Subscription Plans
               </Button>
             </Card>
@@ -243,15 +243,15 @@ export default function Telehealth() {
       <div className="gradient-mesh">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium mb-2">Telehealth Consultations</h1>
+            <h1 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent mb-2">IMSTEV NATURALS Hair Specialist Salon</h1>
             <p className="text-muted-foreground">
-              Connect with verified dermatologists from the comfort of your home
+              Book an appointment with our expert stylists. Request a date and we'll confirm your slot.
             </p>
           </div>
 
           <Tabs defaultValue="clinicians" className="space-y-6">
             <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <TabsTrigger value="clinicians" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">Find a Clinician</TabsTrigger>
+              <TabsTrigger value="clinicians" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">Our Stylists</TabsTrigger>
               <TabsTrigger value="appointments" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">My Appointments</TabsTrigger>
             </TabsList>
 
@@ -290,16 +290,16 @@ export default function Telehealth() {
                     </div>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button className="w-full" onClick={() => setSelectedClinician(clinician)}>
+                        <Button className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white" onClick={() => setSelectedClinician(clinician)}>
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          Book Consultation
+                          Book Appointment
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                          <DialogTitle>Book Consultation with {clinician.profiles?.full_name}</DialogTitle>
+                          <DialogTitle>Book Appointment with {clinician.profiles?.full_name}</DialogTitle>
                           <DialogDescription>
-                            Select a date and time for your consultation
+                            Select your preferred date and time. We'll confirm your slot.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

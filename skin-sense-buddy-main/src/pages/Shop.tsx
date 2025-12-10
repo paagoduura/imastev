@@ -186,12 +186,12 @@ const Shop = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium mb-2">GlowSense Shop</h1>
-              <p className="text-muted-foreground">Premium hair & skin care products curated for you</p>
+              <h1 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent mb-2">IMSTEV NATURALS Shop</h1>
+              <p className="text-muted-foreground">Premium organic hair care products made with love in Nigeria</p>
             </div>
             <Button
               onClick={() => navigate("/cart")}
-              className="btn-premium relative"
+              className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white relative"
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
               Cart
