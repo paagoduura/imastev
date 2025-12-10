@@ -1,10 +1,17 @@
-# GlowSense AI - Hair & Skin Analysis Platform
+# IMSTEV NATURALS - Hair & Skin Analysis Platform
 
 ## Overview
 
-GlowSense AI is a medical-grade AI-powered platform for hair and skin analysis, specializing in African hair types (4A-4C) and diverse skin conditions. The application provides instant dermatological assessments, personalized treatment plans, and comprehensive health tracking through multi-angle image capture and advanced computer vision analysis.
+IMSTEV NATURALS is a medical-grade AI-powered platform for hair and skin analysis, specializing in African hair types (4A-4C) and diverse skin conditions. The application provides instant dermatological assessments, personalized treatment plans, and comprehensive health tracking through multi-angle image capture and advanced computer vision analysis.
 
-The platform targets users seeking professional-grade skin and hair care guidance, with particular expertise in Nigerian and African hair care needs. It includes telehealth consultations, custom formulation services, e-commerce functionality, and family account management.
+The platform operates "IMSTEV NATURALS HAIR SPECIALIST SALON" with appointment-based booking and sells an organic product line. It targets users seeking professional-grade skin and hair care guidance, with particular expertise in Nigerian and African hair care needs. Features include salon consultations, custom formulation services, e-commerce functionality, and family account management.
+
+## Brand Identity
+- **Brand Name**: IMSTEV NATURALS
+- **Tagline**: "Home of Nature's Beauty"
+- **Color Palette**: Purple/Amber gradient (`from-purple-600 to-amber-500`) for active states and CTAs
+- **Logo**: `/public/logo.png`
+- **Product Image**: `/public/products.jpg`
 
 ## User Preferences
 
