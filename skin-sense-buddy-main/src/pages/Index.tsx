@@ -81,47 +81,81 @@ const Index = () => {
               </div>
 
               <div className="relative hidden lg:block animate-fade-in animate-delay-200">
-                <div className="relative w-full aspect-square max-w-md mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl rotate-6 opacity-20 blur-2xl" />
-                  <div className="absolute inset-4 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl rotate-3 opacity-30" />
-                  <div className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-2xl shadow-teal-500/20 p-8 border border-slate-200/50 dark:border-slate-700/50">
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
-                          <Sparkles className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-display font-bold text-xl">AI Analysis</h3>
-                          <p className="text-sm text-slate-500">Scanning complete</p>
+                <div className="relative w-full max-w-lg mx-auto">
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-[2rem] rotate-3 opacity-20 blur-2xl scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-400/30 to-emerald-400/30 rounded-[2rem] -rotate-2 scale-102" />
+                  
+                  <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-teal-500/30 border-4 border-white/20 backdrop-blur-sm">
+                    <img 
+                      src="/hero-image.jpg" 
+                      alt="Hair Analysis Preview" 
+                      className="w-full h-auto object-cover aspect-[4/5]"
+                    />
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+                    
+                    <div 
+                      className="absolute top-[20%] left-[25%] w-28 h-28 rounded-full animate-float"
+                      style={{ animation: 'float 4s ease-in-out infinite' }}
+                    >
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-md border-2 border-white/50 shadow-2xl shadow-black/20" />
+                      <div className="absolute inset-1 rounded-full border border-white/30" />
+                      <div className="absolute inset-2 rounded-full border border-white/20" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-teal-500/20 to-emerald-500/20" />
+                      <div className="absolute top-2 left-3 w-4 h-4 rounded-full bg-white/60 blur-sm" />
+                      <div className="absolute top-4 left-5 w-2 h-2 rounded-full bg-white/80" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold text-white drop-shadow-lg">4C COILS</div>
+                          <div className="text-[8px] text-white/80 drop-shadow">Detected</div>
                         </div>
                       </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                          <span className="text-sm font-medium">Hair Type</span>
-                          <span className="badge-premium">4C Natural</span>
+                      <div className="absolute -inset-1 rounded-full border border-teal-400/50 animate-pulse" />
+                    </div>
+                    
+                    <div 
+                      className="absolute bottom-[30%] right-[15%] w-24 h-24 rounded-full"
+                      style={{ animation: 'float 5s ease-in-out infinite 1s' }}
+                    >
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/35 to-white/10 backdrop-blur-md border-2 border-white/40 shadow-xl" />
+                      <div className="absolute inset-1 rounded-full border border-white/25" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20" />
+                      <div className="absolute top-1.5 left-2.5 w-3 h-3 rounded-full bg-white/50 blur-sm" />
+                      <div className="absolute top-3 left-4 w-1.5 h-1.5 rounded-full bg-white/70" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold text-white drop-shadow-lg">HEALTHY</div>
+                          <div className="text-[8px] text-white/80 drop-shadow">Scalp</div>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                          <span className="text-sm font-medium">Porosity</span>
-                          <span className="badge-success">Normal</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                          <span className="text-sm font-medium">Scalp Health</span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                              <div className="w-[85%] h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full" />
-                            </div>
-                            <span className="text-sm font-semibold text-teal-600">85%</span>
+                      </div>
+                    </div>
+                    
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/20">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-display font-bold text-sm">AI Analysis Complete</p>
+                            <p className="text-xs text-slate-500">4C Natural Hair Detected</p>
+                          </div>
+                          <div className="ml-auto">
+                            <span className="badge-premium text-xs">98% Match</span>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="p-4 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 rounded-xl border border-teal-500/20">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">Recommendation</p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Deep conditioning with shea butter treatment weekly</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="text-xs text-slate-500">Porosity</div>
+                            <div className="text-sm font-bold text-teal-600">Normal</div>
+                          </div>
+                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="text-xs text-slate-500">Moisture</div>
+                            <div className="text-sm font-bold text-emerald-600">85%</div>
+                          </div>
+                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="text-xs text-slate-500">Health</div>
+                            <div className="text-sm font-bold text-amber-600">Great</div>
                           </div>
                         </div>
                       </div>
