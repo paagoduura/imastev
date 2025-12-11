@@ -392,7 +392,7 @@ const Index = () => {
 
               <Button 
                 size="lg"
-                onClick={() => navigate('/telehealth')}
+                onClick={() => navigate('/salon-booking')}
                 className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-xl shadow-amber-500/25 h-14 text-lg font-semibold rounded-xl"
               >
                 <Calendar className="mr-2 h-5 w-5" />
