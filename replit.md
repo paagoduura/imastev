@@ -32,12 +32,15 @@ Preferred communication style: Simple, everyday language.
 - **Tailwind CSS** for utility-first styling with custom design tokens defined in CSS variables
 - **Class Variance Authority** for managing component variants
 - Premium design system with:
-  - Glassmorphism navbar with backdrop blur effects
-  - Gradient mesh backgrounds across all pages
-  - Premium color palette: slate tones, teal/emerald accents, sand highlights
+  - Glassmorphism navbar with backdrop blur effects and IMSTEV logo
+  - Gradient mesh backgrounds with purple/amber tones across all pages
+  - Premium color palette: slate tones, purple/amber accents (primary: 271 hue purple, secondary: 38 hue amber)
   - Custom typography with display fonts for headings
-  - Premium button styles with gradients and hover effects
+  - Premium button styles with purple/amber gradients and hover effects
+  - Floating glass cards on auth page with ambient glow effects
   - Mobile-first responsive design with breakpoints (320px, 375px, 768px, 1024px, 1280px)
+  - Trust badges and social proof elements on authentication
+  - Premium product cards with gradient hover states in shop
 
 **State Management**
 - **TanStack Query (React Query)** for server state management, data fetching, and caching

@@ -156,7 +156,7 @@ export function VideoCall({ meetingUrl, token, userName, onLeave }: VideoCallPro
           <Button 
             onClick={joinCall} 
             disabled={joining}
-            className="w-full bg-teal-600 hover:bg-teal-700"
+            className="w-full bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
           >
             {joining ? (
               <>

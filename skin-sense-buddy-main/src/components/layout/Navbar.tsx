@@ -118,7 +118,7 @@ export function Navbar() {
                     onClick={() => navigate("/profile")}
                     className="gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                   >
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center">
                       <User className="w-4 h-4 text-white" />
                     </div>
                     <span>Profile</span>
@@ -198,7 +198,7 @@ export function Navbar() {
                             setIsOpen(false);
                           }}
                         >
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center">
                             <User className="w-4 h-4 text-white" />
                           </div>
                           <span>My Profile</span>

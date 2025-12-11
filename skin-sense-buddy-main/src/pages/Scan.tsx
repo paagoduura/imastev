@@ -765,7 +765,7 @@ const Scan = () => {
                 key={s}
                 className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                   steps.indexOf(step) >= i
-                    ? 'w-10 sm:w-12 bg-gradient-to-r from-teal-500 to-emerald-500'
+                    ? 'w-10 sm:w-12 bg-gradient-to-r from-purple-600 to-amber-500'
                     : 'w-6 sm:w-8 bg-slate-200 dark:bg-slate-700'
                 }`}
               />

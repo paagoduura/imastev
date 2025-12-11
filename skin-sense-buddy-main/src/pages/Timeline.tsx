@@ -240,8 +240,8 @@ export default function Timeline() {
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
           <div className="text-center space-y-4 animate-in fade-in duration-500">
             <div className="relative">
-              <Loader2 className="w-12 h-12 animate-spin text-teal-500 mx-auto" />
-              <div className="absolute inset-0 blur-xl bg-teal-500/20 animate-pulse" />
+              <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto" />
+              <div className="absolute inset-0 blur-xl bg-purple-500/20 animate-pulse" />
             </div>
             <p className="text-muted-foreground font-medium">Analyzing your journey...</p>
           </div>
@@ -262,7 +262,7 @@ export default function Timeline() {
                 <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium">
                   Your Journey
                 </h1>
-                <Sparkles className="w-5 h-5 text-teal-500 animate-pulse" />
+                <Sparkles className="w-5 h-5 text-purple-500 animate-pulse" />
               </div>
               <p className="text-muted-foreground mt-1">Track your hair & skin health over time</p>
             </div>
@@ -281,7 +281,7 @@ export default function Timeline() {
                 onClick={() => { setJourneyTab("skin"); setSelectedCondition("all"); }}
                 className={`relative px-4 sm:px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                   journeyTab === "skin" 
-                    ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg" 
+                    ? "bg-gradient-to-r from-purple-600 to-violet-500 text-white shadow-lg" 
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >

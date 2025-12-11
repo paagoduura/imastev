@@ -207,7 +207,7 @@ export default function Telehealth() {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
         </div>
       </div>
     );

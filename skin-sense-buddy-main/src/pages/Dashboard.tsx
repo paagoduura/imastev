@@ -96,7 +96,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <p className="text-muted-foreground font-medium">Loading your dashboard...</p>
@@ -113,17 +113,20 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
-                <span className="text-white text-xl sm:text-2xl font-bold">
-                  {profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-amber-500 rounded-2xl blur-lg opacity-40" />
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                  <span className="text-white text-xl sm:text-2xl font-bold">
+                    {profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
                   Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  Ready to continue your glow journey?
+                  Ready to continue your natural beauty journey?
                 </p>
               </div>
             </div>
@@ -185,14 +188,14 @@ const Dashboard = () => {
                 icon={<History className="h-5 w-5" />}
                 title="Timeline"
                 subtitle="View progress"
-                gradient="from-teal-500 to-cyan-500"
+                gradient="from-purple-500 to-violet-500"
                 onClick={() => navigate('/timeline')}
               />
               <QuickActionCard 
                 icon={<Video className="h-5 w-5" />}
-                title="Telehealth"
-                subtitle="Book consult"
-                gradient="from-blue-500 to-indigo-500"
+                title="Salon"
+                subtitle="Book visit"
+                gradient="from-amber-500 to-orange-500"
                 onClick={() => navigate('/telehealth')}
               />
               <QuickActionCard 
@@ -255,12 +258,12 @@ const Dashboard = () => {
 
           {isClinician && (
             <div 
-              className="mb-8 card-premium p-5 sm:p-6 cursor-pointer border-teal-500/30 bg-gradient-to-r from-teal-500/5 to-emerald-500/5" 
+              className="mb-8 card-premium p-5 sm:p-6 cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/5 to-amber-500/5" 
               onClick={() => navigate('/clinician')}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center shadow-lg">
                     <Stethoscope className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -268,7 +271,7 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">Manage your appointments and patients</p>
                   </div>
                 </div>
-                <Button className="btn-premium hidden sm:flex">
+                <Button className="bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white shadow-lg hidden sm:flex">
                   Access Dashboard
                   <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -298,7 +301,7 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">Your latest skin and hair assessments</p>
                 </div>
                 {scans.length > 0 && (
-                  <Button variant="ghost" onClick={() => navigate('/timeline')} className="text-teal-600 hover:text-teal-700">
+                  <Button variant="ghost" onClick={() => navigate('/timeline')} className="text-purple-600 hover:text-purple-700">
                     View All
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
@@ -327,7 +330,7 @@ const Dashboard = () => {
                     return (
                       <div
                         key={scan.id}
-                        className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-teal-500/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group"
+                        className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-purple-500/50 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer group"
                         onClick={() => navigate(`/results/${scan.id}`)}
                       >
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 relative">
@@ -390,17 +393,17 @@ const Dashboard = () => {
                             <div className="flex items-center gap-2 mt-2">
                               <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                 <div 
-                                  className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full" 
+                                  className="h-full bg-gradient-to-r from-purple-500 to-amber-500 rounded-full" 
                                   style={{ width: `${scan.diagnoses[0].confidence_score}%` }}
                                 />
                               </div>
-                              <span className="text-xs font-medium text-teal-600">
+                              <span className="text-xs font-medium text-purple-600">
                                 {scan.diagnoses[0].confidence_score}%
                               </span>
                             </div>
                           )}
                         </div>
-                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-teal-500 group-hover:translate-x-1 transition-all flex-shrink-0 hidden sm:block" />
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all flex-shrink-0 hidden sm:block" />
                       </div>
                     );
                   })}

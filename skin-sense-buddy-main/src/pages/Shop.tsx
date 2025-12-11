@@ -197,7 +197,7 @@ const Shop = () => {
               <ShoppingCart className="mr-2 h-5 w-5" />
               Cart
               {cartCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 bg-white text-teal-600 shadow-lg">
+                <Badge className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 bg-white text-purple-600 shadow-lg">
                   {cartCount}
                 </Badge>
               )}
@@ -205,16 +205,16 @@ const Shop = () => {
           </div>
 
           <Tabs value={productTypeFilter} onValueChange={(v) => { setProductTypeFilter(v); setSelectedCategory("all"); }} className="mb-6">
-            <TabsList className="grid w-full max-w-md grid-cols-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <TabsTrigger value="all" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+            <TabsList className="grid w-full max-w-md grid-cols-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm p-1.5 rounded-xl border border-purple-100 dark:border-purple-900/30 shadow-sm">
+              <TabsTrigger value="all" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300">
                 <Package className="w-4 h-4" />
                 <span className="hidden sm:inline">All</span>
               </TabsTrigger>
-              <TabsTrigger value="skin" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="skin" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300">
                 <Scan className="w-4 h-4" />
                 <span className="hidden sm:inline">Skin Care</span>
               </TabsTrigger>
-              <TabsTrigger value="hair" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="hair" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300">
                 <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">Hair Care</span>
               </TabsTrigger>
@@ -276,7 +276,7 @@ const Shop = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="flex flex-col hover:shadow-lg transition-shadow group">
+              <Card key={product.id} className="flex flex-col hover:shadow-xl hover:shadow-purple-500/10 hover:border-purple-200 dark:hover:border-purple-800 transition-all duration-300 group overflow-hidden">
                 <div className="relative h-48 bg-muted overflow-hidden">
                   {product.image_url ? (
                     <img
@@ -337,7 +337,7 @@ const Shop = () => {
 
                 <CardFooter>
                   <Button
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white shadow-lg shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02]"
                     onClick={() => addToCart(product.id)}
                     disabled={product.stock_quantity <= 0}
                   >
