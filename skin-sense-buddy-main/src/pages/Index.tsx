@@ -81,12 +81,12 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="relative hidden lg:block animate-fade-in animate-delay-200">
-                <div className="relative w-full max-w-lg mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-[2rem] rotate-3 opacity-20 blur-2xl scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-400/30 to-emerald-400/30 rounded-[2rem] -rotate-2 scale-102" />
+              <div className="relative animate-fade-in animate-delay-200 mt-8 lg:mt-0">
+                <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto">
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-[1.5rem] sm:rounded-[2rem] rotate-3 opacity-20 blur-2xl scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-400/30 to-emerald-400/30 rounded-[1.5rem] sm:rounded-[2rem] -rotate-2 scale-102" />
                   
-                  <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-teal-500/30 border-4 border-white/20 backdrop-blur-sm">
+                  <div className="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-teal-500/30 border-2 sm:border-4 border-white/20 backdrop-blur-sm">
                     <img 
                       src="/hero-image.jpg" 
                       alt="Hair Analysis Preview" 
@@ -96,7 +96,7 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
                     
                     <div 
-                      className="absolute top-[20%] left-[25%] w-28 h-28 rounded-full animate-float"
+                      className="absolute top-[20%] left-[20%] sm:left-[25%] w-20 h-20 sm:w-28 sm:h-28 rounded-full animate-float"
                       style={{ animation: 'float 4s ease-in-out infinite' }}
                     >
                       <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-md border-2 border-white/50 shadow-2xl shadow-black/20" />
@@ -107,15 +107,15 @@ const Index = () => {
                       <div className="absolute top-4 left-5 w-2 h-2 rounded-full bg-white/80" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                          <div className="text-[10px] font-bold text-white drop-shadow-lg">4C COILS</div>
-                          <div className="text-[8px] text-white/80 drop-shadow">Detected</div>
+                          <div className="text-[8px] sm:text-[10px] font-bold text-white drop-shadow-lg">4C COILS</div>
+                          <div className="text-[6px] sm:text-[8px] text-white/80 drop-shadow">Detected</div>
                         </div>
                       </div>
                       <div className="absolute -inset-1 rounded-full border border-teal-400/50 animate-pulse" />
                     </div>
                     
                     <div 
-                      className="absolute bottom-[30%] right-[15%] w-24 h-24 rounded-full"
+                      className="absolute bottom-[30%] right-[10%] sm:right-[15%] w-16 h-16 sm:w-24 sm:h-24 rounded-full"
                       style={{ animation: 'float 5s ease-in-out infinite 1s' }}
                     >
                       <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/35 to-white/10 backdrop-blur-md border-2 border-white/40 shadow-xl" />
@@ -125,38 +125,38 @@ const Index = () => {
                       <div className="absolute top-3 left-4 w-1.5 h-1.5 rounded-full bg-white/70" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                          <div className="text-[10px] font-bold text-white drop-shadow-lg">HEALTHY</div>
-                          <div className="text-[8px] text-white/80 drop-shadow">Scalp</div>
+                          <div className="text-[8px] sm:text-[10px] font-bold text-white drop-shadow-lg">HEALTHY</div>
+                          <div className="text-[6px] sm:text-[8px] text-white/80 drop-shadow">Scalp</div>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/20">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg">
-                            <Sparkles className="w-5 h-5 text-white" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
+                      <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-2xl border border-white/20">
+                        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                           </div>
-                          <div>
-                            <p className="font-display font-bold text-sm">AI Analysis Complete</p>
-                            <p className="text-xs text-slate-500">4C Natural Hair Detected</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display font-bold text-xs sm:text-sm truncate">AI Analysis Complete</p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 truncate">4C Natural Hair Detected</p>
                           </div>
-                          <div className="ml-auto">
-                            <span className="badge-premium text-xs">98% Match</span>
+                          <div className="flex-shrink-0">
+                            <span className="badge-premium text-[10px] sm:text-xs whitespace-nowrap">98% Match</span>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <div className="text-xs text-slate-500">Porosity</div>
-                            <div className="text-sm font-bold text-teal-600">Normal</div>
+                        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                          <div className="text-center p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="text-[10px] sm:text-xs text-slate-500">Porosity</div>
+                            <div className="text-xs sm:text-sm font-bold text-teal-600">Normal</div>
                           </div>
-                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <div className="text-xs text-slate-500">Moisture</div>
-                            <div className="text-sm font-bold text-emerald-600">85%</div>
+                          <div className="text-center p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="text-[10px] sm:text-xs text-slate-500">Moisture</div>
+                            <div className="text-xs sm:text-sm font-bold text-emerald-600">85%</div>
                           </div>
-                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <div className="text-xs text-slate-500">Health</div>
-                            <div className="text-sm font-bold text-amber-600">Great</div>
+                          <div className="text-center p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="text-[10px] sm:text-xs text-slate-500">Health</div>
+                            <div className="text-xs sm:text-sm font-bold text-amber-600">Great</div>
                           </div>
                         </div>
                       </div>
