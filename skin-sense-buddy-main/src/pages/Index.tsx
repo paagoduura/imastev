@@ -322,16 +322,28 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="relative rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gradient-to-br from-purple-700/50 to-amber-700/50 backdrop-blur-sm border border-white/10">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <Scissors className="w-10 h-10 text-white/60 mx-auto mb-2" />
-                      <p className="text-white/80 text-sm font-medium">Salon Gallery</p>
-                      <p className="text-white/50 text-xs">Coming Soon</p>
-                    </div>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {[
+                { img: "/gallery-1.jpg", title: "Protective Styling", tag: "4C Twist Updo" },
+                { img: "/gallery-2.jpg", title: "Kids Natural", tag: "Beaded Twists" },
+                { img: "/gallery-3.jpg", title: "Cornrow Art", tag: "Flat Twist Style" },
+                { img: "/gallery-4.jpg", title: "Loc Maintenance", tag: "Professional Locs" }
+              ].map((item, i) => (
+                <div key={i} className="group relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl aspect-square cursor-pointer">
+                  <img 
+                    src={item.img} 
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 border-2 border-white/0 group-hover:border-amber-400/50 rounded-xl sm:rounded-2xl transition-all duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <span className="inline-block px-2 py-0.5 bg-amber-500 text-white text-[10px] sm:text-xs font-semibold rounded-full mb-1">{item.tag}</span>
+                    <p className="text-white font-semibold text-sm sm:text-base">{item.title}</p>
+                  </div>
+                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 fill-amber-400" />
                   </div>
                 </div>
               ))}
