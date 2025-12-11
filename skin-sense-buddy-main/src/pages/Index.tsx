@@ -325,25 +325,28 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {[
-                { img: "/gallery-1.png", title: "Protective Styling", tag: "4C Twist Updo" },
-                { img: "/gallery-2.png", title: "Kids Natural", tag: "Beaded Twists" },
-                { img: "/gallery-3.png", title: "Cornrow Art", tag: "Flat Twist Style" },
-                { img: "/gallery-4.png", title: "Loc Maintenance", tag: "Professional Locs" }
+                { img: "/gallery-1.jpg", title: "Protective Styling", tag: "4C Twist Updo" },
+                { img: "/gallery-2.jpg", title: "Kids Natural", tag: "Beaded Twists" },
+                { img: "/gallery-3.jpg", title: "Cornrow Art", tag: "Flat Twist Style" },
+                { img: "/gallery-4.jpg", title: "Loc Maintenance", tag: "Professional Locs" }
               ].map((item, i) => (
                 <div key={i} className="group relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl aspect-square cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-amber-800" />
                   <img 
                     src={item.img} 
                     alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover object-top transition-all duration-500 group-hover:scale-110 relative z-10"
+                    style={{ filter: 'contrast(1.05) saturate(1.1)' }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute inset-0 border-2 border-white/0 group-hover:border-amber-400/50 rounded-xl sm:rounded-2xl transition-all duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <span className="inline-block px-2 py-0.5 bg-amber-500 text-white text-[10px] sm:text-xs font-semibold rounded-full mb-1">{item.tag}</span>
-                    <p className="text-white font-semibold text-sm sm:text-base">{item.title}</p>
+                  <div className="absolute inset-0 z-20 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(88,28,135,0.4)_70%,rgba(88,28,135,0.7)_100%)]" />
+                  <div className="absolute inset-0 z-20 bg-gradient-to-t from-purple-900/90 via-transparent to-purple-900/30" />
+                  <div className="absolute inset-0 z-30 border-2 border-amber-400/30 group-hover:border-amber-400/60 rounded-xl sm:rounded-2xl transition-all duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-30">
+                    <span className="inline-block px-2 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] sm:text-xs font-semibold rounded-full mb-1 shadow-lg">{item.tag}</span>
+                    <p className="text-white font-semibold text-sm sm:text-base drop-shadow-lg">{item.title}</p>
                   </div>
-                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 fill-amber-400" />
+                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center z-30 shadow-lg">
+                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-white fill-white" />
                   </div>
                 </div>
               ))}
