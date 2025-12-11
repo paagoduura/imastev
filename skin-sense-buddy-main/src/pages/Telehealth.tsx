@@ -298,13 +298,13 @@ export default function Telehealth() {
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                          <DialogTitle>Book Appointment with {clinician.profiles?.full_name}</DialogTitle>
+                          <DialogTitle className="text-lg sm:text-xl">Book Appointment with {clinician.profiles?.full_name}</DialogTitle>
                           <DialogDescription>
                             Select your preferred date and time. We'll confirm your slot.
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                          <div className="flex justify-center">
                             <Calendar
                               mode="single"
                               selected={selectedDate}
@@ -315,13 +315,14 @@ export default function Telehealth() {
                           </div>
                           <div className="space-y-4">
                             <div>
-                              <h4 className="font-medium mb-2">Available Time Slots</h4>
-                              <div className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto">
+                              <h4 className="font-medium mb-2 text-sm sm:text-base">Available Time Slots</h4>
+                              <div className="grid grid-cols-4 sm:grid-cols-3 gap-1.5 sm:gap-2 max-h-48 sm:max-h-80 overflow-y-auto">
                                 {timeSlots.map((time) => (
                                   <Button
                                     key={time}
                                     variant={selectedTime === time ? "default" : "outline"}
                                     size="sm"
+                                    className="text-xs sm:text-sm px-2 sm:px-3"
                                     onClick={() => setSelectedTime(time)}
                                   >
                                     {time}
@@ -330,7 +331,7 @@ export default function Telehealth() {
                               </div>
                             </div>
                             <Button
-                              className="w-full"
+                              className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
                               disabled={!selectedDate || !selectedTime || booking}
                               onClick={handleBookAppointment}
                             >
@@ -355,47 +356,60 @@ export default function Telehealth() {
 
           <TabsContent value="appointments" className="space-y-4">
             {appointments.length === 0 ? (
-              <Card className="text-center p-12">
-                <CalendarIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">No appointments yet</h3>
-                <p className="text-muted-foreground">
+              <Card className="text-center p-8 sm:p-12">
+                <CalendarIcon className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">No appointments yet</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Book your first consultation to get started
                 </p>
               </Card>
             ) : (
               appointments.map((appointment) => (
                 <Card key={appointment.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-3">
-                          <Avatar>
+                          <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                             <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${appointment.clinicians?.profiles?.full_name}`} />
-                            <AvatarFallback>
+                            <AvatarFallback className="text-xs sm:text-sm">
                               {appointment.clinicians?.profiles?.full_name?.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <h4 className="font-semibold">{appointment.clinicians?.profiles?.full_name}</h4>
-                            <p className="text-sm text-muted-foreground">{appointment.clinicians?.specialty}</p>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-sm sm:text-base truncate">{appointment.clinicians?.profiles?.full_name}</h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{appointment.clinicians?.specialty}</p>
                           </div>
+                          <Badge
+                            className="sm:hidden"
+                            variant={
+                              appointment.status === "confirmed"
+                                ? "default"
+                                : appointment.status === "completed"
+                                ? "secondary"
+                                : "outline"
+                            }
+                          >
+                            {appointment.status}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <CalendarIcon className="h-4 w-4" />
-                            {format(new Date(appointment.scheduled_at), "PPP")}
+                            <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                            {format(new Date(appointment.scheduled_at), "PP")}
                           </div>
                           <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
+                            <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                             {format(new Date(appointment.scheduled_at), "p")}
                           </div>
                         </div>
                         {appointment.notes && (
-                          <p className="text-sm mt-2">{appointment.notes}</p>
+                          <p className="text-xs sm:text-sm mt-2 text-muted-foreground">{appointment.notes}</p>
                         )}
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
                         <Badge
+                          className="hidden sm:inline-flex"
                           variant={
                             appointment.status === "confirmed"
                               ? "default"
@@ -409,6 +423,7 @@ export default function Telehealth() {
                         {appointment.meeting_url && (appointment.status === "confirmed" || appointment.status === "scheduled") && (
                           <Button 
                             size="sm" 
+                            className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
                             onClick={() => joinAppointmentCall(appointment.id)}
                             disabled={joiningCall === appointment.id}
                           >

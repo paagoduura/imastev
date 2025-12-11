@@ -151,36 +151,36 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container max-w-4xl py-8 space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate("/dashboard")}>
+      <div className="container max-w-4xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Button variant="outline" size="icon" className="shrink-0" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Profile Settings</h1>
-            <p className="text-muted-foreground">Manage your personal and medical information</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Profile Settings</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Manage your personal and medical information</p>
           </div>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="personal" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="personal">
-                  <User className="w-4 h-4 mr-2" />
-                  Personal
+              <TabsList className="grid w-full grid-cols-4 h-auto">
+                <TabsTrigger value="personal" className="text-xs sm:text-sm px-1 sm:px-3 py-2 flex flex-col sm:flex-row items-center gap-1">
+                  <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Personal</span>
                 </TabsTrigger>
-                <TabsTrigger value="medical">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Medical
+                <TabsTrigger value="medical" className="text-xs sm:text-sm px-1 sm:px-3 py-2 flex flex-col sm:flex-row items-center gap-1">
+                  <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Medical</span>
                 </TabsTrigger>
-                <TabsTrigger value="medications">
-                  <Pill className="w-4 h-4 mr-2" />
-                  Medications
+                <TabsTrigger value="medications" className="text-xs sm:text-sm px-1 sm:px-3 py-2 flex flex-col sm:flex-row items-center gap-1">
+                  <Pill className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Medications</span>
                 </TabsTrigger>
-                <TabsTrigger value="allergies">
-                  <AlertCircle className="w-4 h-4 mr-2" />
-                  Allergies
+                <TabsTrigger value="allergies" className="text-xs sm:text-sm px-1 sm:px-3 py-2 flex flex-col sm:flex-row items-center gap-1">
+                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Allergies</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -478,11 +478,11 @@ export default function Profile() {
               </TabsContent>
             </Tabs>
 
-            <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+              <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => navigate("/dashboard")}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving} className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white">
                 {saving ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

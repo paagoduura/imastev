@@ -145,14 +145,23 @@ const Cart = () => {
 
       if (itemsError) throw itemsError;
 
-      // Update product stock
+      // Update product stock and sold count
       for (const item of cartItems) {
-        const newStock = item.product.stock_quantity - item.quantity;
+        // First get current product data for accurate sold_count increment
+        const { data: currentProduct } = await supabase
+          .from("products")
+          .select("sold_count, stock_quantity")
+          .eq("id", item.product.id)
+          .single();
+        
+        const currentSoldCount = currentProduct?.sold_count || 0;
+        const currentStock = currentProduct?.stock_quantity || item.product.stock_quantity;
+        
         await supabase
           .from("products")
           .update({
-            stock_quantity: newStock,
-            sold_count: item.product.stock_quantity + item.quantity,
+            stock_quantity: currentStock - item.quantity,
+            sold_count: currentSoldCount + item.quantity,
           })
           .eq("id", item.product.id);
       }
@@ -206,24 +215,24 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="container mx-auto max-w-6xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => navigate("/shop")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <Button variant="ghost" size="sm" className="text-xs sm:text-sm" onClick={() => navigate("/shop")}>
+            <ArrowLeft className="mr-1 sm:mr-2 h-4 w-4" />
             Continue Shopping
           </Button>
         </div>
 
-        <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8">Shopping Cart</h1>
 
         {cartItems.length === 0 ? (
-          <Card className="text-center py-16">
+          <Card className="text-center py-10 sm:py-16">
             <CardContent>
-              <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold mb-2">Your cart is empty</h3>
-              <p className="text-muted-foreground mb-6">Add some products to get started</p>
-              <Button onClick={() => navigate("/shop")}>
+              <ShoppingCart className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl sm:text-2xl font-semibold mb-2">Your cart is empty</h3>
+              <p className="text-sm sm:text-base text-muted-foreground mb-6">Add some products to get started</p>
+              <Button onClick={() => navigate("/shop")} className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white">
                 Browse Products
               </Button>
             </CardContent>
@@ -234,9 +243,9 @@ const Cart = () => {
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => (
                 <Card key={item.id}>
-                  <CardContent className="p-6">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 bg-muted rounded-lg flex-shrink-0 overflow-hidden">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex gap-3 sm:gap-4">
+                      <div className="w-16 h-16 sm:w-24 sm:h-24 bg-muted rounded-lg flex-shrink-0 overflow-hidden">
                         {item.product.image_url ? (
                           <img
                             src={item.product.image_url}
@@ -245,50 +254,63 @@ const Cart = () => {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-8 w-8 text-muted-foreground" />
+                            <Package className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
                           </div>
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-lg mb-2 truncate">
-                          {item.product.name}
-                        </h3>
-                        <p className="text-2xl font-bold text-primary mb-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-semibold text-sm sm:text-lg mb-1 sm:mb-2 truncate">
+                            {item.product.name}
+                          </h3>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 sm:hidden"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <p className="text-lg sm:text-2xl font-bold text-primary mb-3 sm:mb-4">
                           ₦{item.product.price_ngn.toLocaleString()}
                         </p>
 
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 sm:gap-2">
                             <Button
                               size="sm"
                               variant="outline"
+                              className="h-8 w-8 p-0"
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
                               disabled={item.quantity <= 1}
                             >
-                              <Minus className="h-4 w-4" />
+                              <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                             <Input
                               type="number"
                               value={item.quantity}
                               onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
-                              className="w-16 text-center"
+                              className="w-12 sm:w-16 text-center h-8 text-sm"
                               min="1"
                               max={item.product.stock_quantity}
                             />
                             <Button
                               size="sm"
                               variant="outline"
+                              className="h-8 w-8 p-0"
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               disabled={item.quantity >= item.product.stock_quantity}
                             >
-                              <Plus className="h-4 w-4" />
+                              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
 
                           <Button
                             size="sm"
                             variant="destructive"
+                            className="hidden sm:flex"
                             onClick={() => removeItem(item.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -324,7 +346,7 @@ const Cart = () => {
                 </CardContent>
                 <CardFooter>
                   <Button
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
                     size="lg"
                     onClick={handleCheckout}
                     disabled={processingCheckout}

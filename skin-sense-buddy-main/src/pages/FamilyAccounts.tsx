@@ -206,22 +206,22 @@ export default function FamilyAccounts() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="mb-4 sm:mb-6 text-xs sm:text-sm">
+          <ArrowLeft className="mr-1 sm:mr-2 h-4 w-4" />
           Back to Dashboard
         </Button>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Family Accounts</h1>
-            <p className="text-muted-foreground">
-              Manage up to {maxMembers} family members on your plan ({familyMembers.length + 1}/{maxMembers} used)
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">Family Accounts</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Manage up to {maxMembers} family members ({familyMembers.length + 1}/{maxMembers} used)
             </p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={familyMembers.length >= maxMembers - 1}>
+              <Button disabled={familyMembers.length >= maxMembers - 1} className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add Member
               </Button>
@@ -283,28 +283,29 @@ export default function FamilyAccounts() {
           </Dialog>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {familyMembers.map((member) => (
             <Card key={member.id}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+                      <AvatarFallback className="text-xs sm:text-sm">
                         {member.profiles?.full_name?.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <h4 className="font-semibold">{member.profiles?.full_name}</h4>
-                      <p className="text-sm text-muted-foreground capitalize">{member.relationship}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm sm:text-base truncate">{member.profiles?.full_name}</h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground capitalize">{member.relationship}</p>
                       {member.profiles?.age && (
-                        <p className="text-sm text-muted-foreground">{member.profiles.age} years old</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{member.profiles.age} years old</p>
                       )}
                     </div>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="shrink-0 h-8 w-8 p-0"
                     onClick={() => handleRemoveMember(member.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />

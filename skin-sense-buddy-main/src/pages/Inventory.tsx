@@ -160,20 +160,20 @@ const Inventory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="container mx-auto max-w-7xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Inventory Management</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Inventory Management</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setEditingProduct(null)}>
+              <Button onClick={() => setEditingProduct(null)} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Product
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-lg sm:text-xl">
                   {editingProduct ? "Edit Product" : "Add New Product"}
                 </DialogTitle>
               </DialogHeader>
@@ -196,7 +196,7 @@ const Inventory = () => {
                     rows={3}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="price">Price (₦)</Label>
                     <Input
@@ -227,7 +227,7 @@ const Inventory = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="sku">SKU</Label>
                     <Input
@@ -260,7 +260,7 @@ const Inventory = () => {
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white">
                   {editingProduct ? "Update Product" : "Add Product"}
                 </Button>
               </form>
@@ -269,36 +269,35 @@ const Inventory = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Products</CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{products.length}</div>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{products.length}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Low Stock Items</CardTitle>
               <AlertTriangle className="h-4 w-4 text-orange-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-500">
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-orange-500">
                 {lowStockProducts.length}
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Stock Value</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Stock Value</CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₦
-                {products
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">
+                ₦{products
                   .reduce((sum, p) => sum + p.stock_quantity * p.price_ngn, 0)
                   .toLocaleString()}
               </div>
@@ -306,50 +305,83 @@ const Inventory = () => {
           </Card>
         </div>
 
-        {/* Products Table */}
+        {/* Products Table - Mobile Card View / Desktop Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Products</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Products</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Sold</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-mono text-sm">{product.sku}</TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>₦{product.price_ngn.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {product.stock_quantity}
-                        {product.stock_quantity <= product.low_stock_threshold && (
-                          <Badge variant="destructive">Low</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{product.sold_count}</TableCell>
-                    <TableCell>
-                      <Badge variant={product.is_active ? "default" : "secondary"}>
+          <CardContent className="p-0 sm:p-6">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Sold</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell>₦{product.price_ngn.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {product.stock_quantity}
+                          {product.stock_quantity <= product.low_stock_threshold && (
+                            <Badge variant="destructive">Low</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{product.sold_count}</TableCell>
+                      <TableCell>
+                        <Badge variant={product.is_active ? "default" : "secondary"}>
+                          {product.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingProduct(product);
+                            setIsDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y">
+              {products.map((product) => (
+                <div key={product.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate">{product.name}</h4>
+                      <p className="text-xs text-muted-foreground font-mono">{product.sku}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={product.is_active ? "default" : "secondary"} className="text-xs">
                         {product.is_active ? "Active" : "Inactive"}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="h-8 w-8 p-0"
                         onClick={() => {
                           setEditingProduct(product);
                           setIsDialogOpen(true);
@@ -357,11 +389,22 @@ const Inventory = () => {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    <span className="text-muted-foreground">{product.category}</span>
+                    <span className="font-semibold">₦{product.price_ngn.toLocaleString()}</span>
+                    <div className="flex items-center gap-1">
+                      <span>Stock: {product.stock_quantity}</span>
+                      {product.stock_quantity <= product.low_stock_threshold && (
+                        <Badge variant="destructive" className="text-xs px-1">Low</Badge>
+                      )}
+                    </div>
+                    <span className="text-muted-foreground">Sold: {product.sold_count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
