@@ -899,6 +899,285 @@ app.get('/api/checkout/session/:sessionId', authenticateToken, async (req: any, 
   }
 });
 
+// ==================== SALON BOOKING ROUTES ====================
+
+// Salon services list
+const SALON_SERVICES = [
+  { id: 'twist-out', name: 'Twist Out Styling', category: 'Styling', duration: 90, price: 8000 },
+  { id: 'flat-twist', name: 'Flat Twist Updo', category: 'Styling', duration: 120, price: 12000 },
+  { id: 'cornrows', name: 'Cornrows', category: 'Braiding', duration: 180, price: 15000 },
+  { id: 'loc-maintenance', name: 'Loc Maintenance', category: 'Locs', duration: 90, price: 10000 },
+  { id: 'loc-styling', name: 'Loc Styling', category: 'Locs', duration: 60, price: 7000 },
+  { id: 'deep-conditioning', name: 'Deep Conditioning Treatment', category: 'Treatment', duration: 60, price: 5000 },
+  { id: 'protein-treatment', name: 'Protein Treatment', category: 'Treatment', duration: 75, price: 7500 },
+  { id: 'scalp-treatment', name: 'Scalp Treatment & Massage', category: 'Treatment', duration: 45, price: 4500 },
+  { id: 'kids-braiding', name: 'Kids Braiding', category: 'Kids', duration: 90, price: 6000 },
+  { id: 'kids-twist', name: 'Kids Twist Styling', category: 'Kids', duration: 60, price: 4500 },
+  { id: 'consultation', name: 'Hair Consultation', category: 'Consultation', duration: 30, price: 2500 },
+  { id: 'custom-formulation', name: 'Custom Product Formulation', category: 'Premium', duration: 45, price: 8000 },
+];
+
+// Time slots configuration
+const TIME_SLOTS = [
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
+];
+
+// Get salon services
+app.get('/api/salon/services', (req, res) => {
+  res.json(SALON_SERVICES);
+});
+
+// Get available time slots for a specific date
+app.get('/api/salon/available-slots', async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) {
+      return res.status(400).json({ error: 'Date is required' });
+    }
+
+    // Get booked slots for this date
+    const bookedResult = await pool.query(
+      `SELECT time_slot, duration_minutes FROM salon_appointments 
+       WHERE appointment_date = $1 AND status NOT IN ('cancelled', 'no-show')`,
+      [date]
+    );
+
+    const bookedSlots = bookedResult.rows.map(row => row.time_slot);
+
+    // Calculate blocked time slots based on duration
+    const blockedSlots = new Set<string>();
+    bookedResult.rows.forEach(booking => {
+      const startIdx = TIME_SLOTS.indexOf(booking.time_slot);
+      if (startIdx >= 0) {
+        const slotsNeeded = Math.ceil(booking.duration_minutes / 30);
+        for (let i = 0; i < slotsNeeded; i++) {
+          if (TIME_SLOTS[startIdx + i]) {
+            blockedSlots.add(TIME_SLOTS[startIdx + i]);
+          }
+        }
+      }
+    });
+
+    const availableSlots = TIME_SLOTS.filter(slot => !blockedSlots.has(slot));
+
+    res.json({ 
+      date, 
+      availableSlots, 
+      bookedSlots: Array.from(blockedSlots),
+      totalSlots: TIME_SLOTS.length 
+    });
+  } catch (error: any) {
+    console.error('Get available slots error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get booked dates for calendar (show dates with limited/no availability)
+app.get('/api/salon/booked-dates', async (req, res) => {
+  try {
+    const { month, year } = req.query;
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const endDate = new Date(Number(year), Number(month), 0).toISOString().split('T')[0];
+
+    const result = await pool.query(
+      `SELECT appointment_date, COUNT(*) as booking_count 
+       FROM salon_appointments 
+       WHERE appointment_date >= $1 AND appointment_date <= $2 
+       AND status NOT IN ('cancelled', 'no-show')
+       GROUP BY appointment_date`,
+      [startDate, endDate]
+    );
+
+    const bookedDates: { [key: string]: { count: number; status: string } } = {};
+    result.rows.forEach(row => {
+      const count = parseInt(row.booking_count);
+      bookedDates[row.appointment_date.toISOString().split('T')[0]] = {
+        count,
+        status: count >= TIME_SLOTS.length * 0.8 ? 'full' : count >= TIME_SLOTS.length * 0.5 ? 'limited' : 'available'
+      };
+    });
+
+    res.json(bookedDates);
+  } catch (error: any) {
+    console.error('Get booked dates error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Optional auth middleware for booking (allows both authenticated and guest users)
+const optionalAuth = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (token) {
+    jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+      if (!err) {
+        req.user = user;
+      }
+      next();
+    });
+  } else {
+    next();
+  }
+};
+
+// Create salon booking
+app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
+  try {
+    const { 
+      customerName, 
+      customerEmail, 
+      customerPhone, 
+      serviceId, 
+      appointmentDate, 
+      timeSlot, 
+      notes 
+    } = req.body;
+
+    // Validate required fields
+    if (!customerName || !customerPhone || !serviceId || !appointmentDate || !timeSlot) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Get service details
+    const service = SALON_SERVICES.find(s => s.id === serviceId);
+    if (!service) {
+      return res.status(400).json({ error: 'Invalid service' });
+    }
+
+    // Check if slot is still available
+    const existingBooking = await pool.query(
+      `SELECT id FROM salon_appointments 
+       WHERE appointment_date = $1 AND time_slot = $2 
+       AND status NOT IN ('cancelled', 'no-show')`,
+      [appointmentDate, timeSlot]
+    );
+
+    if (existingBooking.rows.length > 0) {
+      return res.status(409).json({ error: 'This time slot is no longer available' });
+    }
+
+    // Create booking
+    const isRegisteredUser = !!req.user;
+    const result = await pool.query(
+      `INSERT INTO salon_appointments 
+       (customer_name, customer_email, customer_phone, user_id, service_type, service_name, 
+        appointment_date, time_slot, duration_minutes, price_ngn, notes, is_registered_user, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING *`,
+      [
+        customerName, customerEmail || null, customerPhone, 
+        req.user?.id || null, service.category, service.name,
+        appointmentDate, timeSlot, service.duration, service.price,
+        notes || null, isRegisteredUser, 'confirmed'
+      ]
+    );
+
+    res.json({ 
+      success: true, 
+      booking: result.rows[0],
+      message: 'Appointment booked successfully!'
+    });
+  } catch (error: any) {
+    console.error('Create booking error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's appointments (for logged-in users)
+app.get('/api/salon/my-appointments', authenticateToken, async (req: any, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM salon_appointments 
+       WHERE user_id = $1 
+       ORDER BY appointment_date DESC, time_slot DESC`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (error: any) {
+    console.error('Get my appointments error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Cancel appointment
+app.post('/api/salon/cancel/:id', optionalAuth, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Verify ownership or allow if guest with matching phone
+    let query = 'UPDATE salon_appointments SET status = $1, updated_at = NOW() WHERE id = $2';
+    const params: any[] = ['cancelled', id];
+    
+    if (req.user) {
+      query += ' AND user_id = $3';
+      params.push(req.user.id);
+    }
+    
+    query += ' RETURNING *';
+    
+    const result = await pool.query(query, params);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Appointment not found or already cancelled' });
+    }
+    
+    res.json({ success: true, appointment: result.rows[0] });
+  } catch (error: any) {
+    console.error('Cancel appointment error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get priority time slots for registered users (earlier slots)
+app.get('/api/salon/priority-slots', authenticateToken, async (req: any, res) => {
+  try {
+    const { date, serviceId } = req.query;
+    
+    const service = SALON_SERVICES.find(s => s.id === serviceId);
+    if (!service) {
+      return res.status(400).json({ error: 'Invalid service' });
+    }
+
+    // Get booked slots
+    const bookedResult = await pool.query(
+      `SELECT time_slot, duration_minutes FROM salon_appointments 
+       WHERE appointment_date = $1 AND status NOT IN ('cancelled', 'no-show')`,
+      [date]
+    );
+
+    const blockedSlots = new Set<string>();
+    bookedResult.rows.forEach(booking => {
+      const startIdx = TIME_SLOTS.indexOf(booking.time_slot);
+      if (startIdx >= 0) {
+        const slotsNeeded = Math.ceil(booking.duration_minutes / 30);
+        for (let i = 0; i < slotsNeeded; i++) {
+          if (TIME_SLOTS[startIdx + i]) {
+            blockedSlots.add(TIME_SLOTS[startIdx + i]);
+          }
+        }
+      }
+    });
+
+    // For registered users, prioritize morning slots (first 6 available)
+    const availableSlots = TIME_SLOTS.filter(slot => !blockedSlots.has(slot));
+    const prioritySlots = availableSlots.slice(0, 6);
+    const regularSlots = availableSlots.slice(6);
+
+    res.json({ 
+      prioritySlots, 
+      regularSlots,
+      allAvailable: availableSlots,
+      isRegisteredUser: true
+    });
+  } catch (error: any) {
+    console.error('Get priority slots error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
