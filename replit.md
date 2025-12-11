@@ -4,7 +4,28 @@
 
 IMSTEV NATURALS is a medical-grade AI-powered platform for hair and skin analysis, specializing in African hair types (4A-4C) and diverse skin conditions. The application provides instant dermatological assessments, personalized treatment plans, and comprehensive health tracking through multi-angle image capture and advanced computer vision analysis.
 
-The platform operates "IMSTEV NATURALS HAIR SPECIALIST SALON" with appointment-based booking and sells an organic product line. It targets users seeking professional-grade skin and hair care guidance, with particular expertise in Nigerian and African hair care needs. Features include salon consultations, custom formulation services, e-commerce functionality, and family account management.
+The platform operates "IMSTEV NATURALS HAIR SPECIALIST SALON" with a professional appointment booking system featuring calendar-based date selection, time slot management, and availability tracking. It sells an organic product line and targets users seeking professional-grade skin and hair care guidance, with particular expertise in Nigerian and African hair care needs. Features include salon consultations, custom formulation services, e-commerce functionality, and family account management.
+
+### Salon Booking System (December 2024)
+- **Route**: `/salon-booking`
+- **Database**: `salon_appointments` table with customer info, service details, date/time, status
+- **API Endpoints**:
+  - `GET /api/salon/services` - List all salon services with pricing
+  - `GET /api/salon/available-slots?date=YYYY-MM-DD` - Get available time slots
+  - `GET /api/salon/booked-dates` - Calendar availability status
+  - `POST /api/salon/book` - Create booking (guests and registered users)
+  - `GET /api/salon/my-appointments` - User's appointments (authenticated)
+  - `POST /api/salon/cancel/:id` - Cancel appointment
+- **Features**:
+  - 3-step wizard: Service Selection → Date/Time → Your Details
+  - Premium UI with purple/amber gradients and glassmorphism
+  - Calendar with disabled past dates and Sundays
+  - Time slots (9AM-6PM) with 30-min intervals
+  - Service categories: Styling, Braiding, Locs, Treatment, Kids, Consultation, Premium
+  - Guest booking (name + phone required) and registered user booking
+  - Registered users see "Priority Booking Active" badge with highlighted morning slots
+  - Prices in Nigerian Naira (NGN)
+  - Booking confirmation screen with full details
 
 ## Brand Identity
 - **Brand Name**: IMSTEV NATURALS

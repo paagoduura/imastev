@@ -87,17 +87,19 @@ export default function SalonBooking() {
           const data = await response.json();
           setIsLoggedIn(true);
           setUserProfile(data.user);
-          const profileRes = await fetch(`${API_BASE}/profiles/${data.user.id}`, {
+          const profileRes = await fetch(`${API_BASE}/profiles`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (profileRes.ok) {
             const profile = await profileRes.json();
-            setFormData(prev => ({
-              ...prev,
-              customerName: profile.full_name || "",
-              customerEmail: data.user.email || "",
-              customerPhone: profile.phone || ""
-            }));
+            if (profile) {
+              setFormData(prev => ({
+                ...prev,
+                customerName: profile.full_name || "",
+                customerEmail: data.user.email || "",
+                customerPhone: profile.phone || ""
+              }));
+            }
           }
         }
       } catch (error) {
