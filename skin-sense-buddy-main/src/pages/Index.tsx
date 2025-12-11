@@ -325,10 +325,10 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {[
-                { img: "/gallery-1.jpg", title: "Protective Styling", tag: "4C Twist Updo" },
-                { img: "/gallery-2.jpg", title: "Kids Natural", tag: "Beaded Twists" },
-                { img: "/gallery-3.jpg", title: "Cornrow Art", tag: "Flat Twist Style" },
-                { img: "/gallery-4.jpg", title: "Loc Maintenance", tag: "Professional Locs" }
+                { img: "/gallery-1.png", title: "Protective Styling", tag: "4C Twist Updo" },
+                { img: "/gallery-2.png", title: "Kids Natural", tag: "Beaded Twists" },
+                { img: "/gallery-3.png", title: "Cornrow Art", tag: "Flat Twist Style" },
+                { img: "/gallery-4.png", title: "Loc Maintenance", tag: "Professional Locs" }
               ].map((item, i) => (
                 <div key={i} className="group relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl aspect-square cursor-pointer">
                   <img 
