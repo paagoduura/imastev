@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,9 @@ interface Appointment {
 
 export default function Telehealth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const consultationType = searchParams.get('type');
+  const isDermatology = consultationType === 'dermatology';
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [clinicians, setClinicians] = useState<Clinician[]>([]);
@@ -213,7 +216,7 @@ export default function Telehealth() {
     );
   }
 
-  if (!hasAccess) {
+  if (!hasAccess && !isDermatology) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -244,15 +247,30 @@ export default function Telehealth() {
       <div className="gradient-mesh">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent mb-2">IMSTEV NATURALS Hair Specialist Salon</h1>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)} 
+              className="mb-4 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Results
+            </Button>
+            <h1 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent mb-2">
+              {isDermatology ? 'IMSTEV NATURALS Dermatology Consultations' : 'IMSTEV NATURALS Hair Specialist Salon'}
+            </h1>
             <p className="text-muted-foreground">
-              Book an appointment with our expert stylists. Request a date and we'll confirm your slot.
+              {isDermatology 
+                ? 'Connect with certified dermatologists for professional skin care consultations.'
+                : 'Book an appointment with our expert stylists. Request a date and we\'ll confirm your slot.'
+              }
             </p>
           </div>
 
           <Tabs defaultValue="clinicians" className="space-y-6">
             <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <TabsTrigger value="clinicians" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">Our Stylists</TabsTrigger>
+              <TabsTrigger value="clinicians" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                {isDermatology ? 'Our Dermatologists' : 'Our Stylists'}
+              </TabsTrigger>
               <TabsTrigger value="appointments" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">My Appointments</TabsTrigger>
             </TabsList>
 

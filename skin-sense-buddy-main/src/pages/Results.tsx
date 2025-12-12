@@ -546,9 +546,9 @@ www.imstevnaturals.com
                   <TrendingUp className="mr-2 h-4 w-4" />
                   Track Progress
                 </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/telehealth')}>
+                <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/telehealth?type=dermatology')}>
                   <Calendar className="mr-2 h-4 w-4" />
-                  Schedule Consultation
+                  See a Dermatologist
                 </Button>
               </CardContent>
             </Card>
