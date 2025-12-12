@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, SwitchCamera, X, ZoomIn, ZoomOut, FlipHorizontal } from "lucide-react";
+import { Camera, SwitchCamera, X, ZoomIn, ZoomOut, FlipHorizontal, AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   onCapture: (imageBlob: Blob, dataUrl: string) => void;
@@ -16,12 +16,49 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<'permission' | 'notfound' | 'insecure' | 'unsupported' | 'generic' | null>(null);
   const [zoom, setZoom] = useState(1);
   const [isMirrored, setIsMirrored] = useState(false);
+  const [permissionState, setPermissionState] = useState<'prompt' | 'granted' | 'denied' | 'unknown'>('unknown');
+
+  const checkCameraSupport = useCallback(async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setErrorType('unsupported');
+      setError('Your browser does not support camera access. Please use a modern browser like Chrome, Firefox, or Safari.');
+      return false;
+    }
+
+    if (window.isSecureContext === false) {
+      setErrorType('insecure');
+      setError('Camera access requires a secure connection (HTTPS). Please access this site via HTTPS.');
+      return false;
+    }
+
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        setPermissionState(result.state as 'prompt' | 'granted' | 'denied');
+        
+        result.addEventListener('change', () => {
+          setPermissionState(result.state as 'prompt' | 'granted' | 'denied');
+        });
+      }
+    } catch {
+    }
+
+    return true;
+  }, []);
 
   const startCamera = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    setErrorType(null);
+
+    const isSupported = await checkCameraSupport();
+    if (!isSupported) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       if (stream) {
@@ -31,36 +68,79 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1920, min: 640 },
+          height: { ideal: 1080, min: 480 },
         },
         audio: false
       };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
+      setPermissionState('granted');
 
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
+        
+        await new Promise<void>((resolve, reject) => {
+          if (!videoRef.current) {
+            reject(new Error('Video element not available'));
+            return;
+          }
+          
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current?.play()
+              .then(() => resolve())
+              .catch(reject);
+          };
+          
+          videoRef.current.onerror = () => {
+            reject(new Error('Failed to load video stream'));
+          };
+          
+          setTimeout(() => reject(new Error('Video load timeout')), 10000);
+        });
       }
-    } catch (err) {
-      console.error('Camera error:', err);
-      if (err instanceof DOMException) {
-        if (err.name === 'NotAllowedError') {
-          setError('Camera permission denied. Please allow camera access to capture images.');
-        } else if (err.name === 'NotFoundError') {
-          setError('No camera found on this device.');
-        } else {
-          setError(`Camera error: ${err.message}`);
+    } catch (err: any) {
+      console.error('Camera error:', err?.name, err?.message, err);
+      
+      const errorName = err?.name || '';
+      const errorMessage = err?.message || '';
+      
+      if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+        setErrorType('permission');
+        setPermissionState('denied');
+        setError('Camera permission was denied. Please click the camera icon in your browser\'s address bar and allow access, then try again.');
+      } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
+        setErrorType('notfound');
+        setError('No camera was found on this device. Please connect a camera or use the upload option instead.');
+      } else if (errorName === 'NotReadableError' || errorName === 'TrackStartError') {
+        setErrorType('generic');
+        setError('Camera is being used by another application. Please close other apps using the camera and try again.');
+      } else if (errorName === 'OverconstrainedError') {
+        try {
+          const basicStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          setStream(basicStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = basicStream;
+            await videoRef.current.play();
+          }
+          setIsLoading(false);
+          return;
+        } catch {
+          setErrorType('generic');
+          setError('Could not access camera with requested settings. Please try again.');
         }
+      } else if (errorMessage.includes('timeout')) {
+        setErrorType('generic');
+        setError('Camera took too long to respond. Please try again.');
       } else {
-        setError('Failed to access camera. Please try uploading an image instead.');
+        setErrorType('generic');
+        setError('Unable to access camera. Please try uploading an image instead, or check that no other app is using your camera.');
       }
     } finally {
       setIsLoading(false);
     }
-  }, [facingMode, stream]);
+  }, [facingMode, stream, checkCameraSupport]);
 
   useEffect(() => {
     startCamera();
@@ -140,13 +220,54 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
           )}
 
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted p-4">
-              <div className="text-center space-y-4">
-                <Camera className="w-12 h-12 mx-auto text-destructive" />
-                <p className="text-sm text-destructive">{error}</p>
-                <Button onClick={startCamera} variant="outline">
-                  Try Again
-                </Button>
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800 p-6">
+              <div className="text-center space-y-4 max-w-sm">
+                <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/20 flex items-center justify-center">
+                  {errorType === 'permission' ? (
+                    <AlertTriangle className="w-8 h-8 text-amber-500" />
+                  ) : errorType === 'notfound' ? (
+                    <Camera className="w-8 h-8 text-slate-400" />
+                  ) : (
+                    <AlertTriangle className="w-8 h-8 text-amber-500" />
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white">
+                    {errorType === 'permission' ? 'Camera Permission Needed' :
+                     errorType === 'notfound' ? 'No Camera Detected' :
+                     errorType === 'insecure' ? 'Secure Connection Required' :
+                     errorType === 'unsupported' ? 'Browser Not Supported' :
+                     'Camera Unavailable'}
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">{error}</p>
+                </div>
+                
+                {errorType === 'permission' && (
+                  <div className="text-xs text-slate-400 bg-slate-700/50 rounded-lg p-3 space-y-1">
+                    <p className="font-medium text-slate-300">How to enable camera:</p>
+                    <p>1. Look for the camera icon in your browser's address bar</p>
+                    <p>2. Click it and select "Allow"</p>
+                    <p>3. Click "Try Again" below</p>
+                  </div>
+                )}
+                
+                <div className="flex flex-col gap-2 pt-2">
+                  <Button 
+                    onClick={startCamera} 
+                    className="bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Try Again
+                  </Button>
+                  <Button 
+                    onClick={onClose} 
+                    variant="ghost" 
+                    className="text-slate-400 hover:text-white"
+                  >
+                    Use Upload Instead
+                  </Button>
+                </div>
               </div>
             </div>
           )}
