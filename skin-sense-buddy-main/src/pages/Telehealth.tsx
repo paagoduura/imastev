@@ -131,27 +131,34 @@ export default function Telehealth() {
 
     setBooking(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error("Not authenticated. Please log in.");
 
       const scheduledAt = new Date(selectedDate);
       const [hours, minutes] = selectedTime.split(':');
       scheduledAt.setHours(parseInt(hours), parseInt(minutes));
 
-      const { error } = await supabase
-        .from("appointments")
-        .insert({
-          patient_user_id: user.id,
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
           clinician_id: selectedClinician.id,
           scheduled_at: scheduledAt.toISOString(),
-          status: "pending",
-        });
+          duration_minutes: 30
+        })
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to book appointment');
+      }
 
       toast({
-        title: "Appointment booked",
-        description: "Your appointment has been scheduled successfully",
+        title: "Appointment booked!",
+        description: "Your dermatology consultation has been scheduled successfully.",
       });
 
       setSelectedClinician(null);

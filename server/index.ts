@@ -550,23 +550,32 @@ app.post('/api/appointments', authenticateToken, async (req: any, res) => {
   try {
     const { clinician_id, scheduled_at, duration_minutes = 30 } = req.body;
     
-    const appointmentId = uuidv4().slice(0, 8);
-    const room = await createDailyRoom({
-      name: `glowsense-${appointmentId}`,
-      privacy: 'private',
-      properties: {
-        enable_chat: true,
-        enable_screenshare: true,
-        max_participants: 2,
-        exp: Math.floor(new Date(scheduled_at).getTime() / 1000) + (duration_minutes * 60) + 3600
-      }
-    });
+    let meetingUrl = null;
+    
+    // Try to create Daily room, but don't fail booking if it doesn't work
+    try {
+      const appointmentId = uuidv4().slice(0, 8);
+      const room = await createDailyRoom({
+        name: `imstev-${appointmentId}`,
+        privacy: 'private',
+        properties: {
+          enable_chat: true,
+          enable_screenshare: true,
+          max_participants: 2,
+          exp: Math.floor(new Date(scheduled_at).getTime() / 1000) + (duration_minutes * 60) + 3600
+        }
+      });
+      meetingUrl = room.url;
+    } catch (roomError: any) {
+      console.log('Video room creation skipped:', roomError.message);
+      // Continue without video - appointment can still be booked
+    }
     
     const result = await pool.query(
       `INSERT INTO appointments (patient_user_id, clinician_id, scheduled_at, duration_minutes, meeting_url, status)
        VALUES ($1, $2, $3, $4, $5, 'scheduled')
        RETURNING *`,
-      [req.user.id, clinician_id, scheduled_at, duration_minutes, room.url]
+      [req.user.id, clinician_id, scheduled_at, duration_minutes, meetingUrl]
     );
     
     res.json(result.rows[0]);
