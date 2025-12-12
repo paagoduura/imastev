@@ -426,52 +426,50 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
         <FormField
           control={form.control}
           name="hair_concerns"
-          render={() => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold">Hair Concerns</FormLabel>
-              <FormDescription>Select all that apply to your hair</FormDescription>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3">
-                {HAIR_CONCERNS.map((concern) => (
-                  <FormField
-                    key={concern.value}
-                    control={form.control}
-                    name="hair_concerns"
-                    render={({ field }) => {
-                      const currentValue = field.value || [];
-                      return (
-                        <FormItem>
-                          <FormControl>
-                            <div
-                              className={cn(
-                                "flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm",
-                                currentValue.includes(concern.value)
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border hover:border-primary/50"
-                              )}
-                              onClick={() => {
-                                const newValue = currentValue.includes(concern.value)
-                                  ? currentValue.filter((v: string) => v !== concern.value)
-                                  : [...currentValue, concern.value];
-                                field.onChange(newValue);
-                              }}
-                            >
-                              <Checkbox
-                                checked={currentValue.includes(concern.value)}
-                                className="pointer-events-none"
-                              />
-                              <span>{concern.icon}</span>
-                              <span className="text-xs">{concern.label}</span>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      );
-                    }}
-                  />
-                ))}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const currentValue = field.value || [];
+            const toggleConcern = (concernValue: string) => {
+              const newValue = currentValue.includes(concernValue)
+                ? currentValue.filter((v: string) => v !== concernValue)
+                : [...currentValue, concernValue];
+              field.onChange(newValue);
+            };
+            return (
+              <FormItem>
+                <FormLabel className="text-base font-semibold">Hair Concerns</FormLabel>
+                <FormDescription>Select all that apply to your hair</FormDescription>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3">
+                  {HAIR_CONCERNS.map((concern) => {
+                    const isSelected = currentValue.includes(concern.value);
+                    return (
+                      <div
+                        key={concern.value}
+                        className={cn(
+                          "flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all text-sm group hover:shadow-md",
+                          isSelected
+                            ? "border-amber-500 bg-gradient-to-br from-amber-500/15 to-yellow-500/10 shadow-sm"
+                            : "border-border hover:border-amber-400/60 hover:bg-amber-500/5"
+                        )}
+                        onClick={() => toggleConcern(concern.value)}
+                      >
+                        <div className={cn(
+                          "w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0",
+                          isSelected 
+                            ? "bg-amber-500 border-amber-500" 
+                            : "border-gray-300 group-hover:border-amber-400"
+                        )}>
+                          {isSelected && <CheckCircle2 className="w-3 h-3 text-white" />}
+                        </div>
+                        <span className="text-base">{concern.icon}</span>
+                        <span className="text-xs font-medium">{concern.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       </div>
     );
@@ -541,54 +539,55 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
             <FormField
               control={form.control}
               name="chemical_treatments"
-              render={() => (
-                <FormItem>
-                  <FormLabel className="text-base font-semibold">Which treatments have you had?</FormLabel>
-                  <FormDescription>Select all that apply</FormDescription>
-                  <div className="grid md:grid-cols-2 gap-3 mt-3">
-                    {CHEMICAL_TREATMENTS.map((treatment) => (
-                      <FormField
-                        key={treatment.value}
-                        control={form.control}
-                        name="chemical_treatments"
-                        render={({ field }) => {
-                          const currentValue = field.value || [];
-                          return (
-                            <FormItem>
-                              <FormControl>
-                                <div
-                                  className={cn(
-                                    "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
-                                    currentValue.includes(treatment.value)
-                                      ? "border-purple-500 bg-purple-500/10"
-                                      : "border-border hover:border-purple-500/50"
-                                  )}
-                                  onClick={() => {
-                                    const newValue = currentValue.includes(treatment.value)
-                                      ? currentValue.filter((v: string) => v !== treatment.value)
-                                      : [...currentValue, treatment.value];
-                                    field.onChange(newValue);
-                                  }}
-                                >
-                                  <Checkbox
-                                    checked={currentValue.includes(treatment.value)}
-                                    className="pointer-events-none"
-                                  />
-                                  <div>
-                                    <span className="font-medium">{treatment.label}</span>
-                                    <p className="text-xs text-muted-foreground">{treatment.description}</p>
-                                  </div>
-                                </div>
-                              </FormControl>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const currentValue = field.value || [];
+                const toggleTreatment = (treatmentValue: string) => {
+                  const newValue = currentValue.includes(treatmentValue)
+                    ? currentValue.filter((v: string) => v !== treatmentValue)
+                    : [...currentValue, treatmentValue];
+                  field.onChange(newValue);
+                };
+                return (
+                  <FormItem>
+                    <FormLabel className="text-base font-semibold">Which treatments have you had?</FormLabel>
+                    <FormDescription>Select all that apply</FormDescription>
+                    <div className="grid md:grid-cols-2 gap-3 mt-3">
+                      {CHEMICAL_TREATMENTS.map((treatment) => {
+                        const isSelected = currentValue.includes(treatment.value);
+                        return (
+                          <div
+                            key={treatment.value}
+                            className={cn(
+                              "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-lg group",
+                              isSelected
+                                ? "border-purple-500 bg-gradient-to-br from-purple-500/15 to-pink-500/10 shadow-md"
+                                : "border-border hover:border-purple-400/60 hover:bg-purple-500/5"
+                            )}
+                            onClick={() => toggleTreatment(treatment.value)}
+                          >
+                            <div className={cn(
+                              "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all",
+                              isSelected 
+                                ? "bg-purple-500 border-purple-500" 
+                                : "border-gray-300 group-hover:border-purple-400"
+                            )}>
+                              {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                              <span className="font-semibold text-sm">{treatment.label}</span>
+                              <p className="text-xs text-muted-foreground mt-0.5">{treatment.description}</p>
+                            </div>
+                            {isSelected && (
+                              <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             {/* Last Treatment Date */}
