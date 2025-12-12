@@ -88,6 +88,11 @@ class QueryBuilder {
     return this;
   }
 
+  maybeSingle() {
+    this.singleResult = true;
+    return this;
+  }
+
   async then(resolve: (value: any) => void, reject?: (reason?: any) => void) {
     try {
       const result = await this.execute();
