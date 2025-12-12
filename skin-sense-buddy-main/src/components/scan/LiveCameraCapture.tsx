@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, SwitchCamera, X, ZoomIn, ZoomOut, FlipHorizontal, AlertTriangle, RefreshCw } from "lucide-react";
+import { Camera, SwitchCamera, X, ZoomIn, ZoomOut, FlipHorizontal, FlipVertical, AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   onCapture: (imageBlob: Blob, dataUrl: string) => void;
@@ -19,6 +19,7 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
   const [errorType, setErrorType] = useState<'permission' | 'notfound' | 'insecure' | 'unsupported' | 'generic' | null>(null);
   const [zoom, setZoom] = useState(1);
   const [isMirrored, setIsMirrored] = useState(false);
+  const [isFlippedVertical, setIsFlippedVertical] = useState(false);
   const [permissionState, setPermissionState] = useState<'prompt' | 'granted' | 'denied' | 'unknown'>('unknown');
 
   const checkCameraSupport = useCallback(async () => {
@@ -166,10 +167,23 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
 
     ctx.save();
     
+    let translateX = 0;
+    let translateY = 0;
+    let scaleX = 1;
+    let scaleY = 1;
+    
     if (isMirrored) {
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
+      translateX = canvas.width;
+      scaleX = -1;
     }
+    
+    if (isFlippedVertical) {
+      translateY = canvas.height;
+      scaleY = -1;
+    }
+    
+    ctx.translate(translateX, translateY);
+    ctx.scale(scaleX, scaleY);
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
@@ -279,7 +293,7 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
             muted
             className="w-full h-full object-cover"
             style={{
-              transform: `scale(${zoom}) ${isMirrored ? 'scaleX(-1)' : ''}`,
+              transform: `scale(${zoom}) ${isMirrored ? 'scaleX(-1)' : ''} ${isFlippedVertical ? 'scaleY(-1)' : ''}`,
               transition: 'transform 0.2s ease'
             }}
           />
@@ -317,13 +331,23 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
               variant="outline"
               size="icon"
               onClick={() => setIsMirrored(!isMirrored)}
+              title="Flip Horizontal"
             >
               <FlipHorizontal className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
               size="icon"
+              onClick={() => setIsFlippedVertical(!isFlippedVertical)}
+              title="Flip Vertical"
+            >
+              <FlipVertical className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
               onClick={toggleCamera}
+              title="Switch Camera"
             >
               <SwitchCamera className="w-4 h-4" />
             </Button>
