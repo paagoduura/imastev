@@ -44,6 +44,7 @@ export default function Telehealth() {
   const [searchParams] = useSearchParams();
   const consultationType = searchParams.get('type');
   const isDermatology = consultationType === 'dermatology';
+  const isTrichology = consultationType === 'trichology';
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [clinicians, setClinicians] = useState<Clinician[]>([]);
@@ -92,7 +93,19 @@ export default function Telehealth() {
         .eq("is_verified", true);
 
       if (cliniciansError) throw cliniciansError;
-      setClinicians(cliniciansData || []);
+      
+      // Filter clinicians by specialty based on consultation type
+      let filteredClinicians = cliniciansData || [];
+      if (consultationType === 'dermatology') {
+        filteredClinicians = filteredClinicians.filter((c: any) => 
+          c.specialty?.toLowerCase().includes('dermatolog')
+        );
+      } else if (consultationType === 'trichology') {
+        filteredClinicians = filteredClinicians.filter((c: any) => 
+          c.specialty?.toLowerCase().includes('tricholog')
+        );
+      }
+      setClinicians(filteredClinicians);
 
       // Load appointments
       const { data: appointmentsData, error: appointmentsError } = await supabase
@@ -224,7 +237,7 @@ export default function Telehealth() {
     );
   }
 
-  if (!hasAccess && !isDermatology) {
+  if (!hasAccess && !isDermatology && !isTrichology) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -264,12 +277,18 @@ export default function Telehealth() {
               Back to Results
             </Button>
             <h1 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent mb-2">
-              {isDermatology ? 'IMSTEV NATURALS Dermatology Consultations' : 'IMSTEV NATURALS Hair Specialist Salon'}
+              {isDermatology 
+                ? 'IMSTEV NATURALS Dermatology Consultations' 
+                : isTrichology 
+                  ? 'IMSTEV NATURALS Trichology Consultations'
+                  : 'IMSTEV NATURALS Hair Specialist Salon'}
             </h1>
             <p className="text-muted-foreground">
               {isDermatology 
                 ? 'Connect with certified dermatologists for professional skin care consultations.'
-                : 'Book an appointment with our expert stylists. Request a date and we\'ll confirm your slot.'
+                : isTrichology
+                  ? 'Book a consultation with our expert trichologists for professional hair and scalp care.'
+                  : 'Book an appointment with our expert stylists. Request a date and we\'ll confirm your slot.'
               }
             </p>
           </div>
@@ -277,7 +296,7 @@ export default function Telehealth() {
           <Tabs defaultValue="clinicians" className="space-y-6">
             <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
               <TabsTrigger value="clinicians" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
-                {isDermatology ? 'Our Dermatologists' : 'Our Stylists'}
+                {isDermatology ? 'Our Dermatologists' : isTrichology ? 'Our Trichologists' : 'Our Stylists'}
               </TabsTrigger>
               <TabsTrigger value="appointments" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">My Appointments</TabsTrigger>
             </TabsList>

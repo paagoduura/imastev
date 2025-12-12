@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, Download, TrendingUp, Calendar, ArrowLeft, Sparkles, Scan } from "lucide-react";
+import { AlertCircle, Download, TrendingUp, Calendar, ArrowLeft, Sparkles, Scan, ShoppingBag, Star, UserCheck } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ const Results = () => {
   const [scan, setScan] = useState<any>(null);
   const [treatmentPlan, setTreatmentPlan] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [imstevProducts, setImstevProducts] = useState<any[]>([]);
 
   useEffect(() => {
     if (scanId) {
@@ -222,6 +223,22 @@ www.imstevnaturals.com
         }
       }
 
+      // Fetch IMSTEV products for hair analysis
+      if (scanData?.analysis_type === 'hair') {
+        const token = localStorage.getItem('glowsense_token');
+        try {
+          const response = await fetch('/api/products?category=Hair%20Care', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (response.ok) {
+            const productsData = await response.json();
+            setImstevProducts(productsData.slice(0, 6)); // Show top 6 products
+          }
+        } catch (e) {
+          console.log('Could not fetch IMSTEV products');
+        }
+      }
+
     } catch (error) {
       console.error('Error fetching results:', error);
       toast({
@@ -417,6 +434,152 @@ www.imstevnaturals.com
         {/* Hair-specific results */}
         {isHairAnalysis && diagnosis.hair_profile && (
           <HairResultsDisplay hairProfile={diagnosis.hair_profile} />
+        )}
+
+        {/* IMSTEV Product Recommendations for Hair */}
+        {isHairAnalysis && imstevProducts.length > 0 && (
+          <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50/50 to-amber-50/50 dark:from-purple-950/20 dark:to-amber-950/20">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent">
+                    IMSTEV NATURALS Recommendations
+                  </CardTitle>
+                  <CardDescription>Premium organic products tailored for your hair type</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {imstevProducts.map((product, index) => (
+                  <div 
+                    key={product.id || index} 
+                    className="group relative p-5 bg-white dark:bg-slate-900 rounded-xl border border-purple-100 dark:border-purple-900/50 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300"
+                  >
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-gradient-to-r from-purple-600 to-amber-500 text-white border-0 text-xs">
+                        IMSTEV
+                      </Badge>
+                    </div>
+                    <div className="mb-3">
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        ))}
+                        <span className="text-xs text-muted-foreground ml-1">5.0</span>
+                      </div>
+                      <h4 className="font-semibold text-sm leading-tight group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors">
+                        {product.name}
+                      </h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-purple-700 dark:text-purple-400">
+                        ₦{product.price_ngn?.toLocaleString()}
+                      </span>
+                      <Button 
+                        size="sm" 
+                        className="h-8 text-xs bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
+                        onClick={() => navigate('/shop')}
+                      >
+                        <ShoppingBag className="h-3 w-3 mr-1" />
+                        Shop
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white shadow-lg shadow-purple-500/20"
+                  onClick={() => navigate('/shop')}
+                >
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  View All IMSTEV Products
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Trichologist Consultation for Hair Analysis */}
+        {isHairAnalysis && (
+          <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50/50 to-purple-50/50 dark:from-amber-950/20 dark:to-purple-950/20">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-purple-600 flex items-center justify-center">
+                  <UserCheck className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl bg-gradient-to-r from-amber-600 to-purple-700 bg-clip-text text-transparent">
+                    Book a Trichologist Consultation
+                  </CardTitle>
+                  <CardDescription>Get expert advice from certified hair specialists</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
+                      <Star className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm">Expert Hair Analysis</h4>
+                      <p className="text-xs text-muted-foreground">In-depth assessment of your hair and scalp health by certified trichologists</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="h-4 w-4 text-amber-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm">Personalized Treatment Plans</h4>
+                      <p className="text-xs text-muted-foreground">Custom solutions for 4A-4C hair types, including loc care and protective styling</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm">Flexible Booking</h4>
+                      <p className="text-xs text-muted-foreground">Choose video consultations or in-person appointments at our Lagos salon</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col justify-center items-center p-6 bg-white dark:bg-slate-900 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                  <div className="text-center mb-4">
+                    <p className="text-sm text-muted-foreground mb-1">Starting from</p>
+                    <p className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-purple-600 bg-clip-text text-transparent">₦12,000</p>
+                    <p className="text-xs text-muted-foreground">per consultation</p>
+                  </div>
+                  <Button 
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white shadow-lg shadow-amber-500/20"
+                    onClick={() => navigate('/telehealth?type=trichology')}
+                  >
+                    <Calendar className="mr-2 h-5 w-5" />
+                    Book Trichologist Now
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="w-full mt-3 border-amber-300 hover:bg-amber-50 dark:border-amber-800 dark:hover:bg-amber-950/30"
+                    onClick={() => navigate('/salon-booking')}
+                  >
+                    Or Visit Our Salon
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Skin-specific results: Diagnoses */}
