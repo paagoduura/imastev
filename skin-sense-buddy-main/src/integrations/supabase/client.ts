@@ -2,19 +2,99 @@
 // This provides a drop-in replacement that uses the local Express backend
 
 const API_BASE = '/api';
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // Refresh every 5 minutes of activity
 
 // Token management
 const getToken = () => localStorage.getItem('glowsense_token');
 const setToken = (token: string | null) => {
   if (token) {
     localStorage.setItem('glowsense_token', token);
+    localStorage.setItem('glowsense_last_activity', Date.now().toString());
   } else {
     localStorage.removeItem('glowsense_token');
+    localStorage.removeItem('glowsense_last_activity');
   }
+};
+
+// Track last activity
+const getLastActivity = () => {
+  const lastActivity = localStorage.getItem('glowsense_last_activity');
+  return lastActivity ? parseInt(lastActivity, 10) : 0;
+};
+
+const updateLastActivity = () => {
+  localStorage.setItem('glowsense_last_activity', Date.now().toString());
+};
+
+// Check if session is expired (30 minutes of inactivity)
+const isSessionExpired = () => {
+  const lastActivity = getLastActivity();
+  if (!lastActivity) return true;
+  return Date.now() - lastActivity > SESSION_TIMEOUT_MS;
+};
+
+// Refresh token if needed
+let refreshPromise: Promise<void> | null = null;
+const refreshTokenIfNeeded = async () => {
+  const token = getToken();
+  if (!token) return;
+  
+  // If session expired, clear and don't refresh
+  if (isSessionExpired()) {
+    setToken(null);
+    window.location.href = '/auth';
+    return;
+  }
+  
+  const lastActivity = getLastActivity();
+  const timeSinceActivity = Date.now() - lastActivity;
+  
+  // Only refresh if more than 5 minutes since last refresh
+  if (timeSinceActivity > REFRESH_INTERVAL_MS) {
+    if (refreshPromise) return refreshPromise;
+    
+    refreshPromise = (async () => {
+      try {
+        const response = await fetch(`${API_BASE}/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.token) {
+            setToken(data.token);
+          }
+        } else if (response.status === 401 || response.status === 403) {
+          // Token is invalid, clear and redirect
+          setToken(null);
+          window.location.href = '/auth';
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+    
+    return refreshPromise;
+  }
+  
+  // Just update activity timestamp
+  updateLastActivity();
 };
 
 // Fetch wrapper with auth
 const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  // Check session and refresh token if needed (skip for auth endpoints)
+  if (!url.includes('/auth/')) {
+    await refreshTokenIfNeeded();
+  }
+  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
