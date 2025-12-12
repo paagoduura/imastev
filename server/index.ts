@@ -264,6 +264,52 @@ app.put('/api/profiles', authenticateToken, async (req: any, res) => {
   }
 });
 
+// POST route for profiles - handles upsert (insert or update)
+app.post('/api/profiles', authenticateToken, async (req: any, res) => {
+  try {
+    const profileData = req.body;
+    // Use the authenticated user's ID
+    profileData.user_id = req.user.id;
+    
+    // Check if profile exists
+    const existingProfile = await pool.query(
+      'SELECT id FROM profiles WHERE user_id = $1',
+      [req.user.id]
+    );
+    
+    if (existingProfile.rows.length > 0) {
+      // Update existing profile
+      const fields = { ...profileData };
+      delete fields.user_id; // Don't update user_id
+      
+      const keys = Object.keys(fields);
+      const setClause = keys.map((key, i) => `${key} = $${i + 2}`).join(', ');
+      const values = [req.user.id, ...Object.values(fields)];
+      
+      const result = await pool.query(
+        `UPDATE profiles SET ${setClause}, updated_at = NOW() WHERE user_id = $1 RETURNING *`,
+        values
+      );
+      res.json(result.rows[0]);
+    } else {
+      // Insert new profile
+      const keys = Object.keys(profileData);
+      const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
+      const values = Object.values(profileData);
+      
+      const result = await pool.query(
+        `INSERT INTO profiles (${keys.join(', ')}, created_at, updated_at) 
+         VALUES (${placeholders}, NOW(), NOW()) RETURNING *`,
+        values
+      );
+      res.json(result.rows[0]);
+    }
+  } catch (error: any) {
+    console.error('Profile upsert error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== SUBSCRIPTION ROUTES ====================
 
 app.get('/api/subscription-plans', async (req, res) => {
