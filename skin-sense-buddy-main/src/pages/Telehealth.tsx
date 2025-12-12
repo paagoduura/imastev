@@ -26,6 +26,7 @@ interface Clinician {
   years_experience: number;
   availability: any;
   profiles: any;
+  full_name?: string;
 }
 
 interface Appointment {
@@ -131,7 +132,7 @@ export default function Telehealth() {
 
     setBooking(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('glowsense_token');
       if (!token) throw new Error("Not authenticated. Please log in.");
 
       const scheduledAt = new Date(selectedDate);
@@ -179,7 +180,7 @@ export default function Telehealth() {
   const joinAppointmentCall = async (appointmentId: string) => {
     setJoiningCall(appointmentId);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('glowsense_token');
       const response = await fetch(`/api/appointments/${appointmentId}/join`, {
         method: 'POST',
         headers: {
@@ -288,13 +289,13 @@ export default function Telehealth() {
                   <CardHeader>
                     <div className="flex items-start gap-4">
                       <Avatar className="h-16 w-16">
-                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${clinician.profiles?.full_name}`} />
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${(clinician.profiles?.full_name || clinician.full_name)}`} />
                         <AvatarFallback>
-                          {clinician.profiles?.full_name?.split(' ').map(n => n[0]).join('')}
+                          {(clinician.profiles?.full_name || clinician.full_name)?.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{clinician.profiles?.full_name}</CardTitle>
+                        <CardTitle className="text-lg">{(clinician.profiles?.full_name || clinician.full_name)}</CardTitle>
                         <CardDescription>{clinician.specialty}</CardDescription>
                         <div className="flex items-center gap-2 mt-2">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -323,7 +324,7 @@ export default function Telehealth() {
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                          <DialogTitle className="text-lg sm:text-xl">Book Appointment with {clinician.profiles?.full_name}</DialogTitle>
+                          <DialogTitle className="text-lg sm:text-xl">Book Appointment with {(clinician.profiles?.full_name || clinician.full_name)}</DialogTitle>
                           <DialogDescription>
                             Select your preferred date and time. We'll confirm your slot.
                           </DialogDescription>
