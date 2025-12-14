@@ -13,7 +13,7 @@ import { Footer } from "@/components/layout/Footer";
 import { 
   Scissors, Clock, Calendar as CalendarIcon, Check, Star, 
   ChevronRight, User, Phone, Mail, Crown, Sparkles, 
-  CheckCircle2, ArrowLeft, Timer, MapPin
+  CheckCircle2, ArrowLeft, Timer, MapPin, Loader2
 } from "lucide-react";
 import { format, addDays, isBefore, startOfToday, isToday } from "date-fns";
 
@@ -55,6 +55,7 @@ export default function SalonBooking() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   
   const [formData, setFormData] = useState<BookingData>({
     customerName: "",
@@ -320,40 +321,66 @@ export default function SalonBooking() {
                   <div className="flex flex-col gap-3 pt-4">
                     <Button 
                       onClick={async () => {
+                        setPaymentLoading(true);
                         try {
+                          const customerEmail = bookingDetails.customer_email || formData.customerEmail || `${bookingDetails.customer_phone.replace(/\D/g, '')}@guest.imstevnaturals.com`;
+                          
+                          console.log('Initializing payment with:', {
+                            amount: bookingDetails.price_ngn,
+                            customerEmail,
+                            customerName: bookingDetails.customer_name,
+                            customerPhone: bookingDetails.customer_phone,
+                            bookingId: bookingDetails.id,
+                          });
+                          
                           const response = await fetch(`${API_BASE}/payment/initialize`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                               amount: bookingDetails.price_ngn,
-                              customerEmail: bookingDetails.customer_email || formData.customerEmail,
+                              customerEmail,
                               customerName: bookingDetails.customer_name,
                               customerPhone: bookingDetails.customer_phone,
                               description: `Salon Booking: ${bookingDetails.service_name}`,
                               bookingId: bookingDetails.id,
                             }),
                           });
+                          
                           const data = await response.json();
+                          console.log('Payment response:', data);
+                          
                           if (data.success && data.paymentUrl) {
+                            console.log('Redirecting to:', data.paymentUrl);
                             window.location.href = data.paymentUrl;
                           } else {
+                            setPaymentLoading(false);
                             toast({
                               title: "Payment Error",
                               description: data.error || "Unable to initialize payment",
                               variant: "destructive"
                             });
                           }
-                        } catch (error) {
+                        } catch (error: any) {
+                          console.error('Payment error:', error);
+                          setPaymentLoading(false);
                           toast({
                             title: "Error",
-                            description: "Could not connect to payment service",
+                            description: error.message || "Could not connect to payment service",
                             variant: "destructive"
                           });
                         }
                       }}
-                      className="w-full h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-lg font-semibold"
+                      disabled={paymentLoading}
+                      className="w-full h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-lg font-semibold disabled:opacity-50"
                     >
-                      Pay Now - {formatPrice(bookingDetails.price_ngn)}
+                      {paymentLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Connecting to Payment...
+                        </>
+                      ) : (
+                        `Pay Now - ${formatPrice(bookingDetails.price_ngn)}`
+                      )}
                     </Button>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Button 
