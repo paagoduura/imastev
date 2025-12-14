@@ -149,13 +149,13 @@ const Orders = () => {
                 <CardContent>
                   <Separator className="mb-4" />
                   <div className="space-y-3">
-                    {order.order_items.map((item, idx) => (
+                    {(order.order_items || []).map((item, idx) => (
                       <div key={idx} className="flex gap-4">
                         <div className="w-16 h-16 bg-muted rounded flex-shrink-0 overflow-hidden">
-                          {item.product.image_url ? (
+                          {item.product?.image_url ? (
                             <img
                               src={item.product.image_url}
-                              alt={item.product.name}
+                              alt={item.product?.name || 'Product'}
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -165,7 +165,7 @@ const Orders = () => {
                           )}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold">{item.product.name}</h4>
+                          <h4 className="font-semibold">{item.product?.name || 'Product'}</h4>
                           <p className="text-sm text-muted-foreground">
                             Quantity: {item.quantity} × ₦{item.price_ngn.toLocaleString()}
                           </p>

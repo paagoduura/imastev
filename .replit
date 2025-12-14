@@ -44,6 +44,6 @@ localPort = 5001
 externalPort = 3000
 
 [deployment]
-deploymentTarget = "vm"
-run = ["bash", "start.sh"]
-build = ["npm", "run", "build"]
+deploymentTarget = "autoscale"
+run = ["npx", "tsx", "server/index.ts"]
+build = ["bash", "-c", "cd skin-sense-buddy-main && npm run build"]
