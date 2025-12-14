@@ -10,12 +10,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Calendar as CalendarIcon, Clock, Star, Video, Loader2, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Star, Video, Loader2, ChevronRight, CreditCard, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { VideoCall } from "@/components/telehealth/VideoCall";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+
+const API_BASE = '/api';
 
 interface Clinician {
   id: string;
@@ -62,6 +64,7 @@ export default function Telehealth() {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -182,57 +185,58 @@ export default function Telehealth() {
       return;
     }
 
-    if (!validateCheckoutInfo()) return;
+    if (bookingStep === 2) {
+      if (!validateCheckoutInfo()) return;
+      setBookingStep(3);
+      return;
+    }
 
-    setBooking(true);
+    // Step 3: Process payment
+    setPaymentLoading(true);
     try {
-      const token = localStorage.getItem('glowsense_token');
-      if (!token) throw new Error("Not authenticated. Please log in.");
-
-      const scheduledAt = new Date(selectedDate);
-      const [hours, minutes] = selectedTime.split(':');
-      scheduledAt.setHours(parseInt(hours), parseInt(minutes));
-
-      const response = await fetch('/api/appointments', {
+      const response = await fetch(`${API_BASE}/payment/initialize`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          clinician_id: selectedClinician.id,
-          scheduled_at: scheduledAt.toISOString(),
-          duration_minutes: 30,
-          notes: `Name: ${customerName}, Email: ${customerEmail}, Phone: ${customerPhone}`
-        })
+          amount: selectedClinician.consultation_fee_ngn,
+          customerEmail,
+          customerName,
+          customerPhone,
+          description: `Tricologist Consultation: ${selectedClinician.profiles?.full_name || selectedClinician.full_name}`,
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to book appointment');
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      toast({
-        title: "Appointment booked!",
-        description: "Your consultation has been scheduled successfully.",
-      });
+      const data = await response.json();
 
-      setSelectedClinician(null);
-      setSelectedDate(undefined);
-      setSelectedTime("");
-      setBookingStep(1);
-      setCustomerName("");
-      setCustomerEmail("");
-      setCustomerPhone("");
-      loadData();
+      if (data.success && data.paymentUrl) {
+        // Store appointment details in session for post-payment
+        sessionStorage.setItem('pendingAppointment', JSON.stringify({
+          clinician_id: selectedClinician.id,
+          scheduled_at: new Date(selectedDate).toISOString(),
+          duration_minutes: 30,
+          notes: `Name: ${customerName}, Email: ${customerEmail}, Phone: ${customerPhone}`
+        }));
+        window.location.href = data.paymentUrl;
+      } else {
+        setPaymentLoading(false);
+        toast({
+          title: "Payment Error",
+          description: data.error || "Unable to process payment",
+          variant: "destructive"
+        });
+      }
     } catch (error: any) {
+      setPaymentLoading(false);
+      console.error('Payment error:', error);
       toast({
-        title: "Booking failed",
-        description: error.message,
+        title: "Connection Error",
+        description: "Unable to connect to payment gateway. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setBooking(false);
     }
   };
 
@@ -391,7 +395,7 @@ export default function Telehealth() {
                         <DialogHeader>
                           <DialogTitle className="text-lg sm:text-xl">Book Appointment with {(clinician.profiles?.full_name || clinician.full_name)}</DialogTitle>
                           <DialogDescription>
-                            {bookingStep === 1 ? "Select your preferred date and time" : "Enter your contact information"}
+                            {bookingStep === 1 ? "Select your preferred date and time" : bookingStep === 2 ? "Enter your contact information" : "Review and complete payment"}
                           </DialogDescription>
                         </DialogHeader>
                         
@@ -433,7 +437,7 @@ export default function Telehealth() {
                               </Button>
                             </div>
                           </div>
-                        ) : (
+                        ) : bookingStep === 2 ? (
                           <div className="space-y-4">
                             <div>
                               <Label htmlFor="name" className="text-sm font-medium mb-2 block">Full Name *</Label>
@@ -485,13 +489,83 @@ export default function Telehealth() {
                                 disabled={booking}
                                 onClick={handleBookAppointment}
                               >
-                                {booking ? (
+                                Next: Proceed to Payment
+                                <ChevronRight className="ml-2 h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-amber-50 border border-purple-100">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center">
+                                  <CreditCard className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Appointment Details</p>
+                                  <p className="font-semibold">{(clinician.profiles?.full_name || clinician.full_name)}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                  <CalendarIcon className="w-4 h-4" />
+                                  <span className="text-sm">Date</span>
+                                </div>
+                                <p className="font-semibold text-sm">
+                                  {format(selectedDate!, 'MMM d, yyyy')}
+                                </p>
+                              </div>
+                              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                  <Clock className="w-4 h-4" />
+                                  <span className="text-sm">Time</span>
+                                </div>
+                                <p className="font-semibold text-sm">{selectedTime}</p>
+                              </div>
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Consultation Fee</span>
+                                <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
+                                  ₦{selectedClinician?.consultation_fee_ngn.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                              <p className="text-sm font-medium text-slate-700 mb-2">Patient Details</p>
+                              <div className="space-y-2 text-sm text-muted-foreground">
+                                <p><span className="font-medium text-slate-700">Name:</span> {customerName}</p>
+                                <p><span className="font-medium text-slate-700">Email:</span> {customerEmail}</p>
+                                <p><span className="font-medium text-slate-700">Phone:</span> {customerPhone}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                              <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setBookingStep(2)}
+                                disabled={paymentLoading}
+                              >
+                                Back
+                              </Button>
+                              <Button
+                                onClick={handleBookAppointment}
+                                disabled={paymentLoading}
+                                className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold text-lg"
+                              >
+                                {paymentLoading ? (
                                   <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Booking...
+                                    Processing...
                                   </>
                                 ) : (
-                                  "Confirm Booking"
+                                  `Pay Now - ₦${selectedClinician?.consultation_fee_ngn.toLocaleString()}`
                                 )}
                               </Button>
                             </div>
