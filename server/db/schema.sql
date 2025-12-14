@@ -259,7 +259,7 @@ CREATE TABLE IF NOT EXISTS payment_transactions (
     customer_email VARCHAR(255) NOT NULL,
     customer_name VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(50) NOT NULL,
-    booking_id UUID REFERENCES salon_appointments(id) ON DELETE SET NULL,
+    booking_id INTEGER REFERENCES salon_appointments(id) ON DELETE SET NULL,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     status VARCHAR(20) DEFAULT 'pending',
     payment_ref VARCHAR(255),
