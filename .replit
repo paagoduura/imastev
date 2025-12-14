@@ -44,6 +44,6 @@ localPort = 5001
 externalPort = 3000
 
 [deployment]
-deploymentTarget = "autoscale"
-run = ["node", "server/index.js"]
-build = ["bash", "-c", "cd skin-sense-buddy-main && npm run build"]
+deploymentTarget = "vm"
+run = ["bash", "start.sh"]
+build = ["npm", "run", "build"]
