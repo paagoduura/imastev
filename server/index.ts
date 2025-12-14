@@ -1451,10 +1451,16 @@ app.post('/api/payment/initialize', optionalAuth, async (req: any, res) => {
     // Amount in kobo (multiply by 100)
     const amountInKobo = Math.round(amount * 100);
     
-    // Generate hash: SHA512(transactionRef + payItemId + amountInKobo + redirectUrl + clientSecret)
-    const crypto = await import('crypto');
-    const hashString = `${transactionRef}${payItemId}${amountInKobo}${redirectUrl}${clientSecret}`;
-    const hash = crypto.createHash('sha512').update(hashString).digest('hex');
+    // Generate hash using the same method as quicktellerClient.ts
+    const result = await initializePayment({
+      amount,
+      customerEmail,
+      customerName,
+      customerPhone,
+      transactionRef,
+      redirectUrl,
+      description: 'IMSTEV NATURALS Salon Payment',
+    });
 
     // Return inline checkout configuration
     res.json({
@@ -1470,26 +1476,14 @@ app.post('/api/payment/initialize', optionalAuth, async (req: any, res) => {
         customerEmail,
         customerMobile: customerPhone,
         redirectUrl,
-        hash,
+        hash: result.paymentUrl ? new URL(result.paymentUrl).searchParams.get('hash') || '' : '',
         mode: isProduction ? 'LIVE' : 'TEST',
       },
       scriptUrl: isProduction 
         ? 'https://newwebpay.interswitchng.com/inline-checkout.js'
         : 'https://newwebpay.qa.interswitchng.com/inline-checkout.js',
       // Keep legacy paymentUrl for fallback
-      paymentUrl: `https://${isProduction ? 'webpay.interswitchng.com' : 'sandbox.interswitchng.com'}/collections/w/pay?` + 
-        new URLSearchParams({
-          merchantCode,
-          payItemId,
-          transactionRef,
-          amount: amountInKobo.toString(),
-          currency: '566',
-          customerEmail,
-          customerName,
-          customerMobile: customerPhone,
-          redirectUrl,
-          hash,
-        }).toString(),
+      paymentUrl: result.paymentUrl,
     });
   } catch (error: any) {
     console.error('Payment initialization error:', error);
