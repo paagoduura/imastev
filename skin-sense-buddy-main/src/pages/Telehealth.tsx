@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar as CalendarIcon, Clock, Star, Video, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Star, Video, Loader2, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { VideoCall } from "@/components/telehealth/VideoCall";
@@ -56,6 +58,10 @@ export default function Telehealth() {
   const [hasAccess, setHasAccess] = useState(false);
   const [activeCall, setActiveCall] = useState<{ meetingUrl: string; token: string } | null>(null);
   const [joiningCall, setJoiningCall] = useState<string | null>(null);
+  const [bookingStep, setBookingStep] = useState(1);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
 
   useEffect(() => {
     loadData();
@@ -133,6 +139,34 @@ export default function Telehealth() {
     }
   };
 
+  const validateCheckoutInfo = () => {
+    if (!customerName.trim()) {
+      toast({
+        title: "Missing name",
+        description: "Please enter your full name",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!customerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!customerPhone.trim() || !/^(\+234|0)[0-9]{10}$/.test(customerPhone.replace(/\s/g, ""))) {
+      toast({
+        title: "Invalid phone",
+        description: "Please enter a valid Nigerian phone number",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleBookAppointment = async () => {
     if (!selectedClinician || !selectedDate || !selectedTime) {
       toast({
@@ -142,6 +176,13 @@ export default function Telehealth() {
       });
       return;
     }
+
+    if (bookingStep === 1) {
+      setBookingStep(2);
+      return;
+    }
+
+    if (!validateCheckoutInfo()) return;
 
     setBooking(true);
     try {
@@ -161,7 +202,8 @@ export default function Telehealth() {
         body: JSON.stringify({
           clinician_id: selectedClinician.id,
           scheduled_at: scheduledAt.toISOString(),
-          duration_minutes: 30
+          duration_minutes: 30,
+          notes: `Name: ${customerName}, Email: ${customerEmail}, Phone: ${customerPhone}`
         })
       });
 
@@ -172,12 +214,16 @@ export default function Telehealth() {
 
       toast({
         title: "Appointment booked!",
-        description: "Your dermatology consultation has been scheduled successfully.",
+        description: "Your consultation has been scheduled successfully.",
       });
 
       setSelectedClinician(null);
       setSelectedDate(undefined);
       setSelectedTime("");
+      setBookingStep(1);
+      setCustomerName("");
+      setCustomerEmail("");
+      setCustomerPhone("");
       loadData();
     } catch (error: any) {
       toast({
@@ -345,52 +391,112 @@ export default function Telehealth() {
                         <DialogHeader>
                           <DialogTitle className="text-lg sm:text-xl">Book Appointment with {(clinician.profiles?.full_name || clinician.full_name)}</DialogTitle>
                           <DialogDescription>
-                            Select your preferred date and time. We'll confirm your slot.
+                            {bookingStep === 1 ? "Select your preferred date and time" : "Enter your contact information"}
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                          <div className="flex justify-center">
-                            <Calendar
-                              mode="single"
-                              selected={selectedDate}
-                              onSelect={setSelectedDate}
-                              disabled={(date) => date < new Date() || date.getDay() === 0}
-                              className="rounded-md border"
-                            />
+                        
+                        {bookingStep === 1 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <div className="flex justify-center">
+                              <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={setSelectedDate}
+                                disabled={(date) => date < new Date() || date.getDay() === 0}
+                                className="rounded-md border"
+                              />
+                            </div>
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className="font-medium mb-2 text-sm sm:text-base">Available Time Slots</h4>
+                                <div className="grid grid-cols-4 sm:grid-cols-3 gap-1.5 sm:gap-2 max-h-48 sm:max-h-80 overflow-y-auto">
+                                  {timeSlots.map((time) => (
+                                    <Button
+                                      key={time}
+                                      variant={selectedTime === time ? "default" : "outline"}
+                                      size="sm"
+                                      className="text-xs sm:text-sm px-2 sm:px-3"
+                                      onClick={() => setSelectedTime(time)}
+                                    >
+                                      {time}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                              <Button
+                                className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
+                                disabled={!selectedDate || !selectedTime}
+                                onClick={handleBookAppointment}
+                              >
+                                Next: Enter Details
+                                <ChevronRight className="ml-2 h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
+                        ) : (
                           <div className="space-y-4">
                             <div>
-                              <h4 className="font-medium mb-2 text-sm sm:text-base">Available Time Slots</h4>
-                              <div className="grid grid-cols-4 sm:grid-cols-3 gap-1.5 sm:gap-2 max-h-48 sm:max-h-80 overflow-y-auto">
-                                {timeSlots.map((time) => (
-                                  <Button
-                                    key={time}
-                                    variant={selectedTime === time ? "default" : "outline"}
-                                    size="sm"
-                                    className="text-xs sm:text-sm px-2 sm:px-3"
-                                    onClick={() => setSelectedTime(time)}
-                                  >
-                                    {time}
-                                  </Button>
-                                ))}
-                              </div>
+                              <Label htmlFor="name" className="text-sm font-medium mb-2 block">Full Name *</Label>
+                              <Input
+                                id="name"
+                                value={customerName}
+                                onChange={(e) => setCustomerName(e.target.value)}
+                                placeholder="Your full name"
+                                className="h-11 rounded-lg"
+                              />
                             </div>
-                            <Button
-                              className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
-                              disabled={!selectedDate || !selectedTime || booking}
-                              onClick={handleBookAppointment}
-                            >
-                              {booking ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Booking...
-                                </>
-                              ) : (
-                                "Confirm Booking"
-                              )}
-                            </Button>
+                            <div>
+                              <Label htmlFor="email" className="text-sm font-medium mb-2 block">Email *</Label>
+                              <Input
+                                id="email"
+                                type="email"
+                                value={customerEmail}
+                                onChange={(e) => setCustomerEmail(e.target.value)}
+                                placeholder="your.email@example.com"
+                                className="h-11 rounded-lg"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="phone" className="text-sm font-medium mb-2 block">Phone Number *</Label>
+                              <Input
+                                id="phone"
+                                value={customerPhone}
+                                onChange={(e) => setCustomerPhone(e.target.value)}
+                                placeholder="+234 903 350 5038"
+                                className="h-11 rounded-lg"
+                              />
+                              <p className="text-xs text-slate-500 mt-1">Format: +234 or 0 followed by 10 digits</p>
+                            </div>
+                            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                              <p className="text-sm font-medium text-amber-900">Consultation Fee:</p>
+                              <p className="text-2xl font-bold text-amber-700">₦{selectedClinician?.consultation_fee_ngn.toLocaleString()}</p>
+                            </div>
+                            <div className="flex gap-3">
+                              <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setBookingStep(1)}
+                                disabled={booking}
+                              >
+                                Back
+                              </Button>
+                              <Button
+                                className="flex-1 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
+                                disabled={booking}
+                                onClick={handleBookAppointment}
+                              >
+                                {booking ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Booking...
+                                  </>
+                                ) : (
+                                  "Confirm Booking"
+                                )}
+                              </Button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </DialogContent>
                     </Dialog>
                   </CardContent>
