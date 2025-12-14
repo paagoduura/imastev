@@ -1592,3 +1592,107 @@ initializeDatabase().then(() => {
 });
 
 export default app;
+
+// ==================== EMAIL ROUTES ====================
+
+app.post('/api/checkout/send-details', authenticateToken, async (req: any, res) => {
+  try {
+    const nodemailer = require('nodemailer');
+    const { fullName, email, phone, billingAddress, city, state, zipCode, specialInstructions, cartItems, cartTotal } = req.body;
+    
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT || 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER || 'noreply@imstevnaturals.com',
+        pass: process.env.SMTP_PASS || 'default-pass'
+      }
+    });
+
+    const itemsHTML = cartItems.map((item: any) => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">×${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦${(item.price * item.quantity).toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `
+      <html>
+        <body style="font-family: Arial, sans-serif; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #7c3aed 0%, #f59e0b 100%); padding: 30px; color: white; text-align: center;">
+              <h1 style="margin: 0; font-size: 28px;">New Order Details</h1>
+              <p style="margin: 5px 0; font-size: 14px; opacity: 0.9;">IMSTEV NATURALS</p>
+            </div>
+            
+            <div style="padding: 30px;">
+              <h2 style="color: #7c3aed; margin-top: 0;">Customer Information</h2>
+              <table style="width: 100%; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 8px; font-weight: bold; width: 150px;">Full Name:</td>
+                  <td style="padding: 8px;">${fullName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; font-weight: bold;">Email:</td>
+                  <td style="padding: 8px;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; font-weight: bold;">Phone:</td>
+                  <td style="padding: 8px;">${phone}</td>
+                </tr>
+              </table>
+
+              <h2 style="color: #7c3aed;">Delivery Address</h2>
+              <div style="background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                <p style="margin: 0 0 5px 0;">${billingAddress}</p>
+                <p style="margin: 0;">${city}, ${state} ${zipCode}</p>
+              </div>
+
+              <h2 style="color: #7c3aed;">Order Items</h2>
+              <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #f5f5f5;">
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #7c3aed;">Product</th>
+                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #7c3aed;">Qty</th>
+                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #7c3aed;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHTML}
+                </tbody>
+              </table>
+
+              <div style="background: linear-gradient(135deg, #f5f5f5, #fff); padding: 15px; border-radius: 6px; border-left: 4px solid #7c3aed; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 18px; font-weight: bold;">Order Total: <span style="color: #7c3aed;">₦${cartTotal.toLocaleString()}</span></p>
+              </div>
+
+              ${specialInstructions ? `
+                <h2 style="color: #7c3aed;">Special Instructions</h2>
+                <p style="background: #f5f5f5; padding: 15px; border-radius: 6px; margin: 0;">${specialInstructions}</p>
+              ` : ''}
+
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+                <p style="margin: 0; font-size: 12px; color: #999;">This is an automated message from IMSTEV NATURALS</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">40 Law School Road, Opp FirstBank, Bwari, Abuja | +234 903 350 5038</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: 'IMSTEV NATURALS <contact@imstevnaturals.com>',
+      to: 'contact@imstevnaturals.com',
+      subject: `New Order from ${fullName} - ₦${cartTotal.toLocaleString()}`,
+      html: htmlContent
+    });
+
+    res.json({ success: true, message: 'Order details sent successfully' });
+  } catch (error: any) {
+    console.error('Email error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});

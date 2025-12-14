@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CheckoutForm, CheckoutFormData } from "@/components/checkout/CheckoutForm";
 
 const API_BASE = '/api';
 
@@ -26,8 +27,18 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingCheckout, setProcessingCheckout] = useState(false);
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const email = localStorage.getItem('user_email') || "";
+    const name = localStorage.getItem('user_name') || "";
+    setUserEmail(email);
+    setUserName(name);
+  }, []);
 
   useEffect(() => {
     fetchCartItems();
@@ -122,79 +133,76 @@ const Cart = () => {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
+    setShowCheckoutForm(true);
+  };
+
+  const handleCheckoutFormSubmit = async (formData: CheckoutFormData) => {
     setProcessingCheckout(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      // Create order
-      const total = cartItems.reduce(
-        (sum, item) => sum + (item.product.price_ngn * item.quantity),
-        0
-      );
-
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          order_number: `ORD-${Date.now()}`,
-          total_amount_ngn: total,
-          status: "pending",
-          payment_status: "pending",
-          shipping_address: {},
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = cartItems.map((item) => ({
-        order_id: order.id,
-        product_id: item.product.id,
-        quantity: item.quantity,
-        price_ngn: item.product.price_ngn,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Update product stock and sold count
-      for (const item of cartItems) {
-        // First get current product data for accurate sold_count increment
-        const { data: currentProduct } = await supabase
-          .from("products")
-          .select("sold_count, stock_quantity")
-          .eq("id", item.product.id)
-          .single();
-        
-        const currentSoldCount = currentProduct?.sold_count || 0;
-        const currentStock = currentProduct?.stock_quantity || item.product.stock_quantity;
-        
-        await supabase
-          .from("products")
-          .update({
-            stock_quantity: currentStock - item.quantity,
-            sold_count: currentSoldCount + item.quantity,
-          })
-          .eq("id", item.product.id);
+      const token = localStorage.getItem('glowsense_token');
+      if (!token) {
+        navigate("/auth");
+        return;
       }
 
-      // Clear cart
-      await supabase
-        .from("cart_items")
-        .delete()
-        .eq("user_id", user.id);
+      const cartTotal = cartItems.reduce(
+        (sum, item) => sum + (item.product.price_ngn * item.quantity),
+        0
+      ) + 1000;
 
-      toast({
-        title: "Order placed successfully!",
-        description: `Order number: ${order.order_number}`,
+      // Send customer details to email
+      await fetch(`${API_BASE}/checkout/send-details`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          cartItems: cartItems.map(item => ({
+            name: item.product.name,
+            quantity: item.quantity,
+            price: item.product.price_ngn
+          })),
+          cartTotal
+        })
       });
 
+      toast({
+        title: "Order details sent!",
+        description: "Your information has been sent to our team. Proceeding to payment...",
+      });
+
+      // Proceed with order creation
+      const orderResponse = await fetch(`${API_BASE}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          shipping_address: {
+            name: formData.fullName,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.billingAddress,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode
+          },
+          payment_method: 'pending'
+        })
+      });
+
+      if (!orderResponse.ok) throw new Error('Failed to create order');
+      
+      toast({
+        title: "Order placed successfully!",
+        description: "Your order has been confirmed.",
+      });
+
+      setShowCheckoutForm(false);
       navigate("/orders");
     } catch (error: any) {
       toast({
@@ -255,6 +263,21 @@ const Cart = () => {
               </Button>
             </CardContent>
           </Card>
+        ) : showCheckoutForm ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <CheckoutForm
+                userEmail={userEmail}
+                userName={userName}
+                onSubmit={handleCheckoutFormSubmit}
+                isLoading={processingCheckout}
+                cartTotal={total}
+              />
+            </div>
+            <div className="order-summary">
+              {/* Summary card will show on the right */}
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
