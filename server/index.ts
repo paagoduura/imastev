@@ -1155,7 +1155,7 @@ const SALON_SERVICES = [
   { id: 'heat-cap', name: 'Heat Cap (Bonus)', category: 'Bonus', duration: 20, price: 0 },
   
   // Consultation
-  { id: 'consultation', name: 'Hair Consultation', category: 'Consultation', duration: 30, price: 0 },
+  { id: 'consultation', name: 'Hair Consultation', category: 'Consultation', duration: 30, price: 12000 },
 ];
 
 // Time slots configuration
