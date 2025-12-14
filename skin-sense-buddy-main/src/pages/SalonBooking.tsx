@@ -330,8 +330,6 @@ export default function SalonBooking() {
                         try {
                           const customerEmail = bookingDetails.customer_email || formData.customerEmail || `${bookingDetails.customer_phone.replace(/\D/g, '')}@guest.imstevnaturals.com`;
                           
-                          console.log('Initializing inline payment...');
-                          
                           const response = await fetch(`${API_BASE}/payment/initialize`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -345,68 +343,28 @@ export default function SalonBooking() {
                             }),
                           });
                           
-                          const data = await response.json();
-                          console.log('Payment config received:', data);
+                          if (!response.ok) {
+                            throw new Error(`Server error: ${response.status}`);
+                          }
                           
-                          if (data.success && data.config) {
-                            setPaymentConfig(data.config);
-                            setCheckoutScriptUrl(data.scriptUrl);
-                            
-                            let attempts = 0;
-                            const maxAttempts = 10;
-                            
-                            const launchPayment = () => {
-                              attempts++;
-                              if (window.webpayCheckout) {
-                                console.log('Launching inline checkout...');
-                                try {
-                                  window.webpayCheckout.setup({
-                                    ...data.config,
-                                    callback: (resp: any) => {
-                                      console.log('Payment callback:', resp);
-                                      setPaymentLoading(false);
-                                      if (resp.resp === '00') {
-                                        navigate(`/payment-callback?txnref=${data.transactionRef}&resp=00`);
-                                      } else {
-                                        navigate(`/payment-callback?txnref=${data.transactionRef}&resp=${resp.resp}`);
-                                      }
-                                    }
-                                  });
-                                  setPaymentLoading(false);
-                                } catch (err) {
-                                  console.error('Inline checkout failed, using redirect:', err);
-                                  window.location.href = data.paymentUrl;
-                                }
-                              } else if (attempts < maxAttempts) {
-                                setTimeout(launchPayment, 500);
-                              } else {
-                                console.log('Inline checkout script failed to load, using redirect fallback');
-                                toast({
-                                  title: "Redirecting to Payment",
-                                  description: "Opening secure payment page...",
-                                });
-                                window.location.href = data.paymentUrl;
-                              }
-                            };
-                            
-                            setTimeout(launchPayment, 1000);
-                          } else if (data.paymentUrl) {
-                            console.log('Fallback: Redirecting to payment URL');
+                          const data = await response.json();
+                          
+                          if (data.success && data.paymentUrl) {
                             window.location.href = data.paymentUrl;
                           } else {
                             setPaymentLoading(false);
                             toast({
                               title: "Payment Error",
-                              description: data.error || "Unable to initialize payment",
+                              description: data.error || "Unable to process payment",
                               variant: "destructive"
                             });
                           }
                         } catch (error: any) {
-                          console.error('Payment error:', error);
                           setPaymentLoading(false);
+                          console.error('Payment error:', error);
                           toast({
-                            title: "Error",
-                            description: error.message || "Could not connect to payment service",
+                            title: "Connection Error",
+                            description: "Unable to connect to payment gateway. Please try again.",
                             variant: "destructive"
                           });
                         }
@@ -417,7 +375,7 @@ export default function SalonBooking() {
                       {paymentLoading ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Opening Payment...
+                          Processing Payment...
                         </>
                       ) : (
                         `Pay Now - ${formatPrice(bookingDetails.price_ngn)}`
