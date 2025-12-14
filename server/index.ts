@@ -1422,7 +1422,7 @@ app.get('/api/salon/priority-slots', authenticateToken, async (req: any, res) =>
 
 // ==================== QUICKTELLER PAYMENT ROUTES ====================
 
-// Initialize payment
+// Initialize payment - returns inline checkout config
 app.post('/api/payment/initialize', optionalAuth, async (req: any, res) => {
   try {
     const { amount, customerEmail, customerName, customerPhone, description, bookingId } = req.body;
@@ -1442,25 +1442,55 @@ app.post('/api/payment/initialize', optionalAuth, async (req: any, res) => {
       [transactionRef, amount, customerEmail, customerName, customerPhone, bookingId || null, 'pending', req.user?.id || null]
     );
 
-    const result = await initializePayment({
-      amount,
-      customerEmail,
-      customerName,
-      customerPhone,
-      transactionRef,
-      redirectUrl,
-      description: description || 'IMSTEV NATURALS Payment',
-    });
+    // Get Quickteller credentials
+    const merchantCode = process.env.QUICKTELLER_MERCHANT_CODE || '';
+    const payItemId = process.env.QUICKTELLER_PAYMENT_ITEM_ID || '';
+    const clientSecret = process.env.QUICKTELLER_CLIENT_SECRET || '';
+    const isProduction = process.env.QUICKTELLER_ENV === 'production';
+    
+    // Amount in kobo (multiply by 100)
+    const amountInKobo = Math.round(amount * 100);
+    
+    // Generate hash: SHA512(transactionRef + payItemId + amountInKobo + redirectUrl + clientSecret)
+    const crypto = await import('crypto');
+    const hashString = `${transactionRef}${payItemId}${amountInKobo}${redirectUrl}${clientSecret}`;
+    const hash = crypto.createHash('sha512').update(hashString).digest('hex');
 
-    if (result.success) {
-      res.json({
-        success: true,
-        paymentUrl: result.paymentUrl,
-        transactionRef: result.transactionRef,
-      });
-    } else {
-      res.status(500).json({ success: false, error: result.error });
-    }
+    // Return inline checkout configuration
+    res.json({
+      success: true,
+      transactionRef,
+      config: {
+        merchantCode,
+        payItemId,
+        transactionReference: transactionRef,
+        amount: amountInKobo,
+        currency: 566, // NGN
+        customerName,
+        customerEmail,
+        customerMobile: customerPhone,
+        redirectUrl,
+        hash,
+        mode: isProduction ? 'LIVE' : 'TEST',
+      },
+      scriptUrl: isProduction 
+        ? 'https://newwebpay.interswitchng.com/inline-checkout.js'
+        : 'https://newwebpay.qa.interswitchng.com/inline-checkout.js',
+      // Keep legacy paymentUrl for fallback
+      paymentUrl: `https://${isProduction ? 'webpay.interswitchng.com' : 'sandbox.interswitchng.com'}/collections/w/pay?` + 
+        new URLSearchParams({
+          merchantCode,
+          payItemId,
+          transactionRef,
+          amount: amountInKobo.toString(),
+          currency: '566',
+          customerEmail,
+          customerName,
+          customerMobile: customerPhone,
+          redirectUrl,
+          hash,
+        }).toString(),
+    });
   } catch (error: any) {
     console.error('Payment initialization error:', error);
     res.status(500).json({ error: error.message });
