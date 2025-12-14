@@ -126,7 +126,7 @@ export function Footer() {
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm text-slate-400">
                   <MapPin className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
-                  <span>40 Law School Road, Opp FirstBank, Bari, Abuja, Nigeria</span>
+                  <span>40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria</span>
                 </li>
                 <li>
                   <a 
