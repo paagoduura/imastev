@@ -16,6 +16,7 @@ import {
   CheckCircle2, ArrowLeft, Timer, MapPin, Loader2
 } from "lucide-react";
 import { format, addDays, isBefore, startOfToday, isToday } from "date-fns";
+import { useInterswitchCheckout } from "@/hooks/useInterswitchCheckout";
 
 interface Service {
   id: string;
@@ -56,6 +57,10 @@ export default function SalonBooking() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [checkoutScriptUrl, setCheckoutScriptUrl] = useState<string | null>(null);
+  const [paymentConfig, setPaymentConfig] = useState<any>(null);
+  
+  const { isLoaded: checkoutLoaded, launchCheckout } = useInterswitchCheckout(checkoutScriptUrl);
   
   const [formData, setFormData] = useState<BookingData>({
     customerName: "",
@@ -325,13 +330,7 @@ export default function SalonBooking() {
                         try {
                           const customerEmail = bookingDetails.customer_email || formData.customerEmail || `${bookingDetails.customer_phone.replace(/\D/g, '')}@guest.imstevnaturals.com`;
                           
-                          console.log('Initializing payment with:', {
-                            amount: bookingDetails.price_ngn,
-                            customerEmail,
-                            customerName: bookingDetails.customer_name,
-                            customerPhone: bookingDetails.customer_phone,
-                            bookingId: bookingDetails.id,
-                          });
+                          console.log('Initializing inline payment...');
                           
                           const response = await fetch(`${API_BASE}/payment/initialize`, {
                             method: 'POST',
@@ -347,10 +346,52 @@ export default function SalonBooking() {
                           });
                           
                           const data = await response.json();
-                          console.log('Payment response:', data);
+                          console.log('Payment config received:', data);
                           
-                          if (data.success && data.paymentUrl) {
-                            console.log('Redirecting to:', data.paymentUrl);
+                          if (data.success && data.config) {
+                            setPaymentConfig(data.config);
+                            setCheckoutScriptUrl(data.scriptUrl);
+                            
+                            let attempts = 0;
+                            const maxAttempts = 10;
+                            
+                            const launchPayment = () => {
+                              attempts++;
+                              if (window.webpayCheckout) {
+                                console.log('Launching inline checkout...');
+                                try {
+                                  window.webpayCheckout.setup({
+                                    ...data.config,
+                                    callback: (resp: any) => {
+                                      console.log('Payment callback:', resp);
+                                      setPaymentLoading(false);
+                                      if (resp.resp === '00') {
+                                        navigate(`/payment-callback?txnref=${data.transactionRef}&resp=00`);
+                                      } else {
+                                        navigate(`/payment-callback?txnref=${data.transactionRef}&resp=${resp.resp}`);
+                                      }
+                                    }
+                                  });
+                                  setPaymentLoading(false);
+                                } catch (err) {
+                                  console.error('Inline checkout failed, using redirect:', err);
+                                  window.location.href = data.paymentUrl;
+                                }
+                              } else if (attempts < maxAttempts) {
+                                setTimeout(launchPayment, 500);
+                              } else {
+                                console.log('Inline checkout script failed to load, using redirect fallback');
+                                toast({
+                                  title: "Redirecting to Payment",
+                                  description: "Opening secure payment page...",
+                                });
+                                window.location.href = data.paymentUrl;
+                              }
+                            };
+                            
+                            setTimeout(launchPayment, 1000);
+                          } else if (data.paymentUrl) {
+                            console.log('Fallback: Redirecting to payment URL');
                             window.location.href = data.paymentUrl;
                           } else {
                             setPaymentLoading(false);
@@ -376,7 +417,7 @@ export default function SalonBooking() {
                       {paymentLoading ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Connecting to Payment...
+                          Opening Payment...
                         </>
                       ) : (
                         `Pay Now - ${formatPrice(bookingDetails.price_ngn)}`
