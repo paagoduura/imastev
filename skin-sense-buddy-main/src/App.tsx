@@ -21,6 +21,7 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Inventory from "./pages/Inventory";
 import SalonBooking from "./pages/SalonBooking";
+import PaymentCallback from "./pages/PaymentCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/orders" element={<Orders />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/salon-booking" element={<SalonBooking />} />
+          <Route path="/payment-callback" element={<PaymentCallback />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

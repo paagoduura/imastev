@@ -12,6 +12,7 @@ import { getStripeSync, getUncachableStripeClient, getStripePublishableKey } fro
 import { WebhookHandlers } from './webhookHandlers';
 import { createDailyRoom, createMeetingToken } from './dailyClient';
 import { analyzeWithAI } from './aiAnalysis';
+import { initializePayment, verifyPayment, generateTransactionRef } from './quicktellerClient';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -1415,6 +1416,110 @@ app.get('/api/salon/priority-slots', authenticateToken, async (req: any, res) =>
     });
   } catch (error: any) {
     console.error('Get priority slots error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== QUICKTELLER PAYMENT ROUTES ====================
+
+// Initialize payment
+app.post('/api/payment/initialize', optionalAuth, async (req: any, res) => {
+  try {
+    const { amount, customerEmail, customerName, customerPhone, description, bookingId } = req.body;
+
+    if (!amount || !customerEmail || !customerName || !customerPhone) {
+      return res.status(400).json({ error: 'Missing required payment details' });
+    }
+
+    const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
+    const redirectUrl = `https://${domain}/payment-callback`;
+    const transactionRef = generateTransactionRef();
+
+    // Store payment intent in database
+    await pool.query(
+      `INSERT INTO payment_transactions (transaction_ref, amount, customer_email, customer_name, customer_phone, booking_id, status, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [transactionRef, amount, customerEmail, customerName, customerPhone, bookingId || null, 'pending', req.user?.id || null]
+    );
+
+    const result = await initializePayment({
+      amount,
+      customerEmail,
+      customerName,
+      customerPhone,
+      transactionRef,
+      redirectUrl,
+      description: description || 'IMSTEV NATURALS Payment',
+    });
+
+    if (result.success) {
+      res.json({
+        success: true,
+        paymentUrl: result.paymentUrl,
+        transactionRef: result.transactionRef,
+      });
+    } else {
+      res.status(500).json({ success: false, error: result.error });
+    }
+  } catch (error: any) {
+    console.error('Payment initialization error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Verify payment
+app.get('/api/payment/verify/:transactionRef', async (req, res) => {
+  try {
+    const { transactionRef } = req.params;
+
+    const result = await verifyPayment(transactionRef);
+
+    // Update payment status in database
+    if (result.success) {
+      await pool.query(
+        `UPDATE payment_transactions SET status = $1, verified_at = NOW(), payment_ref = $2 WHERE transaction_ref = $3`,
+        [result.status, result.paymentRef || null, transactionRef]
+      );
+
+      // If payment is successful and linked to a booking, update booking status
+      if (result.status === 'successful') {
+        const paymentResult = await pool.query(
+          `SELECT booking_id FROM payment_transactions WHERE transaction_ref = $1`,
+          [transactionRef]
+        );
+        if (paymentResult.rows[0]?.booking_id) {
+          await pool.query(
+            `UPDATE salon_appointments SET payment_status = 'paid', payment_ref = $1 WHERE id = $2`,
+            [transactionRef, paymentResult.rows[0].booking_id]
+          );
+        }
+      }
+    }
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Payment verification error:', error);
+    res.status(500).json({ success: false, status: 'failed', error: error.message });
+  }
+});
+
+// Get payment status
+app.get('/api/payment/status/:transactionRef', async (req, res) => {
+  try {
+    const { transactionRef } = req.params;
+
+    const result = await pool.query(
+      `SELECT * FROM payment_transactions WHERE transaction_ref = $1`,
+      [transactionRef]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error: any) {
+    console.error('Get payment status error:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -306,7 +306,7 @@ export default function SalonBooking() {
                         {formatPrice(bookingDetails.price_ngn)}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">Pay at the salon</p>
+                    <p className="text-sm text-muted-foreground mt-1">Pay now online or pay at the salon</p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-purple-50 border border-purple-100">
@@ -317,26 +317,65 @@ export default function SalonBooking() {
                     <p className="text-sm text-purple-700">Lagos, Nigeria</p>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <div className="flex flex-col gap-3 pt-4">
                     <Button 
-                      onClick={() => navigate('/')}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Back to Home
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setBookingSuccess(false);
-                        setStep(1);
-                        setSelectedService(null);
-                        setSelectedDate(undefined);
-                        setSelectedSlot("");
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`${API_BASE}/payment/initialize`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              amount: bookingDetails.price_ngn,
+                              customerEmail: bookingDetails.customer_email || formData.customerEmail,
+                              customerName: bookingDetails.customer_name,
+                              customerPhone: bookingDetails.customer_phone,
+                              description: `Salon Booking: ${bookingDetails.service_name}`,
+                              bookingId: bookingDetails.id,
+                            }),
+                          });
+                          const data = await response.json();
+                          if (data.success && data.paymentUrl) {
+                            window.location.href = data.paymentUrl;
+                          } else {
+                            toast({
+                              title: "Payment Error",
+                              description: data.error || "Unable to initialize payment",
+                              variant: "destructive"
+                            });
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Could not connect to payment service",
+                            variant: "destructive"
+                          });
+                        }
                       }}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
+                      className="w-full h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-lg font-semibold"
                     >
-                      Book Another Appointment
+                      Pay Now - {formatPrice(bookingDetails.price_ngn)}
                     </Button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button 
+                        onClick={() => navigate('/')}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        Pay at Salon Instead
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          setBookingSuccess(false);
+                          setStep(1);
+                          setSelectedService(null);
+                          setSelectedDate(undefined);
+                          setSelectedSlot("");
+                        }}
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
+                      >
+                        Book Another Appointment
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

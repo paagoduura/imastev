@@ -251,6 +251,30 @@ CREATE TABLE IF NOT EXISTS user_roles (
     UNIQUE(user_id, role)
 );
 
+-- Payment transactions for Quickteller
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    transaction_ref VARCHAR(100) UNIQUE NOT NULL,
+    amount DECIMAL(12, 2) NOT NULL,
+    customer_email VARCHAR(255) NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(50) NOT NULL,
+    booking_id UUID REFERENCES salon_appointments(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    payment_ref VARCHAR(255),
+    verified_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add payment columns to salon_appointments if not exists
+DO $$ BEGIN
+    ALTER TABLE salon_appointments ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid';
+    ALTER TABLE salon_appointments ADD COLUMN IF NOT EXISTS payment_ref VARCHAR(255);
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_scans_user_id ON scans(user_id);
@@ -261,3 +285,5 @@ CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_patient ON appointments(patient_user_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_clinician ON appointments(clinician_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_ref ON payment_transactions(transaction_ref);
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_booking ON payment_transactions(booking_id);
