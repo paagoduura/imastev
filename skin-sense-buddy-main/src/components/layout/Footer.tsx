@@ -126,24 +126,24 @@ export function Footer() {
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm text-slate-400">
                   <MapPin className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
-                  <span>IMSTEV NATURALS Hair Specialist Salon, Lagos, Nigeria</span>
+                  <span>40 Law School Road, Opp FirstBank, Bari, Abuja, Nigeria</span>
                 </li>
                 <li>
                   <a 
-                    href="tel:+2348000000000" 
+                    href="tel:+2349033505038" 
                     className="flex items-center gap-3 text-sm text-slate-400 hover:text-purple-400 transition-colors"
                   >
                     <Phone className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                    <span>+234 800 000 0000</span>
+                    <span>+234 903 350 5038</span>
                   </a>
                 </li>
                 <li>
                   <a 
-                    href="mailto:hello@imstevnaturals.com" 
+                    href="mailto:contact@imstevnaturals.com" 
                     className="flex items-center gap-3 text-sm text-slate-400 hover:text-purple-400 transition-colors"
                   >
                     <Mail className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                    <span>hello@imstevnaturals.com</span>
+                    <span>contact@imstevnaturals.com</span>
                   </a>
                 </li>
               </ul>
