@@ -47,50 +47,50 @@ INSERT INTO products (sku, name, description, price_ngn, category, product_type,
 ON CONFLICT (sku) DO NOTHING;
 
 -- Hair Care Products
-INSERT INTO products (sku, name, description, price_ngn, category, product_type, stock_quantity, ingredients, suitable_for_conditions, suitable_hair_types, suitable_hair_concerns) VALUES
-('HAIR-001', 'Deep Moisture Leave-In Conditioner', 'Intensive moisture treatment for 4A-4C hair types. Perfect for dry, coily hair.', 5500, 'Conditioners', 'hair', 90,
+INSERT INTO products (sku, name, description, price_ngn, category, product_type, image_url, stock_quantity, ingredients, suitable_for_conditions, suitable_hair_types, suitable_hair_concerns) VALUES
+('HAIR-001', 'Deep Moisture Leave-In Conditioner', 'Intensive moisture treatment for 4A-4C hair types. Perfect for dry, coily hair.', 5500, 'Conditioners', 'hair', '/IMG_20250828_155322_1765737829710.jpg', 90,
  ARRAY['Shea Butter', 'Coconut Oil', 'Argan Oil', 'Glycerin', 'Aloe Vera'],
  ARRAY['dry hair', 'breakage'],
  ARRAY['4A', '4B', '4C', 'natural'],
  ARRAY['dryness', 'breakage', 'frizz']),
 
-('HAIR-002', 'Jamaican Black Castor Oil', 'Traditional JBCO for hair growth, edges, and scalp health.', 6500, 'Oils', 'hair', 100,
+('HAIR-002', 'Jamaican Black Castor Oil', 'Traditional JBCO for hair growth, edges, and scalp health.', 6500, 'Oils', 'hair', '/IMG_20250828_154251_1765737829710.jpg', 100,
  ARRAY['Jamaican Black Castor Oil', 'Peppermint Oil', 'Rosemary Extract'],
  ARRAY['hair loss', 'thin edges', 'slow growth'],
  ARRAY['4A', '4B', '4C', 'relaxed', 'transitioning', 'natural'],
  ARRAY['thinning', 'slow growth', 'weak edges']),
 
-('HAIR-003', 'Clarifying Shampoo', 'Sulfate-free clarifying shampoo to remove product buildup without stripping moisture.', 4000, 'Shampoos', 'hair', 85,
+('HAIR-003', 'Clarifying Shampoo', 'Sulfate-free clarifying shampoo to remove product buildup without stripping moisture.', 4000, 'Shampoos', 'hair', '/IMG_20250828_154808_1765737829710.jpg', 85,
  ARRAY['Apple Cider Vinegar', 'Charcoal', 'Tea Tree Oil', 'Peppermint'],
  ARRAY['product buildup', 'oily scalp'],
  ARRAY['4A', '4B', '4C', 'relaxed', 'natural'],
  ARRAY['buildup', 'oily scalp', 'dandruff']),
 
-('HAIR-004', 'Protein Treatment Mask', 'Strengthening protein mask for damaged and over-processed hair.', 7000, 'Treatments', 'hair', 70,
+('HAIR-004', 'Protein Treatment Mask', 'Strengthening protein mask for damaged and over-processed hair.', 7000, 'Treatments', 'hair', '/IMG_20250828_154251_1765737829710.jpg', 70,
  ARRAY['Hydrolyzed Keratin', 'Silk Amino Acids', 'Biotin', 'Egg Protein'],
  ARRAY['damaged hair', 'breakage', 'chemical damage'],
  ARRAY['4A', '4B', '4C', 'relaxed', 'transitioning'],
  ARRAY['breakage', 'damage', 'weak hair']),
 
-('HAIR-005', 'Edge Control Gel', 'Non-flaking edge control for sleek styles without buildup.', 2500, 'Styling', 'hair', 120,
+('HAIR-005', 'Edge Control Gel', 'Non-flaking edge control for sleek styles without buildup.', 2500, 'Styling', 'hair', '/IMG_20250828_154251_1765737829710.jpg', 120,
  ARRAY['Castor Oil', 'Flaxseed Gel', 'Argan Oil', 'Biotin'],
  ARRAY['flyaways', 'edge styling'],
  ARRAY['4A', '4B', '4C', 'relaxed', 'natural'],
  ARRAY['edges', 'styling']),
 
-('HAIR-006', 'Scalp Treatment Oil', 'Anti-dandruff and scalp-soothing treatment oil with neem and tea tree.', 5000, 'Treatments', 'hair', 65,
+('HAIR-006', 'Scalp Treatment Oil', 'Anti-dandruff and scalp-soothing treatment oil with neem and tea tree.', 5000, 'Treatments', 'hair', '/IMG_20250828_155449_1765737829710.jpg', 65,
  ARRAY['Neem Oil', 'Tea Tree Oil', 'Jojoba Oil', 'Peppermint', 'Rosemary'],
  ARRAY['dandruff', 'dry scalp', 'itchy scalp'],
  ARRAY['4A', '4B', '4C', 'relaxed', 'natural', 'locs'],
  ARRAY['dandruff', 'itchy scalp', 'dry scalp']),
 
-('HAIR-007', 'Curl Defining Cream', 'Lightweight cream for defined, bouncy curls and coils.', 4500, 'Styling', 'hair', 95,
+('HAIR-007', 'Curl Defining Cream', 'Lightweight cream for defined, bouncy curls and coils.', 4500, 'Styling', 'hair', '/IMG_20250828_154251_1765737829710.jpg', 95,
  ARRAY['Shea Butter', 'Flaxseed Gel', 'Coconut Oil', 'Marshmallow Root'],
  ARRAY['undefined curls', 'frizz'],
  ARRAY['4A', '4B', '4C', 'natural'],
  ARRAY['frizz', 'curl definition']),
 
-('HAIR-008', 'Transitioning Hair Treatment', 'Special treatment for hair transitioning from relaxed to natural.', 6000, 'Treatments', 'hair', 50,
+('HAIR-008', 'Transitioning Hair Treatment', 'Special treatment for hair transitioning from relaxed to natural.', 6000, 'Treatments', 'hair', '/IMG_20250828_154251_1765737829710.jpg', 50,
  ARRAY['Olaplex-like Bond Repair', 'Keratin', 'Argan Oil', 'Avocado Oil'],
  ARRAY['transitioning hair', 'line of demarcation'],
  ARRAY['transitioning'],
