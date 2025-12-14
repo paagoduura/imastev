@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video } from "lucide-react";
+import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video, Crown, Loader2 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import { AnalysisTypeSelector } from "@/components/scan/AnalysisTypeSelector";
 import { HairCaptureGuidelines, HAIR_REQUIRED_ANGLES, HAIR_OPTIONAL_ANGLES, HAIR_ANGLE_DESCRIPTIONS } from "@/components/scan/HairCaptureGuidelines";
 import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
 import { PorosityTest } from "@/components/scan/PorosityTest";
+import { Badge } from "@/components/ui/badge";
 
 interface CapturedAngle {
   angle: string;
@@ -35,6 +36,16 @@ interface CapturedAngle {
 const SKIN_REQUIRED_ANGLES = ['front', 'close'];
 const SKIN_OPTIONAL_ANGLES = ['left', 'right'];
 
+interface ScanQuota {
+  hasSubscription: boolean;
+  planName: string;
+  tier: string;
+  scansUsed: number;
+  maxScans: number | null;
+  scansRemaining: number | null;
+  isUnlimited: boolean;
+}
+
 const Scan = () => {
   const [step, setStep] = useState<'type' | 'porosity' | 'capture' | 'review' | 'calibrate' | 'analyze'>('type');
   const [analysisType, setAnalysisType] = useState<'skin' | 'hair'>('skin');
@@ -45,10 +56,41 @@ const Scan = () => {
   const [calibrationData, setCalibrationData] = useState<{ pixelsPerMM: number; referenceType: string } | null>(null);
   const [showLiveCamera, setShowLiveCamera] = useState(false);
   const [porosityResult, setPorosityResult] = useState<any>(null);
+  const [scanQuota, setScanQuota] = useState<ScanQuota | null>(null);
+  const [loadingQuota, setLoadingQuota] = useState(true);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    loadScanQuota();
+  }, []);
+
+  const loadScanQuota = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      const response = await fetch('/api/scan-quota', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('glowsense_token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const quota = await response.json();
+        setScanQuota(quota);
+      }
+    } catch (error) {
+      console.error('Error loading scan quota:', error);
+    } finally {
+      setLoadingQuota(false);
+    }
+  };
 
   // Get the correct angles based on analysis type
   const REQUIRED_ANGLES = analysisType === 'hair' ? HAIR_REQUIRED_ANGLES : SKIN_REQUIRED_ANGLES;
@@ -733,13 +775,63 @@ const Scan = () => {
     </div>
   );
 
+  // Show loading state - this check must come first
+  if (loadingQuota) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-purple-500" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show upgrade prompt if scan limit reached
+  if (scanQuota && !scanQuota.isUnlimited && scanQuota.scansRemaining !== null && scanQuota.scansRemaining <= 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="gradient-mesh min-h-[calc(100vh-80px)]">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-2xl">
+            <Card className="text-center p-8 sm:p-12 premium-card border-purple-100 dark:border-purple-900/30">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-600 to-amber-500 rounded-2xl flex items-center justify-center">
+                <Crown className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">Scan Limit Reached</h2>
+              <p className="text-muted-foreground mb-2">
+                You've used all <strong>{scanQuota.maxScans}</strong> scans available on your <strong>{scanQuota.planName}</strong> plan.
+              </p>
+              <p className="text-muted-foreground mb-6">
+                Upgrade to Premium for unlimited AI-powered hair and skin analysis.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => navigate("/subscription")} 
+                  className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
+                >
+                  <Crown className="mr-2 h-4 w-4" />
+                  Upgrade Now
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/dashboard")}>
+                  Back to Dashboard
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
       <div className="gradient-mesh min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8">
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 sm:mb-8 flex items-center justify-between">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/dashboard')}
@@ -748,6 +840,14 @@ const Scan = () => {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Button>
+            {scanQuota && (
+              <Badge variant="outline" className={`${scanQuota.isUnlimited ? 'border-purple-500 text-purple-600' : 'border-slate-300'}`}>
+                {scanQuota.isUnlimited 
+                  ? '✨ Unlimited Scans' 
+                  : `${scanQuota.scansRemaining} of ${scanQuota.maxScans} scans left`
+                }
+              </Badge>
+            )}
           </div>
 
           <div className="text-center mb-6 sm:mb-8">

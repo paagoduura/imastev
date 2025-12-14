@@ -475,8 +475,82 @@ app.delete('/api/cart/:id', authenticateToken, async (req: any, res) => {
 
 // ==================== SCAN ROUTES ====================
 
+// Get subscription status for scan limits
+app.get('/api/scan-quota', authenticateToken, async (req: any, res) => {
+  try {
+    const subResult = await pool.query(
+      `SELECT s.*, sp.max_scans_per_month, sp.name as plan_name, sp.tier
+       FROM subscriptions s
+       JOIN subscription_plans sp ON s.plan_id = sp.id
+       WHERE s.user_id = $1 AND s.status = 'active' AND sp.is_active = true
+       LIMIT 1`,
+      [req.user.id]
+    );
+    
+    if (subResult.rows.length === 0) {
+      // No active subscription - default to starter limits (3 scans)
+      return res.json({
+        hasSubscription: false,
+        planName: 'Starter',
+        tier: 'free',
+        scansUsed: 0,
+        maxScans: 3,
+        scansRemaining: 3,
+        isUnlimited: false
+      });
+    }
+    
+    const sub = subResult.rows[0];
+    const isUnlimited = sub.max_scans_per_month === null;
+    const scansRemaining = isUnlimited ? Infinity : Math.max(0, sub.max_scans_per_month - (sub.scans_used_this_period || 0));
+    
+    res.json({
+      hasSubscription: true,
+      planName: sub.plan_name,
+      tier: sub.tier,
+      scansUsed: sub.scans_used_this_period || 0,
+      maxScans: sub.max_scans_per_month,
+      scansRemaining: isUnlimited ? null : scansRemaining,
+      isUnlimited
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/scans', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
+    // Check subscription quota before creating scan
+    const subResult = await pool.query(
+      `SELECT s.*, sp.max_scans_per_month
+       FROM subscriptions s
+       JOIN subscription_plans sp ON s.plan_id = sp.id
+       WHERE s.user_id = $1 AND s.status = 'active' AND sp.is_active = true
+       LIMIT 1`,
+      [req.user.id]
+    );
+    
+    let maxScans = 3; // Default to starter limit
+    let scansUsed = 0;
+    let subscriptionId = null;
+    
+    if (subResult.rows.length > 0) {
+      const sub = subResult.rows[0];
+      maxScans = sub.max_scans_per_month; // null means unlimited
+      scansUsed = sub.scans_used_this_period || 0;
+      subscriptionId = sub.id;
+    }
+    
+    // Check if user has exceeded their scan limit (null = unlimited)
+    if (maxScans !== null && scansUsed >= maxScans) {
+      return res.status(403).json({ 
+        error: 'Scan limit reached',
+        message: 'You have used all your scans for this period. Upgrade your plan for unlimited scans.',
+        scansUsed,
+        maxScans
+      });
+    }
+    
     const { scan_type, calibration_data, porosity_test_result } = req.body;
     const imageUrl = req.file ? `/uploads/${scan_type || 'skin'}-scans/${req.file.filename}` : null;
     
@@ -486,6 +560,15 @@ app.post('/api/scans', authenticateToken, upload.single('image'), async (req: an
        RETURNING *`,
       [req.user.id, scan_type || 'skin', imageUrl, calibration_data, porosity_test_result]
     );
+    
+    // Increment scan usage counter
+    if (subscriptionId) {
+      await pool.query(
+        `UPDATE subscriptions SET scans_used_this_period = COALESCE(scans_used_this_period, 0) + 1 WHERE id = $1`,
+        [subscriptionId]
+      );
+    }
+    
     res.json(result.rows[0]);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
