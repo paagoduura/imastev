@@ -1081,20 +1081,81 @@ app.get('/api/checkout/session/:sessionId', authenticateToken, async (req: any, 
 
 // ==================== SALON BOOKING ROUTES ====================
 
-// Salon services list
+// Salon services list - IMSTEV NATURALS Price List
 const SALON_SERVICES = [
-  { id: 'twist-out', name: 'Twist Out Styling', category: 'Styling', duration: 90, price: 8000 },
-  { id: 'flat-twist', name: 'Flat Twist Updo', category: 'Styling', duration: 120, price: 12000 },
-  { id: 'cornrows', name: 'Cornrows', category: 'Braiding', duration: 180, price: 15000 },
-  { id: 'loc-maintenance', name: 'Loc Maintenance', category: 'Locs', duration: 90, price: 10000 },
-  { id: 'loc-styling', name: 'Loc Styling', category: 'Locs', duration: 60, price: 7000 },
-  { id: 'deep-conditioning', name: 'Deep Conditioning Treatment', category: 'Treatment', duration: 60, price: 5000 },
-  { id: 'protein-treatment', name: 'Protein Treatment', category: 'Treatment', duration: 75, price: 7500 },
-  { id: 'scalp-treatment', name: 'Scalp Treatment & Massage', category: 'Treatment', duration: 45, price: 4500 },
-  { id: 'kids-braiding', name: 'Kids Braiding', category: 'Kids', duration: 90, price: 6000 },
-  { id: 'kids-twist', name: 'Kids Twist Styling', category: 'Kids', duration: 60, price: 4500 },
-  { id: 'consultation', name: 'Hair Consultation', category: 'Consultation', duration: 30, price: 2500 },
-  { id: 'custom-formulation', name: 'Custom Product Formulation', category: 'Premium', duration: 45, price: 8000 },
+  // HAIRDO - Basic Services
+  { id: 'loosening-hair', name: 'Loosening of Hair', category: 'Hairdo', duration: 60, price: 1000, priceMax: 8000 },
+  { id: 'blow-drying', name: 'Blow Drying', category: 'Hairdo', duration: 30, price: 1500 },
+  { id: 'retouching', name: 'Retouching', category: 'Hairdo', duration: 60, price: 3000 },
+  
+  // HAIRDO - Dyeing/Colouring
+  { id: 'dyeing-client-colour', name: 'Dyeing/Colouring (Client Colour)', category: 'Colouring', duration: 90, price: 1500 },
+  { id: 'dyeing-salon-colour', name: 'Dyeing/Colouring (Salon Product)', category: 'Colouring', duration: 90, price: 3000 },
+  
+  // HAIRDO - Natural Twist
+  { id: 'natural-twist-jumbo', name: 'Natural Twist - Jumbo Size', category: 'Twists', duration: 90, price: 2000 },
+  { id: 'natural-twist-medium', name: 'Natural Twist - Medium Size', category: 'Twists', duration: 120, price: 3000 },
+  { id: 'natural-twist-small', name: 'Natural Twist - Small Size', category: 'Twists', duration: 180, price: 5000 },
+  
+  // HAIRDO - Kinky Twist
+  { id: 'kinky-twist-jumbo', name: 'Kinky Twist - Jumbo Size', category: 'Twists', duration: 120, price: 3500 },
+  { id: 'kinky-twist-medium', name: 'Kinky Twist - Medium Size', category: 'Twists', duration: 180, price: 4500 },
+  { id: 'kinky-twist-small', name: 'Kinky Twist - Small Size', category: 'Twists', duration: 300, price: 12000 },
+  
+  // HAIRDO - Braids
+  { id: 'braids-jumbo', name: 'Braids - Jumbo Size', category: 'Braiding', duration: 120, price: 3000 },
+  { id: 'braids-medium', name: 'Braids - Medium Size', category: 'Braiding', duration: 180, price: 4500 },
+  { id: 'braids-small', name: 'Braids - Small Size', category: 'Braiding', duration: 240, price: 6000 },
+  { id: 'cornrows-didi', name: 'Cornrows / Didi', category: 'Braiding', duration: 90, price: 1000, priceMax: 3000 },
+  { id: 'threading', name: 'Threading', category: 'Braiding', duration: 120, price: 4000, priceMax: 6000 },
+  { id: 'crochet', name: 'Crochet', category: 'Braiding', duration: 120, price: 4000, priceMax: 6000 },
+  
+  // HAIRDO - Locs
+  { id: 'relocking-dread', name: 'Relocking of Dreadlocks', category: 'Locs', duration: 90, price: 5000 },
+  { id: 'relocking-micro-sister', name: 'Relocking of Microlocs & Sisterlocs', category: 'Locs', duration: 120, price: 8000 },
+  { id: 'install-dreadlocks', name: 'Installation of Dreadlocks', category: 'Locs', duration: 300, price: 15000, priceMax: 20000 },
+  { id: 'install-microlocs', name: 'Installation of Microlocs', category: 'Locs', duration: 420, price: 25000, priceMax: 35000 },
+  { id: 'install-sisterlocs', name: 'Installation of Sisterlocs', category: 'Locs', duration: 480, price: 35000, priceMax: 40000 },
+  
+  // HAIRDO - Premium/Bridal
+  { id: 'bridal-packing', name: 'Bridal Packing', category: 'Premium', duration: 180, price: 1500, priceMax: 25000 },
+  
+  // TREATMENT - Washing
+  { id: 'wash-client-products', name: 'Washing (Client Products)', category: 'Treatment', duration: 30, price: 1200 },
+  { id: 'wash-treatment-short', name: 'Washing & Treatment - Short Hair', category: 'Treatment', duration: 45, price: 4200 },
+  { id: 'wash-treatment-long', name: 'Washing & Treatment - Long Hair', category: 'Treatment', duration: 60, price: 5200 },
+  
+  // TREATMENT - Deep Conditioning
+  { id: 'deep-conditioning-short', name: 'Deep Conditioning - Short Hair', category: 'Treatment', duration: 45, price: 1000 },
+  { id: 'deep-conditioning-long', name: 'Deep Conditioning - Long Hair', category: 'Treatment', duration: 60, price: 1500 },
+  
+  // TREATMENT - Leave-in
+  { id: 'leave-in-short', name: 'Leave-in Treatment - Short Hair', category: 'Treatment', duration: 30, price: 1000 },
+  { id: 'leave-in-long', name: 'Leave-in Treatment - Long Hair', category: 'Treatment', duration: 45, price: 1500 },
+  
+  // TREATMENT - Other Treatments
+  { id: 'protein-treatment', name: 'Protein Treatment', category: 'Treatment', duration: 60, price: 1000 },
+  { id: 'clay-mask', name: 'Clay Mask Treatment', category: 'Treatment', duration: 45, price: 1000 },
+  { id: 'butter-treatment-long', name: 'Butter Treatment - Long Hair', category: 'Treatment', duration: 30, price: 1000 },
+  { id: 'butter-treatment-short', name: 'Butter Treatment - Short Hair', category: 'Treatment', duration: 30, price: 500 },
+  { id: 'hair-growth-solution', name: 'Hair Growth Solution', category: 'Treatment', duration: 30, price: 500 },
+  { id: 'aloe-vera-treatment', name: 'Aloe Vera Treatment', category: 'Treatment', duration: 30, price: 500 },
+  { id: 'flaxseed-treatment', name: 'Flaxseed Treatment', category: 'Treatment', duration: 30, price: 500 },
+  { id: 'rice-water-treatment', name: 'Rice Water Treatment', category: 'Treatment', duration: 30, price: 500 },
+  { id: 'acv-treatment', name: 'ACV Treatment', category: 'Treatment', duration: 20, price: 500 },
+  { id: 'fenugreek-treatment', name: 'Fenugreek Treatment', category: 'Treatment', duration: 30, price: 500 },
+  { id: 'serum-oil', name: 'Serum / Oil Application', category: 'Treatment', duration: 15, price: 500 },
+  { id: 'mousse-application', name: 'Mousse Application', category: 'Treatment', duration: 15, price: 500 },
+  { id: 'shampoo', name: 'Shampoo', category: 'Treatment', duration: 15, price: 500 },
+  { id: 'soda-treatment', name: 'Soda Treatment', category: 'Treatment', duration: 20, price: 500 },
+  
+  // BONUS - Free with other services
+  { id: 'scalp-massage', name: 'Scalp Massage (Bonus)', category: 'Bonus', duration: 15, price: 0 },
+  { id: 'trimming', name: 'Trimming (Bonus)', category: 'Bonus', duration: 15, price: 0 },
+  { id: 'heat-cap', name: 'Heat Cap (Bonus)', category: 'Bonus', duration: 20, price: 0 },
+  
+  // Consultation
+  { id: 'consultation', name: 'Hair Consultation', category: 'Consultation', duration: 30, price: 0 },
 ];
 
 // Time slots configuration

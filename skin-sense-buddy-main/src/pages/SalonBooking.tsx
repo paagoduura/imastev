@@ -23,6 +23,7 @@ interface Service {
   category: string;
   duration: number;
   price: number;
+  priceMax?: number;
 }
 
 interface BookingData {
@@ -207,12 +208,16 @@ export default function SalonBooking() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
+  const formatPrice = (price: number, priceMax?: number) => {
+    const formatter = new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0
-    }).format(price);
+    });
+    if (priceMax && priceMax > price) {
+      return `${formatter.format(price)} - ${formatter.format(priceMax)}`;
+    }
+    return formatter.format(price);
   };
 
   const formatDuration = (minutes: number) => {
@@ -233,11 +238,13 @@ export default function SalonBooking() {
   }, {} as Record<string, Service[]>);
 
   const categoryIcons: Record<string, string> = {
-    'Styling': '💇‍♀️',
+    'Hairdo': '💇‍♀️',
+    'Colouring': '🎨',
+    'Twists': '🌀',
     'Braiding': '🎀',
     'Locs': '✨',
     'Treatment': '🧴',
-    'Kids': '👧',
+    'Bonus': '🎁',
     'Consultation': '💬',
     'Premium': '👑'
   };
@@ -440,7 +447,7 @@ export default function SalonBooking() {
                                 <span className="text-sm">{formatDuration(service.duration)}</span>
                               </div>
                               <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
-                                {formatPrice(service.price)}
+                                {formatPrice(service.price, service.priceMax)}
                               </span>
                             </div>
                           </CardContent>
@@ -471,7 +478,7 @@ export default function SalonBooking() {
                       </div>
                       <div>
                         <p className="font-semibold">{selectedService.name}</p>
-                        <p className="text-sm text-muted-foreground">{formatDuration(selectedService.duration)} • {formatPrice(selectedService.price)}</p>
+                        <p className="text-sm text-muted-foreground">{formatDuration(selectedService.duration)} • {formatPrice(selectedService.price, selectedService.priceMax)}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
@@ -723,10 +730,10 @@ export default function SalonBooking() {
                           <div className="flex justify-between items-center">
                             <span className="font-semibold">Total</span>
                             <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
-                              {selectedService && formatPrice(selectedService.price)}
+                              {selectedService && formatPrice(selectedService.price, selectedService.priceMax)}
                             </span>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">Pay at the salon</p>
+                          <p className="text-xs text-muted-foreground mt-1">{selectedService?.priceMax ? 'Final price depends on hair length/complexity • ' : ''}Pay at the salon</p>
                         </div>
 
                         <Button
