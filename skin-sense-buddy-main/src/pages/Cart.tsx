@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const API_BASE = '/api';
 
 interface CartItem {
   id: string;
@@ -34,23 +35,30 @@ const Cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const token = localStorage.getItem('glowsense_token');
+      if (!token) {
         navigate("/auth");
         return;
       }
 
-      const { data, error } = await supabase
-        .from("cart_items")
-        .select(`
-          id,
-          quantity,
-          product:products(id, name, price_ngn, image_url, stock_quantity)
-        `)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      setCartItems(data as any || []);
+      const response = await fetch(`${API_BASE}/cart`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to load cart');
+      
+      const data = await response.json();
+      const items = data.map((item: any) => ({
+        id: item.id,
+        quantity: item.quantity,
+        product: {
+          id: item.product_id,
+          name: item.name,
+          price_ngn: item.price_ngn,
+          image_url: item.image_url,
+          stock_quantity: item.stock_quantity
+        }
+      }));
+      setCartItems(items);
     } catch (error: any) {
       toast({
         title: "Error loading cart",
@@ -66,12 +74,19 @@ const Cart = () => {
     if (newQuantity < 1) return;
 
     try {
-      const { error } = await supabase
-        .from("cart_items")
-        .update({ quantity: newQuantity })
-        .eq("id", itemId);
+      const token = localStorage.getItem('glowsense_token');
+      if (!token) return;
 
-      if (error) throw error;
+      const response = await fetch(`${API_BASE}/cart/${itemId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ quantity: newQuantity })
+      });
+
+      if (!response.ok) throw new Error('Failed to update quantity');
       fetchCartItems();
     } catch (error: any) {
       toast({
@@ -84,12 +99,15 @@ const Cart = () => {
 
   const removeItem = async (itemId: string) => {
     try {
-      const { error } = await supabase
-        .from("cart_items")
-        .delete()
-        .eq("id", itemId);
+      const token = localStorage.getItem('glowsense_token');
+      if (!token) return;
 
-      if (error) throw error;
+      const response = await fetch(`${API_BASE}/cart/${itemId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error('Failed to remove item');
       toast({
         title: "Removed from cart",
         description: "Item removed successfully",

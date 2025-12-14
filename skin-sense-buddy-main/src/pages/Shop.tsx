@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+
+const API_BASE = '/api';
 
 interface Product {
   id: string;
@@ -50,13 +51,9 @@ const Shop = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("is_active", true)
-        .order("name");
-
-      if (error) throw error;
+      const response = await fetch(`${API_BASE}/products`);
+      if (!response.ok) throw new Error('Failed to load products');
+      const data = await response.json();
       setProducts(data || []);
     } catch (error: any) {
       toast({
@@ -71,16 +68,16 @@ const Shop = () => {
 
   const fetchCartCount = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const token = localStorage.getItem('glowsense_token');
+      if (!token) return;
 
-      const { count, error } = await supabase
-        .from("cart_items")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      setCartCount(count || 0);
+      const response = await fetch(`${API_BASE}/cart`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      setCartCount(Array.isArray(data) ? data.length : 0);
     } catch (error) {
       console.error("Error fetching cart count:", error);
     }
@@ -117,8 +114,8 @@ const Shop = () => {
 
   const addToCart = async (productId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const token = localStorage.getItem('glowsense_token');
+      if (!token) {
         toast({
           title: "Please sign in",
           description: "You need to be signed in to add items to cart",
@@ -128,14 +125,19 @@ const Shop = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from("cart_items")
-        .upsert(
-          { user_id: user.id, product_id: productId, quantity: 1 },
-          { onConflict: "user_id,product_id" }
-        );
+      const response = await fetch(`${API_BASE}/cart`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add to cart');
+      }
 
       toast({
         title: "Added to cart",
