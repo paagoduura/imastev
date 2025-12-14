@@ -338,14 +338,44 @@ app.get('/api/subscription-plans', async (req, res) => {
 app.get('/api/subscriptions', authenticateToken, async (req: any, res) => {
   try {
     const result = await pool.query(
-      `SELECT s.*, sp.name as plan_name, sp.features, sp.max_scans_per_month, 
-              sp.includes_telehealth, sp.includes_custom_formulations, sp.max_family_members
+      `SELECT s.*, 
+              sp.id as sp_id, sp.name as sp_name, sp.tier, sp.price_ngn, sp.features, 
+              sp.max_scans_per_month, sp.includes_telehealth, sp.includes_custom_formulations, 
+              sp.max_family_members
        FROM subscriptions s
        JOIN subscription_plans sp ON s.plan_id = sp.id
        WHERE s.user_id = $1 AND s.status = 'active'`,
       [req.user.id]
     );
-    res.json(result.rows[0] || null);
+    
+    if (result.rows.length === 0) {
+      return res.json(null);
+    }
+    
+    // Transform to nested format expected by frontend
+    const row = result.rows[0];
+    const subscription = {
+      id: row.id,
+      user_id: row.user_id,
+      plan_id: row.plan_id,
+      status: row.status,
+      current_period_start: row.current_period_start,
+      current_period_end: row.current_period_end,
+      scans_used_this_period: row.scans_used_this_period,
+      subscription_plans: {
+        id: row.sp_id,
+        name: row.sp_name,
+        tier: row.tier,
+        price_ngn: row.price_ngn,
+        features: row.features,
+        max_scans_per_month: row.max_scans_per_month,
+        includes_telehealth: row.includes_telehealth,
+        includes_custom_formulations: row.includes_custom_formulations,
+        max_family_members: row.max_family_members
+      }
+    };
+    
+    res.json(subscription);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

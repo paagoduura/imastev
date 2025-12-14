@@ -184,7 +184,9 @@ class QueryBuilder {
 
   private async execute() {
     try {
-      const response = await fetchWithAuth(`/${this.table}`);
+      // Map table names to API routes (handle underscores to hyphens)
+      const apiRoute = this.table.replace(/_/g, '-');
+      const response = await fetchWithAuth(`/${apiRoute}`);
       
       if (!response.ok) {
         const error = await response.json().catch(() => ({ message: 'Request failed' }));
