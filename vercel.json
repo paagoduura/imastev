@@ -1,5 +1,5 @@
 {
-  "installCommand": "cd skin-sense-buddy-main && npm install",
+  "installCommand": "cd skin-sense-buddy-main && npm install --legacy-peer-deps",
   "buildCommand": "cd skin-sense-buddy-main && npm run build",
   "outputDirectory": "skin-sense-buddy-main/dist",
   "rewrites": [
