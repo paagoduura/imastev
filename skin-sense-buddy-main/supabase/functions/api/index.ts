@@ -171,6 +171,10 @@ function createAnonClient() {
   });
 }
 
+function googleClientId() {
+  return getEnv("GOOGLE_CLIENT_ID") || getEnv("VITE_GOOGLE_CLIENT_ID");
+}
+
 function normalizePath(pathname: string) {
   const match = pathname.match(/\/api(\/.*)?$/);
   return match?.[1] || "/";
@@ -344,6 +348,72 @@ async function ensureLegacyUserRecord(service: SupabaseClient, user: UserContext
   }
 
   return inserted.data;
+}
+
+async function ensureUserScaffold(service: SupabaseClient, userId: string) {
+  await service.from("profiles").upsert({ user_id: userId }, { onConflict: "user_id" });
+  await service.from("user_roles").upsert({ user_id: userId, role: "patient" }, { onConflict: "user_id,role" });
+
+  const { data: freePlan } = await service
+    .from("subscription_plans")
+    .select("id")
+    .eq("tier", "free")
+    .limit(1)
+    .maybeSingle();
+
+  if (!freePlan?.id) return;
+
+  const { data: existingSubscription } = await service
+    .from("subscriptions")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("plan_id", freePlan.id)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
+
+  if (existingSubscription?.id) return;
+
+  await service.from("subscriptions").insert({
+    user_id: userId,
+    plan_id: freePlan.id,
+    status: "active",
+    current_period_start: new Date().toISOString(),
+    current_period_end: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
+    scans_used_this_period: 0,
+  });
+}
+
+async function verifyGoogleIdToken(idToken: string) {
+  const clientId = googleClientId();
+  if (!clientId) {
+    return { ok: false as const, error: "Google sign-in is not configured" };
+  }
+
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    return { ok: false as const, error: "Google token verification failed" };
+  }
+
+  if (String(payload.aud || "") !== clientId) {
+    return { ok: false as const, error: "Google token audience mismatch" };
+  }
+
+  const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+  if (!email) {
+    return { ok: false as const, error: "Google account email is missing" };
+  }
+
+  return {
+    ok: true as const,
+    profile: {
+      email,
+      fullName: typeof payload.name === "string" ? payload.name.trim() : "",
+      emailVerified: String(payload.email_verified || "") === "true",
+    },
+  };
 }
 
 async function requireUser(req: Request, service = createServiceClient()) {
@@ -860,6 +930,77 @@ serve(async (req) => {
         });
       } catch (error) {
         return json({ error: error instanceof Error ? error.message : "Failed to sync user account" }, 400);
+      }
+
+      return json({
+        user: {
+          id: signedIn.data.user.id,
+          email: signedIn.data.user.email,
+          created_at: signedIn.data.user.created_at,
+        },
+        token: signedIn.data.session.access_token,
+      });
+    }
+
+    if (route === "/auth/google" && req.method === "POST") {
+      const credential = typeof body.credential === "string" ? body.credential.trim() : "";
+      if (!credential) return json({ error: "Google credential is required" }, 400);
+
+      const verified = await verifyGoogleIdToken(credential);
+      if (!verified.ok) {
+        return json({ error: verified.error }, 401);
+      }
+
+      const { data: existingUsers } = await service.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const existingUser = ensureArray(existingUsers?.users).find(
+        (candidate) => (candidate.email || "").trim().toLowerCase() === verified.profile.email
+      );
+
+      let authUser = existingUser || null;
+
+      if (!authUser) {
+        const created = await service.auth.admin.createUser({
+          email: verified.profile.email,
+          email_confirm: verified.profile.emailVerified || true,
+          user_metadata: verified.profile.fullName ? { full_name: verified.profile.fullName } : undefined,
+        });
+
+        if (created.error || !created.data.user) {
+          return json({ error: created.error?.message || "Failed to create Google user" }, 400);
+        }
+
+        authUser = created.data.user;
+      }
+
+      const appUser = {
+        id: authUser.id,
+        email: authUser.email || verified.profile.email,
+      };
+
+      try {
+        await ensureLegacyUserRecord(service, appUser);
+      } catch (error) {
+        return json({ error: error instanceof Error ? error.message : "Failed to sync user account" }, 400);
+      }
+
+      await ensureUserScaffold(service, authUser.id);
+
+      if (verified.profile.fullName) {
+        await service
+          .from("profiles")
+          .update({ full_name: verified.profile.fullName })
+          .eq("user_id", authUser.id)
+          .is("full_name", null);
+      }
+
+      const anon = createAnonClient();
+      const signedIn = await anon.auth.signInWithIdToken({
+        provider: "google",
+        token: credential,
+      });
+
+      if (signedIn.error || !signedIn.data.user || !signedIn.data.session) {
+        return json({ error: signedIn.error?.message || "Google sign-in failed" }, 401);
       }
 
       return json({
