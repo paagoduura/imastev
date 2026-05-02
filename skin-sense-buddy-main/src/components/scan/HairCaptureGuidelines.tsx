@@ -32,8 +32,8 @@ export function HairCaptureGuidelines() {
 
         <div className="mt-4 p-3 bg-amber-500/10 rounded-lg">
           <p className="text-sm text-amber-700 dark:text-amber-300">
-            <strong>For Nigerian Hair:</strong> If transitioning from relaxed to natural, 
-            try to capture the line of demarcation clearly. For locs or braids, 
+            <strong>For all hair types:</strong> If you are transitioning, color-treated, chemically processed,
+            or wearing locs, braids, or twists,
             capture the scalp between partings.
           </p>
         </div>

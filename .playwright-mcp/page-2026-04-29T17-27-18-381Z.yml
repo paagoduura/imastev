@@ -1,0 +1,54 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - button "Back" [ref=e4] [cursor=pointer]:
+    - img
+    - text: Back
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - img "IMSTEV NATURALS" [ref=e16]
+      - heading "Welcome to IMSTEV NATURALS" [level=1] [ref=e17]
+      - paragraph [ref=e18]: Home of Nature's Beauty
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - img [ref=e23]
+        - generic [ref=e25]: Secure Authentication
+      - generic [ref=e26]:
+        - tablist [ref=e27]:
+          - tab "Sign In" [selected] [ref=e28] [cursor=pointer]
+          - tab "Sign Up" [ref=e29] [cursor=pointer]
+        - tabpanel "Sign In" [ref=e30]:
+          - generic [ref=e31]:
+            - generic [ref=e32]:
+              - text: Email Address
+              - generic [ref=e33]:
+                - img [ref=e34]
+                - textbox "Email Address" [ref=e37]:
+                  - /placeholder: you@example.com
+            - generic [ref=e38]:
+              - text: Password
+              - generic [ref=e39]:
+                - img [ref=e40]
+                - textbox "Password" [ref=e43]:
+                  - /placeholder: Enter your password
+                - button "Show password" [ref=e44] [cursor=pointer]:
+                  - img [ref=e45]
+            - button "Sign In" [ref=e48] [cursor=pointer]:
+              - generic [ref=e49]:
+                - text: Sign In
+                - img
+    - generic [ref=e50]:
+      - generic [ref=e51]:
+        - img [ref=e53]
+        - paragraph [ref=e55]: Secure
+        - paragraph [ref=e56]: Data Protected
+      - generic [ref=e57]:
+        - img [ref=e59]
+        - paragraph [ref=e64]: 100K+
+        - paragraph [ref=e65]: Happy Users
+      - generic [ref=e66]:
+        - img [ref=e68]
+        - paragraph [ref=e70]: 4.9/5
+        - paragraph [ref=e71]: Rating
+    - paragraph [ref=e72]: By continuing, you agree to our Terms of Service and Privacy Policy

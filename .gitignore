@@ -1,0 +1,5 @@
+.env
+node_modules/
+skin-sense-buddy-main/node_modules/
+skin-sense-buddy-main/dist/
+uploads/

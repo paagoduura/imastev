@@ -1,96 +1,76 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, Sparkles, Heart } from "lucide-react";
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Music2, Mail, Phone, MapPin, Sparkles } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
     { label: "Home", href: "/" },
+    { label: "Community", href: "/community" },
+    { label: "Salon", href: "/salon-booking" },
+    { label: "Shop", href: "/shop" },
     { label: "AI Scan", href: "/scan" },
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Timeline", href: "/timeline" },
   ];
 
   const services = [
     { label: "Hair Analysis", href: "/scan" },
     { label: "Skin Analysis", href: "/scan" },
-    { label: "Salon Booking", href: "/telehealth" },
-    { label: "Custom Formulations", href: "/custom-formulation" },
-  ];
-
-  const shop = [
-    { label: "All Products", href: "/shop" },
-    { label: "Hair Care", href: "/shop" },
-    { label: "Skin Care", href: "/shop" },
-    { label: "Organic Oils", href: "/shop" },
+    { label: "Salon Booking", href: "/salon-booking" },
+    { label: "Custom Formulations", href: "/formulation" },
   ];
 
   return (
-    <footer className="relative bg-gradient-to-b from-slate-900 via-slate-900 to-black text-white overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-16 lg:py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+    <footer className="relative overflow-hidden border-t border-white/15 bg-primary text-white">
+      <div className="absolute inset-0 bg-black/5" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-12 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             <div className="lg:col-span-1">
-              <div className="flex items-center gap-3 mb-6">
+              <div className="mb-5 flex items-center gap-3">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-amber-500 rounded-full blur-lg opacity-60" />
-                  <img 
-                    src="/imstev-logo.png" 
-                    alt="IMSTEV NATURALS" 
-                    className="relative h-14 w-14 rounded-full object-cover ring-2 ring-purple-500/30"
+                  <div className="absolute inset-0 rounded-full bg-primary/15 blur-lg" />
+                  <img
+                    src="/imstev-logo.jpeg"
+                    alt="IMSTEV NATURALS"
+                    className="relative h-14 w-14 rounded-full object-cover ring-2 ring-primary/15"
                   />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
-                    IMSTEV NATURALS
-                  </h3>
-                  <p className="text-sm text-purple-300/80 font-medium">Home of Nature's Beauty</p>
+                  <h3 className="text-xl font-bold text-white text-primary">IMSTEV NATURALS</h3>
+                  <p className="text-sm font-medium text-white/80">Home of Nature&apos;s Beauty</p>
                 </div>
               </div>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+              <p className="mb-6 text-sm leading-relaxed text-white/75">
+                Nigeria&apos;s premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
               </p>
-              <div className="flex items-center gap-4">
-                <a 
-                  href="#" 
-                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-gradient-to-r hover:from-purple-600 hover:to-amber-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="w-4 h-4" />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-gradient-to-r hover:from-purple-600 hover:to-amber-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-gradient-to-r hover:from-purple-600 hover:to-amber-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  aria-label="Twitter"
-                >
-                  <Twitter className="w-4 h-4" />
-                </a>
+              <div className="flex items-center gap-3">
+                {[Facebook, Instagram, Twitter, Linkedin, Youtube, Music2].map((Icon, index) => (
+                  <a
+                    key={index}
+                    href="#"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-all duration-300 hover:bg-white hover:text-primary"
+                    aria-label={`Social link ${index + 1}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                ))}
               </div>
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-400" />
+              <h4 className="mb-4 flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+                <Sparkles className="h-4 w-4 text-white" />
                 Quick Links
               </h4>
               <ul className="space-y-3">
                 {quickLinks.map((link) => (
                   <li key={link.label}>
-                    <Link 
+                    <Link
                       to={link.href}
-                      className="text-slate-400 hover:text-purple-400 transition-colors duration-300 text-sm flex items-center gap-2 group"
+                      className="group flex items-center gap-2 text-sm text-white/75 transition-colors duration-300 hover:text-white"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500/50 group-hover:bg-purple-400 transition-colors" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40 transition-colors group-hover:bg-white" />
                       {link.label}
                     </Link>
                   </li>
@@ -99,18 +79,18 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+              <h4 className="mb-4 flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+                <Sparkles className="h-4 w-4 text-white" />
                 Our Services
               </h4>
               <ul className="space-y-3">
                 {services.map((link) => (
                   <li key={link.label}>
-                    <Link 
+                    <Link
                       to={link.href}
-                      className="text-slate-400 hover:text-amber-400 transition-colors duration-300 text-sm flex items-center gap-2 group"
+                      className="group flex items-center gap-2 text-sm text-white/75 transition-colors duration-300 hover:text-white"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500/50 group-hover:bg-amber-400 transition-colors" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40 transition-colors group-hover:bg-white" />
                       {link.label}
                     </Link>
                   </li>
@@ -119,65 +99,64 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-400" />
+              <h4 className="mb-4 flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+                <Sparkles className="h-4 w-4 text-white" />
                 Contact Us
               </h4>
               <ul className="space-y-4">
-                <li className="flex items-start gap-3 text-sm text-slate-400">
-                  <MapPin className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                <li className="flex items-start gap-3 text-sm text-white/75">
+                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-white" />
                   <span>40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria</span>
                 </li>
                 <li>
-                  <a 
-                    href="tel:+2349033505038" 
-                    className="flex items-center gap-3 text-sm text-slate-400 hover:text-purple-400 transition-colors"
+                  <a
+                    href="tel:+2349033505038"
+                    className="flex items-center gap-3 text-sm text-white/75 transition-colors hover:text-white"
                   >
-                    <Phone className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <Phone className="h-4 w-4 flex-shrink-0 text-white" />
                     <span>+234 903 350 5038</span>
                   </a>
                 </li>
                 <li>
-                  <a 
-                    href="mailto:contact@imstevnaturals.com" 
-                    className="flex items-center gap-3 text-sm text-slate-400 hover:text-purple-400 transition-colors"
+                  <a
+                    href="mailto:contact@imstevnaturals.com"
+                    className="flex items-center gap-3 text-sm text-white/75 transition-colors hover:text-white"
                   >
-                    <Mail className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <Mail className="h-4 w-4 flex-shrink-0 text-white" />
                     <span>contact@imstevnaturals.com</span>
                   </a>
                 </li>
               </ul>
-              
-              <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-purple-900/30 to-amber-900/30 border border-purple-500/20">
-                <p className="text-xs text-slate-300 font-medium mb-1">Salon Hours</p>
-                <p className="text-xs text-slate-400">Mon - Sat: 9AM - 7PM</p>
-                <p className="text-xs text-slate-400">Sunday: By Appointment</p>
+
+              <div className="mt-6 rounded-xl border border-white/20 bg-white/10 p-4">
+                <p className="mb-1 text-xs font-medium text-white">Salon Hours</p>
+                <p className="text-xs text-white/75">Monday: Closed</p>
+                <p className="text-xs text-white/75">Tuesday - Saturday: 2PM onward</p>
+                <p className="text-xs text-white/75">Sunday: By appointment from 2PM</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-white/10 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm text-center md:text-left">
+        <div className="border-t border-white/15 py-6 sm:py-8">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <p className="text-center text-sm text-white/75 md:text-left">
               &copy; {currentYear} IMSTEV NATURALS. All rights reserved.
             </p>
-            <div className="flex items-center gap-6 text-sm">
-              <Link to="#" className="text-slate-500 hover:text-purple-400 transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm md:justify-end">
+              <Link to="#" className="text-white/75 transition-colors hover:text-white">
                 Privacy Policy
               </Link>
-              <Link to="#" className="text-slate-500 hover:text-purple-400 transition-colors">
+              <Link to="#" className="text-white/75 transition-colors hover:text-white">
                 Terms of Service
               </Link>
-              <Link to="#" className="text-slate-500 hover:text-purple-400 transition-colors">
+              <Link to="#" className="text-white/75 transition-colors hover:text-white">
                 Refund Policy
               </Link>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-center gap-1 text-xs text-slate-600">
-            <span>Made with</span>
-            <Heart className="w-3 h-3 text-purple-500 fill-purple-500" />
-            <span>for beautiful hair & skin</span>
+          <div className="mt-4 flex items-center justify-center gap-1 text-xs text-white/70">
+           
           </div>
         </div>
       </div>

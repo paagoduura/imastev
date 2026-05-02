@@ -1,4 +1,4 @@
-import { UseFormReturn } from "react-hook-form";
+import type { FieldValues, UseFormReturn } from "react-hook-form";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -9,60 +9,28 @@ import { Sparkles, Droplets, FlaskConical, Calendar, AlertTriangle, CheckCircle2
 import { cn } from "@/lib/utils";
 
 interface HairProfileStepProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   subStep: 'type' | 'porosity' | 'chemical';
 }
 
 const HAIR_TYPES = [
-  {
-    value: "3c",
-    label: "Type 3C",
-    description: "Tight curls, corkscrew pattern",
-    pattern: "Defined S-shaped curls that are tightly coiled",
-    visual: "🌀",
-  },
-  {
-    value: "4a",
-    label: "Type 4A",
-    description: "S-shaped coils",
-    pattern: "Defined S-pattern coils with visible curl definition",
-    visual: "➰",
-  },
-  {
-    value: "4b",
-    label: "Type 4B",
-    description: "Z-shaped pattern",
-    pattern: "Sharp Z-pattern angles, less defined curls",
-    visual: "⚡",
-  },
-  {
-    value: "4c",
-    label: "Type 4C",
-    description: "Tight coils, minimal definition",
-    pattern: "Densely packed coils with little to no curl definition",
-    visual: "💫",
-  },
-  {
-    value: "relaxed",
-    label: "Relaxed",
-    description: "Chemically straightened",
-    pattern: "Permanently straightened with relaxer treatment",
-    visual: "〰️",
-  },
-  {
-    value: "transitioning",
-    label: "Transitioning",
-    description: "Growing out relaxer",
-    pattern: "Two textures: natural roots with relaxed ends",
-    visual: "🔄",
-  },
-  {
-    value: "locs",
-    label: "Locs/Dreadlocks",
-    description: "Mature or starter locs",
-    pattern: "Hair locked into rope-like strands",
-    visual: "🔗",
-  },
+  { value: "1a", label: "Type 1A", description: "Very straight, fine hair", pattern: "Pin-straight hair with minimal body or wave", visual: "S" },
+  { value: "1b", label: "Type 1B", description: "Straight with more body", pattern: "Straight hair with slight fullness and movement", visual: "S" },
+  { value: "1c", label: "Type 1C", description: "Straight, coarse texture", pattern: "Mostly straight strands with a fuller, coarser feel", visual: "S" },
+  { value: "2a", label: "Type 2A", description: "Loose wave pattern", pattern: "Soft, fine waves with light movement", visual: "W" },
+  { value: "2b", label: "Type 2B", description: "Defined waves", pattern: "More visible S-waves through the mid-lengths", visual: "W" },
+  { value: "2c", label: "Type 2C", description: "Strong waves", pattern: "Deep waves with volume and occasional ringlets", visual: "W" },
+  { value: "3a", label: "Type 3A", description: "Loose curls", pattern: "Large, springy curls with an open shape", visual: "C" },
+  { value: "3b", label: "Type 3B", description: "Bouncy ringlets", pattern: "Well-defined curls with noticeable volume", visual: "C" },
+  { value: "3c", label: "Type 3C", description: "Tight curls, corkscrew pattern", pattern: "Defined S-shaped curls that are tightly coiled", visual: "C" },
+  { value: "4a", label: "Type 4A", description: "S-shaped coils", pattern: "Defined S-pattern coils with visible curl definition", visual: "K" },
+  { value: "4b", label: "Type 4B", description: "Z-shaped pattern", pattern: "Sharp Z-pattern angles, less defined curls", visual: "K" },
+  { value: "4c", label: "Type 4C", description: "Tight coils, minimal definition", pattern: "Densely packed coils with little to no curl definition", visual: "K" },
+  { value: "relaxed", label: "Relaxed", description: "Chemically straightened", pattern: "Permanently straightened with chemical treatment", visual: "R" },
+  { value: "transitioning", label: "Transitioning", description: "Growing out processed hair", pattern: "Two textures with natural new growth and processed ends", visual: "T" },
+  { value: "locs", label: "Locs", description: "Starter, mature, or maintained locs", pattern: "Hair locked into rope-like strands", visual: "L" },
+  { value: "braided", label: "Braided/Protective Style", description: "Hair currently in braids or twists", pattern: "Protective styling with visible parts or extensions", visual: "B" },
+  { value: "extensions", label: "Extensions/Weave/Wig", description: "Hair enhanced with added hair", pattern: "Installed hairpieces, weaves, wigs, or extensions", visual: "E" },
 ];
 
 const POROSITY_LEVELS = [
@@ -164,7 +132,7 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
           </div>
           <h3 className="text-xl font-semibold">Let's understand your hair</h3>
           <p className="text-sm text-muted-foreground">
-            Select your hair texture for personalized care recommendations
+            Select the option that best matches your current hair texture or style
           </p>
         </div>
 
@@ -176,7 +144,7 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
             <FormItem className="space-y-4">
               <FormLabel className="text-base font-semibold flex items-center gap-2">
                 Hair Texture Type *
-                <Badge variant="secondary" className="text-xs">Nigerian Hair Focus</Badge>
+                <Badge variant="secondary" className="text-xs">All Hair Types</Badge>
               </FormLabel>
               <FormControl>
                 <RadioGroup
@@ -640,7 +608,7 @@ export function HairProfileStep({ form, subStep }: HairProfileStepProps) {
               <p className="font-medium text-amber-700 dark:text-amber-300">Hair Profile Complete!</p>
               <p className="text-sm text-muted-foreground">
                 Your hair profile will help us provide personalized hair analysis, product recommendations, 
-                and treatment plans tailored specifically for Nigerian hair care needs.
+                and treatment plans tailored to your hair type, scalp needs, and styling history.
               </p>
             </div>
           </div>

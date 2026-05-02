@@ -1,0 +1,174 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - button "Back" [ref=e4] [cursor=pointer]:
+    - img
+    - text: Back
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e8]:
+        - button "IMSTEV NATURALS IMSTEV NATURALS Home of Nature's Beauty" [ref=e9] [cursor=pointer]:
+          - img "IMSTEV NATURALS" [ref=e12]
+          - generic [ref=e14]:
+            - generic [ref=e15]: IMSTEV NATURALS
+            - generic [ref=e16]: Home of Nature's Beauty
+        - generic [ref=e17]:
+          - button "Dashboard" [ref=e18] [cursor=pointer]:
+            - img [ref=e19]
+            - generic [ref=e24]: Dashboard
+          - button "Scan" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+            - generic [ref=e29]: Scan
+          - button "Timeline" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - generic [ref=e34]: Timeline
+          - button "Community" [ref=e35] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e41]: Community
+          - button "Salon" [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+            - generic [ref=e46]: Salon
+          - button "Shop" [ref=e47] [cursor=pointer]:
+            - img [ref=e48]
+            - generic [ref=e51]: Shop
+        - generic [ref=e52]:
+          - button "Sign In" [ref=e53] [cursor=pointer]
+          - button "Start Scan" [ref=e54] [cursor=pointer]:
+            - img
+            - text: Start Scan
+    - main [ref=e56]:
+      - generic [ref=e60]:
+        - generic [ref=e61]: Community Hub
+        - heading "Hair & Skin Community" [level=1] [ref=e62]
+        - paragraph [ref=e63]: Learn from real journeys, celebrate wins, ask questions, and build healthy routines with a supportive beauty community.
+      - generic [ref=e64]:
+        - generic [ref=e66] [cursor=pointer]:
+          - heading "Hair Community" [level=3] [ref=e67]:
+            - img [ref=e68]
+            - text: Hair Community
+          - paragraph [ref=e70]: Textured hair care, growth journeys, scalp health, routines, and styling tips.
+        - generic [ref=e72] [cursor=pointer]:
+          - heading "Skin Community" [level=3] [ref=e73]:
+            - img [ref=e74]
+            - text: Skin Community
+          - paragraph [ref=e79]: Acne care, hyperpigmentation support, barrier repair, and glow routines.
+      - generic [ref=e82]: Not found
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - heading "Share Your Hair Journey" [level=3] [ref=e86]
+          - paragraph [ref=e87]: Post updates, progress photos, routine wins, and lessons learned.
+        - generic [ref=e88]:
+          - textbox "Your display name" [ref=e89]: Community Member
+          - textbox "What's new in your hair journey?" [ref=e90]
+          - generic [ref=e91]:
+            - button "😀" [ref=e92] [cursor=pointer]
+            - button "😍" [ref=e93] [cursor=pointer]
+            - button "🔥" [ref=e94] [cursor=pointer]
+            - button "💧" [ref=e95] [cursor=pointer]
+            - button "✨" [ref=e96] [cursor=pointer]
+            - button "👏" [ref=e97] [cursor=pointer]
+            - button "💪" [ref=e98] [cursor=pointer]
+            - button "💚" [ref=e99] [cursor=pointer]
+          - button "Choose File" [ref=e100]
+          - button "Publish Post" [ref=e102] [cursor=pointer]:
+            - img
+            - text: Publish Post
+      - generic [ref=e105]: No posts yet in this community. Be the first to share your journey.
+    - contentinfo [ref=e106]:
+      - generic [ref=e108]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - img "IMSTEV NATURALS" [ref=e115]
+              - generic [ref=e116]:
+                - heading "IMSTEV NATURALS" [level=3] [ref=e117]
+                - paragraph [ref=e118]: Home of Nature's Beauty
+            - paragraph [ref=e119]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+            - generic [ref=e120]:
+              - link "Social link 1" [ref=e121] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e122]
+              - link "Social link 2" [ref=e124] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e125]
+              - link "Social link 3" [ref=e128] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e129]
+          - generic [ref=e131]:
+            - heading "Quick Links" [level=4] [ref=e132]:
+              - img [ref=e133]
+              - text: Quick Links
+            - list [ref=e135]:
+              - listitem [ref=e136]:
+                - link "Home" [ref=e137] [cursor=pointer]:
+                  - /url: /
+                  - text: Home
+              - listitem [ref=e139]:
+                - link "Community" [ref=e140] [cursor=pointer]:
+                  - /url: /community
+                  - text: Community
+              - listitem [ref=e142]:
+                - link "Salon" [ref=e143] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon
+              - listitem [ref=e145]:
+                - link "Shop" [ref=e146] [cursor=pointer]:
+                  - /url: /shop
+                  - text: Shop
+              - listitem [ref=e148]:
+                - link "AI Scan" [ref=e149] [cursor=pointer]:
+                  - /url: /scan
+                  - text: AI Scan
+          - generic [ref=e151]:
+            - heading "Our Services" [level=4] [ref=e152]:
+              - img [ref=e153]
+              - text: Our Services
+            - list [ref=e155]:
+              - listitem [ref=e156]:
+                - link "Hair Analysis" [ref=e157] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Hair Analysis
+              - listitem [ref=e159]:
+                - link "Skin Analysis" [ref=e160] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Skin Analysis
+              - listitem [ref=e162]:
+                - link "Salon Booking" [ref=e163] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon Booking
+              - listitem [ref=e165]:
+                - link "Custom Formulations" [ref=e166] [cursor=pointer]:
+                  - /url: /formulation
+                  - text: Custom Formulations
+          - generic [ref=e168]:
+            - heading "Contact Us" [level=4] [ref=e169]:
+              - img [ref=e170]
+              - text: Contact Us
+            - list [ref=e172]:
+              - listitem [ref=e173]:
+                - img [ref=e174]
+                - generic [ref=e177]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+              - listitem [ref=e178]:
+                - link "+234 903 350 5038" [ref=e179] [cursor=pointer]:
+                  - /url: tel:+2349033505038
+                  - img [ref=e180]
+                  - generic [ref=e182]: +234 903 350 5038
+              - listitem [ref=e183]:
+                - link "contact@imstevnaturals.com" [ref=e184] [cursor=pointer]:
+                  - /url: mailto:contact@imstevnaturals.com
+                  - img [ref=e185]
+                  - generic [ref=e188]: contact@imstevnaturals.com
+            - generic [ref=e189]:
+              - paragraph [ref=e190]: Salon Hours
+              - paragraph [ref=e191]: "Mon - Sat: 9AM - 7PM"
+              - paragraph [ref=e192]: "Sunday: By Appointment"
+        - generic [ref=e194]:
+          - paragraph [ref=e195]: © 2026 IMSTEV NATURALS. All rights reserved.
+          - generic [ref=e196]:
+            - link "Privacy Policy" [ref=e197] [cursor=pointer]:
+              - /url: /community
+            - link "Terms of Service" [ref=e198] [cursor=pointer]:
+              - /url: /community
+            - link "Refund Policy" [ref=e199] [cursor=pointer]:
+              - /url: /community

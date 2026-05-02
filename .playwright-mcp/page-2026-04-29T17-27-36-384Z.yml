@@ -1,0 +1,62 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list [ref=e74]:
+      - status [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e77]: Welcome back!
+          - generic [ref=e78]: Let's complete your profile setup.
+        - button [ref=e79] [cursor=pointer]:
+          - img [ref=e80]
+  - region "Notifications alt+T"
+  - button "Back" [ref=e4] [cursor=pointer]:
+    - img
+    - text: Back
+  - generic [ref=e85]:
+    - generic [ref=e86]:
+      - generic [ref=e87]:
+        - img [ref=e90]
+        - img [ref=e96]
+        - img [ref=e105]
+        - img [ref=e110]
+        - img [ref=e116]
+        - img [ref=e121]
+        - img [ref=e126]
+      - generic [ref=e128]:
+        - generic [ref=e129]:
+          - img [ref=e131]
+          - generic [ref=e134]:
+            - heading "Basic Info" [level=3] [ref=e135]
+            - paragraph [ref=e136]: Your personal details
+        - generic [ref=e137]: 1 / 7
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - text: Full Name *
+          - textbox "Full Name *" [ref=e144]:
+            - /placeholder: John Doe
+        - generic [ref=e145]:
+          - generic [ref=e146]:
+            - text: Age *
+            - spinbutton "Age *" [ref=e147]
+          - generic [ref=e148]:
+            - text: Sex *
+            - combobox "Sex *" [ref=e149] [cursor=pointer]:
+              - generic: Select
+              - img [ref=e150]
+            - combobox [ref=e152]
+        - generic [ref=e153]:
+          - text: Phone Number
+          - textbox "Phone Number" [ref=e154]:
+            - /placeholder: +234 xxx xxx xxxx
+          - paragraph [ref=e155]: Optional - for appointment reminders
+        - generic [ref=e156]:
+          - text: Country *
+          - textbox "Country *" [ref=e157]:
+            - /placeholder: Nigeria
+      - generic [ref=e158]:
+        - button "Previous" [disabled]:
+          - img
+          - text: Previous
+        - button "Next" [ref=e159] [cursor=pointer]:
+          - text: Next
+          - img

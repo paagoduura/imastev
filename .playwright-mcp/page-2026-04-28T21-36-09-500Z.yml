@@ -1,0 +1,218 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list [ref=e4]:
+        - status [ref=e5]:
+          - generic [ref=e6]:
+            - generic [ref=e7]: Error loading products
+            - generic [ref=e8]: Failed to load products
+          - button [ref=e9] [cursor=pointer]:
+            - img [ref=e10]
+    - region "Notifications alt+T"
+    - button "Back" [ref=e15] [cursor=pointer]:
+      - img
+      - text: Back
+    - generic [ref=e16]:
+      - navigation [ref=e17]:
+        - generic [ref=e19]:
+          - button "IMSTEV NATURALS IMSTEV NATURALS Home of Nature's Beauty" [ref=e20] [cursor=pointer]:
+            - img "IMSTEV NATURALS" [ref=e23]
+            - generic [ref=e25]:
+              - generic [ref=e26]: IMSTEV NATURALS
+              - generic [ref=e27]: Home of Nature's Beauty
+          - generic [ref=e28]:
+            - button "Dashboard" [ref=e29] [cursor=pointer]:
+              - img [ref=e30]
+              - generic [ref=e35]: Dashboard
+            - button "Scan" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e40]: Scan
+            - button "Timeline" [ref=e41] [cursor=pointer]:
+              - img [ref=e42]
+              - generic [ref=e45]: Timeline
+            - button "Community" [ref=e46] [cursor=pointer]:
+              - img [ref=e47]
+              - generic [ref=e52]: Community
+            - button "Salon" [ref=e53] [cursor=pointer]:
+              - img [ref=e54]
+              - generic [ref=e57]: Salon
+            - button "Shop" [ref=e58] [cursor=pointer]:
+              - img [ref=e59]
+              - generic [ref=e62]: Shop
+          - generic [ref=e63]:
+            - button "Sign In" [ref=e64] [cursor=pointer]
+            - button "Start Scan" [ref=e65] [cursor=pointer]:
+              - img
+              - text: Start Scan
+      - generic [ref=e69]:
+        - generic [ref=e71]:
+          - generic [ref=e73]:
+            - img "Defined mini twists with a clean, geometric parting pattern" [ref=e74]
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - img [ref=e79]
+                - text: Mini twists
+              - heading "Defined mini twists with a clean, geometric parting pattern" [level=2] [ref=e81]
+              - paragraph [ref=e82]: A polished protective style that highlights neat sectioning, healthy scalp visibility, and a salon-finished twist set.
+          - generic [ref=e84]:
+            - img "Kids beaded twists with soft volume and playful movement" [ref=e85]
+            - generic [ref=e88]:
+              - generic [ref=e89]:
+                - img [ref=e90]
+                - text: Beaded twists
+              - heading "Kids beaded twists with soft volume and playful movement" [level=2] [ref=e92]
+              - paragraph [ref=e93]: A child-friendly protective style with tidy parts, moisturized twists, and clear beads that give the finish a bright, joyful character.
+          - generic [ref=e95]:
+            - img "Side-swept rope twists styled with texture and scalp definition" [ref=e96]
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - img [ref=e101]
+                - text: Rope twists
+              - heading "Side-swept rope twists styled with texture and scalp definition" [level=2] [ref=e103]
+              - paragraph [ref=e104]: A versatile look that brings together crisp side parting, healthy shine, and softly gathered twists for everyday elegance.
+          - generic [ref=e106]:
+            - img "Twist updo with sculpted rows and a smooth protective finish" [ref=e107]
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - img [ref=e112]
+                - text: Twist updo
+              - heading "Twist updo with sculpted rows and a smooth protective finish" [level=2] [ref=e114]
+              - paragraph [ref=e115]: A refined updo that showcases precise braiding lines, nourished roots, and a secure style built for lasting wear.
+        - generic [ref=e116]:
+          - generic [ref=e117]:
+            - button "Go to slide 1" [ref=e118] [cursor=pointer]
+            - button "Go to slide 2" [ref=e119] [cursor=pointer]
+            - button "Go to slide 3" [ref=e120] [cursor=pointer]
+            - button "Go to slide 4" [ref=e121] [cursor=pointer]
+          - generic [ref=e122]:
+            - button [ref=e123] [cursor=pointer]:
+              - img
+            - button [ref=e124] [cursor=pointer]:
+              - img
+      - generic [ref=e126]:
+        - generic [ref=e127]:
+          - generic [ref=e128]:
+            - heading "IMSTEV NATURALS Shop" [level=1] [ref=e129]
+            - paragraph [ref=e130]: Premium organic hair care products made with love in Nigeria
+          - button "Cart" [ref=e131] [cursor=pointer]:
+            - img
+            - text: Cart
+        - tablist [ref=e133]:
+          - tab "All" [selected] [ref=e134] [cursor=pointer]:
+            - img [ref=e135]
+            - generic [ref=e139]: All
+          - tab "Skin Care" [ref=e140] [cursor=pointer]:
+            - img [ref=e141]
+            - generic [ref=e146]: Skin Care
+          - tab "Hair Care" [ref=e147] [cursor=pointer]:
+            - img [ref=e148]
+            - generic [ref=e154]: Hair Care
+        - generic [ref=e155]:
+          - generic [ref=e156]:
+            - img [ref=e157]
+            - textbox "Search products..." [ref=e160]
+          - combobox [ref=e161] [cursor=pointer]:
+            - generic: All Categories
+            - img [ref=e162]
+      - generic [ref=e165]:
+        - img [ref=e166]
+        - heading "No products found" [level=3] [ref=e170]
+        - paragraph [ref=e171]: Try adjusting your search or filters
+      - contentinfo [ref=e172]:
+        - generic [ref=e174]:
+          - generic [ref=e176]:
+            - generic [ref=e177]:
+              - generic [ref=e178]:
+                - img "IMSTEV NATURALS" [ref=e181]
+                - generic [ref=e182]:
+                  - heading "IMSTEV NATURALS" [level=3] [ref=e183]
+                  - paragraph [ref=e184]: Home of Nature's Beauty
+              - paragraph [ref=e185]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+              - generic [ref=e186]:
+                - link "Social link 1" [ref=e187] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e188]
+                - link "Social link 2" [ref=e190] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e191]
+                - link "Social link 3" [ref=e194] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e195]
+            - generic [ref=e197]:
+              - heading "Quick Links" [level=4] [ref=e198]:
+                - img [ref=e199]
+                - text: Quick Links
+              - list [ref=e201]:
+                - listitem [ref=e202]:
+                  - link "Home" [ref=e203] [cursor=pointer]:
+                    - /url: /
+                    - text: Home
+                - listitem [ref=e205]:
+                  - link "Community" [ref=e206] [cursor=pointer]:
+                    - /url: /community
+                    - text: Community
+                - listitem [ref=e208]:
+                  - link "Salon" [ref=e209] [cursor=pointer]:
+                    - /url: /salon-booking
+                    - text: Salon
+                - listitem [ref=e211]:
+                  - link "Shop" [ref=e212] [cursor=pointer]:
+                    - /url: /shop
+                    - text: Shop
+                - listitem [ref=e214]:
+                  - link "AI Scan" [ref=e215] [cursor=pointer]:
+                    - /url: /scan
+                    - text: AI Scan
+            - generic [ref=e217]:
+              - heading "Our Services" [level=4] [ref=e218]:
+                - img [ref=e219]
+                - text: Our Services
+              - list [ref=e221]:
+                - listitem [ref=e222]:
+                  - link "Hair Analysis" [ref=e223] [cursor=pointer]:
+                    - /url: /scan
+                    - text: Hair Analysis
+                - listitem [ref=e225]:
+                  - link "Skin Analysis" [ref=e226] [cursor=pointer]:
+                    - /url: /scan
+                    - text: Skin Analysis
+                - listitem [ref=e228]:
+                  - link "Salon Booking" [ref=e229] [cursor=pointer]:
+                    - /url: /salon-booking
+                    - text: Salon Booking
+                - listitem [ref=e231]:
+                  - link "Custom Formulations" [ref=e232] [cursor=pointer]:
+                    - /url: /formulation
+                    - text: Custom Formulations
+            - generic [ref=e234]:
+              - heading "Contact Us" [level=4] [ref=e235]:
+                - img [ref=e236]
+                - text: Contact Us
+              - list [ref=e238]:
+                - listitem [ref=e239]:
+                  - img [ref=e240]
+                  - generic [ref=e243]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+                - listitem [ref=e244]:
+                  - link "+234 903 350 5038" [ref=e245] [cursor=pointer]:
+                    - /url: tel:+2349033505038
+                    - img [ref=e246]
+                    - generic [ref=e248]: +234 903 350 5038
+                - listitem [ref=e249]:
+                  - link "contact@imstevnaturals.com" [ref=e250] [cursor=pointer]:
+                    - /url: mailto:contact@imstevnaturals.com
+                    - img [ref=e251]
+                    - generic [ref=e254]: contact@imstevnaturals.com
+              - generic [ref=e255]:
+                - paragraph [ref=e256]: Salon Hours
+                - paragraph [ref=e257]: "Mon - Sat: 9AM - 7PM"
+                - paragraph [ref=e258]: "Sunday: By Appointment"
+          - generic [ref=e260]:
+            - paragraph [ref=e261]: © 2026 IMSTEV NATURALS. All rights reserved.
+            - generic [ref=e262]:
+              - link "Privacy Policy" [ref=e263] [cursor=pointer]:
+                - /url: /shop
+              - link "Terms of Service" [ref=e264] [cursor=pointer]:
+                - /url: /shop
+              - link "Refund Policy" [ref=e265] [cursor=pointer]:
+                - /url: /shop
+  - status [ref=e266]

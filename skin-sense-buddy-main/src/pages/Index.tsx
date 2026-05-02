@@ -1,17 +1,23 @@
 import { Button } from "@/components/ui/button";
-import { Camera, Sparkles, TrendingUp, Shield, Users, Star, ChevronRight, Heart, Zap, CheckCircle2, ArrowRight, Video, ShoppingBag, Calendar, Scissors, Leaf, MapPin, Clock, Phone } from "lucide-react";
+import { Camera, Sparkles, TrendingUp, Shield, Users, ThumbsUp, ChevronRight, Heart, Zap, CheckCircle2, ArrowRight, ShoppingBag, Calendar, Scissors, Leaf, Clock, Phone, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { BeautyShowcaseCarousel } from "@/components/layout/BeautyShowcaseCarousel";
+import { fallbackCatalog } from "@/lib/fallbackCatalog";
+import { BRAND_IMAGES } from "@/lib/brandImages";
 
 const Index = () => {
   const navigate = useNavigate();
+  const featuredProducts = fallbackCatalog.filter((product) => product.product_type === "hair").slice(0, 8);
+  const showcaseProducts = featuredProducts.slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background page-reveal">
       <Navbar />
+      <BeautyShowcaseCarousel />
       
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden section-reveal">
         <div className="absolute inset-0 gradient-mesh" />
         <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl animate-pulse-soft" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse-soft animate-delay-300" />
@@ -29,7 +35,7 @@ const Index = () => {
                   </span>
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-[1.1] tracking-tight animate-fade-in-up">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-[1.05] tracking-tight animate-fade-in-up">
                   Your Hair & Skin's
                   <span className="block text-gradient-premium mt-2">
                     Personal AI Expert
@@ -38,7 +44,7 @@ const Index = () => {
 
                 <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed animate-fade-in-up animate-delay-100">
                   Get instant, accurate hair and skin analysis powered by medical-grade AI. 
-                  <span className="font-semibold text-slate-800 dark:text-white"> Specialized expertise for 4A-4C hair types</span> with personalized treatment plans.
+                  <span className="font-semibold text-slate-800 dark:text-white"> Specialized expertise for all hair types and textures</span> with personalized treatment plans.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up animate-delay-200">
@@ -48,13 +54,13 @@ const Index = () => {
                     onClick={() => navigate('/scan')}
                   >
                     <Camera className="mr-2 h-5 w-5" />
-                    Start Free Scan
+                    Start Scan
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                   <Button 
                     size="lg" 
                     variant="outline"
-                    className="border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-base sm:text-lg px-8 py-6 h-auto rounded-xl"
+                    className="border-2 border-slate-200 dark:border-slate-700 hover:border-[#D97706] hover:bg-[#D97706] hover:text-white dark:hover:border-[#D97706] dark:hover:bg-[#D97706] text-base sm:text-lg px-8 py-6 h-auto rounded-xl"
                     onClick={() => navigate('/auth')}
                   >
                     Sign In
@@ -74,17 +80,17 @@ const Index = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     {[1,2,3,4,5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <ThumbsUp key={i} className="w-4 h-4 text-amber-400" />
                     ))}
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400 ml-1">4.9/5</span>
                   </div>
                 </div>
               </div>
 
-              <div className="relative animate-fade-in animate-delay-200 mt-8 lg:mt-0">
+              <div className="relative animate-fade-in animate-delay-200 mt-8 lg:mt-0 subtle-float">
                 <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-[1.5rem] sm:rounded-[2rem] rotate-3 opacity-20 blur-2xl scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-400/30 to-emerald-400/30 rounded-[1.5rem] sm:rounded-[2rem] -rotate-2 scale-102" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-sky-300/40 via-teal-400/30 to-emerald-500/25 rounded-[1.5rem] sm:rounded-[2rem] rotate-3 opacity-70 blur-2xl scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-sky-200/35 via-sky-300/20 to-emerald-300/20 rounded-[1.5rem] sm:rounded-[2rem] -rotate-2 scale-102" />
                   
                   <div className="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-teal-500/30 border-2 sm:border-4 border-white/20 backdrop-blur-sm">
                     <img 
@@ -99,10 +105,11 @@ const Index = () => {
                       className="absolute top-[20%] left-[20%] sm:left-[25%] w-20 h-20 sm:w-28 sm:h-28 rounded-full animate-float"
                       style={{ animation: 'float 4s ease-in-out infinite' }}
                     >
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-md border-2 border-white/50 shadow-2xl shadow-black/20" />
+                      <div className="absolute -inset-3 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(125,211,252,0.38),rgba(56,189,248,0.2)_40%,rgba(14,116,144,0)_75%)] blur-xl" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-100/45 via-sky-200/25 to-white/10 backdrop-blur-md border-2 border-sky-100/55 shadow-2xl shadow-sky-900/20" />
                       <div className="absolute inset-1 rounded-full border border-white/30" />
                       <div className="absolute inset-2 rounded-full border border-white/20" />
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-teal-500/20 to-emerald-500/20" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-400/30 via-teal-400/20 to-emerald-500/15" />
                       <div className="absolute top-2 left-3 w-4 h-4 rounded-full bg-white/60 blur-sm" />
                       <div className="absolute top-4 left-5 w-2 h-2 rounded-full bg-white/80" />
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -111,16 +118,17 @@ const Index = () => {
                           <div className="text-[6px] sm:text-[8px] text-white/80 drop-shadow">Detected</div>
                         </div>
                       </div>
-                      <div className="absolute -inset-1 rounded-full border border-teal-400/50 animate-pulse" />
+                      <div className="absolute -inset-1 rounded-full border border-sky-300/60 animate-pulse" />
                     </div>
                     
                     <div 
                       className="absolute bottom-[30%] right-[10%] sm:right-[15%] w-16 h-16 sm:w-24 sm:h-24 rounded-full"
                       style={{ animation: 'float 5s ease-in-out infinite 1s' }}
                     >
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/35 to-white/10 backdrop-blur-md border-2 border-white/40 shadow-xl" />
+                      <div className="absolute -inset-2 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(186,230,253,0.34),rgba(125,211,252,0.2)_45%,rgba(14,116,144,0)_80%)] blur-lg" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-100/40 via-sky-200/20 to-white/10 backdrop-blur-md border-2 border-sky-100/45 shadow-xl shadow-sky-900/15" />
                       <div className="absolute inset-1 rounded-full border border-white/25" />
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-300/25 via-amber-400/20 to-orange-500/15" />
                       <div className="absolute top-1.5 left-2.5 w-3 h-3 rounded-full bg-white/50 blur-sm" />
                       <div className="absolute top-3 left-4 w-1.5 h-1.5 rounded-full bg-white/70" />
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -169,7 +177,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="section-padding bg-gradient-to-b from-purple-50 to-white dark:from-purple-950/20 dark:to-slate-900 relative overflow-hidden">
+      <section className="section-padding bg-gradient-to-b from-purple-50 to-white dark:from-purple-950/20 dark:to-slate-900 relative overflow-hidden section-reveal">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-amber-300/20 rounded-full blur-3xl" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -186,64 +194,75 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:items-stretch max-w-6xl mx-auto">
             <div className="relative order-2 lg:order-1">
               <div className="absolute -inset-4 bg-gradient-to-br from-purple-500/20 to-amber-500/20 rounded-[2.5rem] blur-2xl" />
-              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-purple-500/20 border-4 border-white/50 dark:border-purple-900/30">
-                <img 
-                  src="/imstev-products.jpg" 
-                  alt="IMSTEV NATURALS Organic Products" 
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/60 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center shadow-lg">
-                        <Leaf className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold">Complete Hair Care Range</p>
-                        <p className="text-sm text-slate-500">Shampoo, Conditioner, Oils & More</p>
-                      </div>
-                      <Button 
-                        onClick={() => navigate('/shop')}
-                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg"
-                      >
-                        Shop Now
-                      </Button>
+              <div className="relative grid h-full gap-4 rounded-[2rem] border-4 border-white/50 bg-white/70 p-4 shadow-2xl shadow-purple-500/20 backdrop-blur dark:border-purple-900/30 dark:bg-slate-900/60">
+                <div className="group relative overflow-hidden rounded-[1.6rem]">
+                  <img
+                    src={BRAND_IMAGES.skinPortrait}
+                    alt="Premium skin beauty portrait"
+                    className="h-[22rem] w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />
+                  <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur">
+                    Skin confidence
+                  </div>
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <div className="max-w-md rounded-[1.35rem] border border-white/20 bg-slate-950/35 px-5 py-4 shadow-xl backdrop-blur-md">
+                      <p className="font-display text-xl font-black leading-tight text-white drop-shadow-[0_4px_18px_rgba(15,23,42,0.85)] sm:text-2xl">
+                        Beauty that feels clinical and aspirational
+                      </p>
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-purple-900 to-amber-700">
+                    <img
+                      src="/4c_twist_updo_hairstyle.png"
+                      alt="Beautiful black natural hairstyle"
+                      className="h-52 w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-[1.4rem] bg-white shadow-lg">
+                    <img
+                      src={BRAND_IMAGES.productCollection}
+                      alt="IMSTEV NATURALS product collection"
+                      className="h-52 w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="order-1 lg:order-2 space-y-6">
-              <div className="grid gap-4">
-                {[
-                  { name: "Deep Cleanse Shampoo", desc: "African Black Soap with Tea Tree Oil", price: "₦4,500" },
-                  { name: "Deep Conditioner", desc: "Protein & Moisture Rich Formula", price: "₦5,200" },
-                  { name: "Scalp & Hair Growth Oil", desc: "Argan, Jojoba & Castor Oil Infused", price: "₦3,800" },
-                  { name: "Leave-In Conditioner", desc: "Clove Oil & Goat Milk Extract", price: "₦4,000" },
-                  { name: "Hair Softening Butter", desc: "For Strong & Healthy Roots", price: "₦3,500" },
-                  { name: "Organic Coconut Oil", desc: "Pure Cold-Pressed Formula", price: "₦2,800" }
-                ].map((product, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-purple-100 dark:border-purple-900/30">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                      {i + 1}
+            <div className="order-1 lg:order-2 flex h-full flex-col gap-6">
+              <div className="grid flex-1 auto-rows-fr gap-4">
+                {showcaseProducts.map((product, i) => (
+                  <div key={product.id} className="flex h-full items-center gap-4 rounded-xl border border-purple-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-purple-900/30 dark:bg-slate-800">
+                    <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-purple-100 to-amber-100 shadow-inner">
+                      <img
+                        src={product.image_url || BRAND_IMAGES.productCollection}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-foreground">{product.name}</h4>
-                      <p className="text-sm text-muted-foreground">{product.desc}</p>
+                      <p className="text-sm text-muted-foreground">{product.description}</p>
                     </div>
-                    <span className="font-bold text-purple-600 dark:text-purple-400">{product.price}</span>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400">0{i + 1}</p>
+                    </div>
                   </div>
                 ))}
               </div>
               <Button 
                 size="lg"
                 onClick={() => navigate('/shop')}
-                className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white shadow-xl shadow-purple-500/25 h-14 text-lg font-semibold rounded-xl"
+                className="mt-auto h-14 w-full rounded-xl bg-gradient-to-r from-purple-600 to-amber-600 text-lg font-semibold text-white shadow-xl shadow-purple-500/25 hover:from-purple-700 hover:to-amber-700"
               >
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 View All Products
@@ -253,7 +272,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="section-padding bg-slate-50 dark:bg-slate-900/50">
+      <section className="section-padding bg-slate-50 dark:bg-slate-900/50 section-reveal">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <span className="badge-premium mb-4">Our Services</span>
@@ -267,7 +286,7 @@ const Index = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
             <FeatureCard
-              icon={<Camera className="w-6 h-6" />}
+              icon={<Scissors className="w-6 h-6" />}
               title="AI Hair Analysis"
               description="Advanced AI technology to analyze your hair type, porosity, and health. Get personalized recommendations for 4A-4C hair types."
               gradient="from-purple-500 to-violet-500"
@@ -297,7 +316,7 @@ const Index = () => {
               gradient="from-teal-500 to-cyan-500"
             />
             <FeatureCard
-              icon={<Heart className="w-6 h-6" />}
+              icon={<FlaskConical className="w-6 h-6" />}
               title="Custom Treatments"
               description="Get personalized treatment formulas and regimens based on your AI analysis results and specific hair concerns."
               gradient="from-pink-500 to-rose-500"
@@ -306,7 +325,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="section-padding bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 text-white relative overflow-hidden">
+      <section className="section-padding bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 text-white relative overflow-hidden section-reveal">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-12 sm:mb-16">
@@ -325,8 +344,8 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {[
-                { img: "/gallery-1.jpg", title: "Protective Styling", tag: "4C Twist Updo" },
-                { img: "/gallery-2.jpg", title: "Kids Natural", tag: "Beaded Twists" },
+                { img: "4c_twist_updo_hairstyle.png", title: "Protective Styling", tag: "4C Twist Updo" },
+                { img: "kids_beaded_twist_hairstyle.png", title: "Kids Natural", tag: "Beaded Twists" },
                 { img: "/gallery-3.jpg", title: "Cornrow Art", tag: "Flat Twist Style" },
                 { img: "/gallery-4.jpg", title: "Loc Maintenance", tag: "Professional Locs" }
               ].map((item, i) => (
@@ -346,7 +365,7 @@ const Index = () => {
                     <p className="text-white font-semibold text-sm sm:text-base drop-shadow-lg">{item.title}</p>
                   </div>
                   <div className="absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center z-30 shadow-lg">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-white fill-white" />
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                   </div>
                 </div>
               ))}
@@ -403,7 +422,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="section-padding">
+      <section className="section-padding section-reveal">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -428,7 +447,7 @@ const Index = () => {
                       <p className="text-sm text-muted-foreground">Compliant</p>
                     </div>
                     <div className="card-premium p-6 animate-fade-in-up animate-delay-300">
-                      <Star className="w-10 h-10 text-amber-400 mb-4" />
+                      <ThumbsUp className="w-10 h-10 text-amber-400 mb-4" />
                       <h4 className="font-semibold text-2xl">4.9/5</h4>
                       <p className="text-sm text-muted-foreground">User Rating</p>
                     </div>
@@ -465,7 +484,7 @@ const Index = () => {
                   onClick={() => navigate('/scan')}
                   className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white shadow-lg mt-4"
                 >
-                  Try It Free
+                  Try Scan
                   <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
@@ -474,7 +493,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="section-padding bg-gradient-to-br from-purple-600 via-purple-700 to-amber-600 text-white relative overflow-hidden">
+      <section className="section-padding bg-gradient-to-br from-purple-600 via-purple-700 to-amber-600 text-white relative overflow-hidden section-reveal">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="max-w-3xl mx-auto text-center space-y-8">
@@ -491,15 +510,15 @@ const Index = () => {
                 className="bg-white text-purple-700 hover:bg-white/90 shadow-xl shadow-black/10 text-lg px-8 py-6 h-auto rounded-xl font-semibold"
               >
                 <Camera className="mr-2 h-5 w-5" />
-                Get Your Free Analysis
+                Get Your Analysis
               </Button>
               <Button 
                 size="lg"
                 variant="outline"
                 onClick={() => navigate('/telehealth')}
-                className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur text-lg px-8 py-6 h-auto rounded-xl"
+                className="bg-black/10 border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur text-lg px-8 py-6 h-auto rounded-xl"
               >
-                <Calendar className="mr-2 h-5 w-5" />
+                <Calendar className="mr-2 h-5 w-5 bg" />
                 Book Salon Appointment
               </Button>
             </div>
@@ -513,7 +532,7 @@ const Index = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-purple-100 dark:ring-purple-900/30">
-                  <img src="/imstev-logo.png" alt="IMSTEV NATURALS" className="w-full h-full object-cover" />
+                  <img src="/imstev-logo.jpeg" alt="IMSTEV NATURALS" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="font-display font-bold text-lg bg-gradient-to-r from-purple-700 to-amber-700 bg-clip-text text-transparent">IMSTEV NATURALS</span>
@@ -553,7 +572,7 @@ const FeatureCard = ({
   gradient: string;
 }) => (
   <div className="group card-interactive p-6 sm:p-8">
-    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+    <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white mb-5 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
       {icon}
     </div>
     <h3 className="text-xl font-display font-semibold text-foreground mb-3">{title}</h3>

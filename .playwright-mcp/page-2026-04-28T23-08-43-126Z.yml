@@ -1,0 +1,266 @@
+- generic [ref=e1]:
+  - dialog [ref=e2]:
+    - button "Close" [ref=e3] [cursor=pointer]:
+      - img [ref=e4]
+    - paragraph [ref=e6]:
+      - text: Unsplash uses cookies and similar technologies to secure our site, provide useful features to free and paying users, and to ensure optimal performance. By clicking "Accept all cookies" or closing this prompt, you consent to the use of all cookies. By clicking "Accept essential only", you consent only to the use of cookies that are strictly necessary for the site to function. See our
+      - link "Cookie Policy" [ref=e7] [cursor=pointer]:
+        - /url: /cookies
+      - text: for more info.
+    - link "Manage cookies" [ref=e9] [cursor=pointer]:
+      - /url: /cookies#manage-consent
+    - generic [ref=e10]:
+      - button "Accept essential only" [ref=e11] [cursor=pointer]
+      - button "Accept all cookies" [active] [ref=e12] [cursor=pointer]
+  - generic [ref=e16]:
+    - navigation [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - link "Unsplash Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "Unsplash Home" [ref=e21]
+          - link "Photos" [ref=e23] [cursor=pointer]:
+            - /url: /
+            - img [ref=e24]
+          - link "Illustrations" [ref=e26] [cursor=pointer]:
+            - /url: /illustrations
+            - img [ref=e27]
+        - generic [ref=e29]:
+          - button "Explore" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+          - button "Collections" [ref=e33] [cursor=pointer]:
+            - img [ref=e34]
+          - button "Download History" [ref=e36] [cursor=pointer]:
+            - img [ref=e37]
+        - button "Bookmarks" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+      - generic [ref=e43]:
+        - link "Log in / Sign up" [ref=e44] [cursor=pointer]:
+          - /url: /login?referrer=%2Fphotos%2Fa-young-black-woman-with-dark-skin-and-short-hair-I0FCLHZYd54
+          - img [ref=e45]
+        - button "Language" [ref=e47] [cursor=pointer]:
+          - img [ref=e48]
+        - button "Menu" [ref=e50] [cursor=pointer]:
+          - img [ref=e51]
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - navigation [ref=e55]:
+          - search "Find visuals sitewide" [ref=e57]:
+            - button "Search Unsplash" [ref=e58] [cursor=pointer]:
+              - img [ref=e59]
+            - combobox [ref=e61]:
+              - searchbox "Search Unsplash" [ref=e62]
+              - listbox
+            - button "Visual search" [ref=e64] [cursor=pointer]:
+              - img [ref=e65]
+          - generic [ref=e67]:
+            - link "Get Unsplash+" [ref=e68] [cursor=pointer]:
+              - /url: /plus
+            - link "Log in" [ref=e69] [cursor=pointer]:
+              - /url: /login?referrer=%2Fphotos%2Fa-young-black-woman-with-dark-skin-and-short-hair-I0FCLHZYd54
+          - button "Submit an image" [ref=e71] [cursor=pointer]
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - banner [ref=e75]:
+              - generic [ref=e77]:
+                - link [ref=e78] [cursor=pointer]:
+                  - /url: /@justbeingblythe
+                - generic [ref=e81]:
+                  - link "Eze Joseph" [ref=e82] [cursor=pointer]:
+                    - /url: /@justbeingblythe
+                  - link "Available for hire" [ref=e84] [cursor=pointer]:
+                    - /url: /@justbeingblythe
+                    - text: Available for hire
+                    - img [ref=e85]
+              - generic [ref=e87]:
+                - button "Bookmark" [ref=e88] [cursor=pointer]:
+                  - img [ref=e89]
+                - button "Add to Collection" [ref=e91] [cursor=pointer]:
+                  - img [ref=e92]
+                - button "Edit image" [ref=e94] [cursor=pointer]:
+                  - text: Edit image
+                  - img [ref=e95]
+                - generic [ref=e98]:
+                  - link "Download free" [ref=e99] [cursor=pointer]:
+                    - /url: https://unsplash.com/photos/I0FCLHZYd54/download?force=true
+                  - button "Choose download size" [ref=e101] [cursor=pointer]:
+                    - img [ref=e102]
+            - button "Zoom in on this image" [ref=e107]:
+              - img "A young black woman with dark skin and short hair." [ref=e108]
+              - generic:
+                - generic:
+                  - img
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - generic [ref=e111]:
+                  - generic [ref=e112]:
+                    - heading "Views" [level=3] [ref=e113]
+                    - text: 25,301
+                  - generic [ref=e114]:
+                    - heading "Downloads" [level=3] [ref=e115]
+                    - text: "394"
+                - generic [ref=e116]:
+                  - button "Share this image" [ref=e117] [cursor=pointer]:
+                    - img [ref=e118]
+                    - generic [ref=e120]: Share
+                  - button "Stats about this image" [ref=e121] [cursor=pointer]:
+                    - img [ref=e122]
+                    - generic [ref=e124]: Info
+                  - button "More Actions" [ref=e125] [cursor=pointer]:
+                    - img [ref=e126]
+              - generic [ref=e129]:
+                - heading "A young black woman with dark skin and short hair." [level=1] [ref=e131]
+                - paragraph [ref=e135]: Download this free HD photo of portrait, face, beauty, and wellness by Eze Joseph (@justbeingblythe)
+                - generic [ref=e137]:
+                  - generic [ref=e138]:
+                    - img [ref=e139]
+                    - generic [ref=e142]:
+                      - text: Published on
+                      - time [ref=e143]: December 13, 2025
+                  - generic [ref=e144]:
+                    - img [ref=e145]
+                    - generic [ref=e147]:
+                      - text: Free to use under the
+                      - link "Unsplash License" [ref=e148] [cursor=pointer]:
+                        - /url: /license
+              - generic [ref=e150]:
+                - link "portrait" [ref=e151] [cursor=pointer]:
+                  - /url: /s/photos/portrait
+                - link "face" [ref=e152] [cursor=pointer]:
+                  - /url: /s/photos/face
+                - link "beauty" [ref=e153] [cursor=pointer]:
+                  - /url: /s/photos/beauty
+                - link "wellness" [ref=e154] [cursor=pointer]:
+                  - /url: /s/photos/wellness
+                - link "skincare" [ref=e155] [cursor=pointer]:
+                  - /url: /s/photos/skincare
+                - link "skin" [ref=e156] [cursor=pointer]:
+                  - /url: /s/photos/skin
+                - link "makeup" [ref=e157] [cursor=pointer]:
+                  - /url: /s/photos/makeup
+                - link "self care" [ref=e158] [cursor=pointer]:
+                  - /url: /s/photos/self-care
+                - link "cosmetics" [ref=e159] [cursor=pointer]:
+                  - /url: /s/photos/cosmetics
+                - link "natural beauty" [ref=e160] [cursor=pointer]:
+                  - /url: /s/photos/natural-beauty
+                - link "earring" [ref=e161] [cursor=pointer]:
+                  - /url: /s/photos/earring
+                - link "elegance" [ref=e162] [cursor=pointer]:
+                  - /url: /s/photos/elegance
+                - link "one person" [ref=e163] [cursor=pointer]:
+                  - /url: /s/photos/one-person
+                - link "studio shot" [ref=e164] [cursor=pointer]:
+                  - /url: /s/photos/studio-shot
+                - link "dark skin" [ref=e165] [cursor=pointer]:
+                  - /url: /s/photos/dark-skin
+                - link "sophistication" [ref=e166] [cursor=pointer]:
+                  - /url: /s/photos/sophistication
+          - generic [ref=e170]:
+            - heading "Related images" [level=4] [ref=e172]
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - figure [ref=e178]:
+                  - link "A young black woman with short hair gazes thoughtfully." [ref=e181]:
+                    - /url: /photos/a-young-black-woman-with-short-hair-gazes-thoughtfully-AmLDjIBAEG8
+                    - img "A young black woman with short hair gazes thoughtfully." [ref=e182]
+                - figure [ref=e183]:
+                  - link "Two young women with dark skin and pearl earrings." [ref=e186]:
+                    - /url: /photos/two-young-women-with-dark-skin-and-pearl-earrings-q0UnFB7jX18
+                    - img "Two young women with dark skin and pearl earrings." [ref=e187]
+                - figure [ref=e188]:
+                  - link "A young black woman with short hair looking up." [ref=e191]:
+                    - /url: /photos/a-young-black-woman-with-short-hair-looking-up-bL7PVHNWfc8
+                    - img "A young black woman with short hair looking up." [ref=e192]
+                - figure [ref=e193]:
+                  - link "Two young black women with pearl earrings" [ref=e196]:
+                    - /url: /photos/two-young-black-women-with-pearl-earrings-xet0F4udQlo
+                    - img "Two young black women with pearl earrings" [ref=e197]
+                - figure [ref=e198]:
+                  - link "Young woman smiles, holding her face with her hands." [ref=e201]:
+                    - /url: /photos/young-woman-smiles-holding-her-face-with-her-hands-9tIZUhPyLag
+                    - img "Young woman smiles, holding her face with her hands." [ref=e202]
+                - figure [ref=e203]:
+                  - link "a man with dark hair" [ref=e206]:
+                    - /url: /photos/a-man-with-dark-hair-ihmQo55PNG8
+                    - img "a man with dark hair" [ref=e207]
+                - figure [ref=e208]:
+                  - generic [ref=e210]:
+                    - link "Nice natural makeup. Appealing young African-American woman with nice natural makeup touching her face" [ref=e211]:
+                      - /url: /photos/nice-natural-makeup-appealing-young-african-american-woman-with-nice-natural-makeup-touching-her-face-X5S3-cqh2Bk
+                      - img "Nice natural makeup. Appealing young African-American woman with nice natural makeup touching her face" [ref=e212]
+                    - link [ref=e213] [cursor=pointer]:
+                      - /url: /plus?referrer=%2Fphotos%2Fnice-natural-makeup-appealing-young-african-american-woman-with-nice-natural-makeup-touching-her-face-X5S3-cqh2Bk
+                      - img [ref=e214]
+              - generic [ref=e216]:
+                - figure [ref=e217]:
+                  - link "A young black woman with short hair and pearl earrings." [ref=e220]:
+                    - /url: /photos/a-young-black-woman-with-short-hair-and-pearl-earrings-tXCh43qpcz8
+                    - img "A young black woman with short hair and pearl earrings." [ref=e221]
+                - figure [ref=e222]:
+                  - generic [ref=e224]:
+                    - link "Afro-American woman with glowing skin" [ref=e225]:
+                      - /url: /photos/afro-american-woman-with-glowing-skin-IJSjVH4meeM
+                      - img "Afro-American woman with glowing skin" [ref=e226]
+                    - link [ref=e227] [cursor=pointer]:
+                      - /url: /plus?referrer=%2Fphotos%2Fafro-american-woman-with-glowing-skin-IJSjVH4meeM
+                      - img [ref=e228]
+                - figure [ref=e230]:
+                  - generic [ref=e232]:
+                    - link "Portrait close up of beautiful african girl. Smiling young woman touch her clean face and looking at camera. Concept of face skin care. Isolated on beige background. Studio shoot" [ref=e233]:
+                      - /url: /photos/portrait-close-up-of-beautiful-african-girl-smiling-young-woman-touch-her-clean-face-and-looking-at-camera-concept-of-face-skin-care-isolated-on-beige-background-studio-shoot--DAKCUUWee8
+                      - img "Portrait close up of beautiful african girl. Smiling young woman touch her clean face and looking at camera. Concept of face skin care. Isolated on beige background. Studio shoot" [ref=e234]
+                    - link [ref=e235] [cursor=pointer]:
+                      - /url: /plus?referrer=%2Fphotos%2Fportrait-close-up-of-beautiful-african-girl-smiling-young-woman-touch-her-clean-face-and-looking-at-camera-concept-of-face-skin-care-isolated-on-beige-background-studio-shoot--DAKCUUWee8
+                      - img [ref=e236]
+                - figure [ref=e238]:
+                  - generic [ref=e240]:
+                    - link "a woman in a white tank top posing for a picture" [ref=e241]:
+                      - /url: /photos/a-woman-in-a-white-tank-top-posing-for-a-picture-9D2SmwV1pMc
+                      - img "a woman in a white tank top posing for a picture" [ref=e242]
+                    - link [ref=e243] [cursor=pointer]:
+                      - /url: /plus?referrer=%2Fphotos%2Fa-woman-in-a-white-tank-top-posing-for-a-picture-9D2SmwV1pMc
+                      - img [ref=e244]
+                - figure [ref=e246]:
+                  - link "a woman with a red manicure on her nails" [ref=e249]:
+                    - /url: /photos/a-woman-with-a-red-manicure-on-her-nails-F_JclIZa4D8
+                    - img "a woman with a red manicure on her nails" [ref=e250]
+                - figure [ref=e251]:
+                  - link "woman with black hair and brown eyes" [ref=e254]:
+                    - /url: /photos/woman-with-black-hair-and-brown-eyes-pkcD-JvP_Y8
+                    - img "woman with black hair and brown eyes" [ref=e255]
+              - generic [ref=e256]:
+                - figure [ref=e257]:
+                  - link "woman in black tank top" [ref=e260]:
+                    - /url: /photos/woman-in-black-tank-top-WCEMFqEIVek
+                    - img "woman in black tank top" [ref=e261]
+                - figure [ref=e262]:
+                  - link "woman in white tank top" [ref=e265]:
+                    - /url: /photos/woman-in-white-tank-top-FYxhALJcywI
+                    - img "woman in white tank top" [ref=e266]
+                - figure [ref=e267]:
+                  - link "woman with red lipstick and brown scarf" [ref=e270]:
+                    - /url: /photos/woman-with-red-lipstick-and-brown-scarf-X104l7V6Wk0
+                    - img "woman with red lipstick and brown scarf" [ref=e271]
+                - figure [ref=e272]:
+                  - link "a woman with her hands on her chest" [ref=e275]:
+                    - /url: /photos/a-woman-with-her-hands-on-her-chest-EkGkHleHQOU
+                    - img "a woman with her hands on her chest" [ref=e276]
+                - figure [ref=e277]:
+                  - link "A woman with eyes closed, bathed in light" [ref=e280]:
+                    - /url: /photos/a-woman-with-eyes-closed-bathed-in-light-0Rkv32PDGjI
+                    - img "A woman with eyes closed, bathed in light" [ref=e281]
+                - figure [ref=e282]:
+                  - generic [ref=e284]:
+                    - link "a close up of a person laying on a bed" [ref=e285]:
+                      - /url: /photos/a-close-up-of-a-person-laying-on-a-bed-0xekrj9O4dU
+                      - img "a close up of a person laying on a bed" [ref=e286]
+                    - link [ref=e287] [cursor=pointer]:
+                      - /url: /plus?referrer=%2Fphotos%2Fa-close-up-of-a-person-laying-on-a-bed-0xekrj9O4dU
+                      - img [ref=e288]
+                - figure [ref=e290]:
+                  - link "woman in black and yellow bikini top" [ref=e293]:
+                    - /url: /photos/woman-in-black-and-yellow-bikini-top-jTkJUMVoauE
+                    - img "woman in black and yellow bikini top" [ref=e294]
+      - generic:
+        - region "Notifications"

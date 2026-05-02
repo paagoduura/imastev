@@ -3,10 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Ruler, CheckCircle2, AlertCircle, Hand } from "lucide-react";
-import { detectCircles, REFERENCE_OBJECTS, calculatePixelsPerMM, drawCalibrationOverlay } from "@/lib/scaleCalibration";
+import { Ruler, CheckCircle2, AlertCircle } from "lucide-react";
+import { detectCircles, REFERENCE_OBJECTS, calculatePixelsPerMM, drawCalibrationOverlay, type CircleDetection } from "@/lib/scaleCalibration";
 
 interface Props {
   imageDataUrl: string;
@@ -16,7 +14,7 @@ interface Props {
 export const ScaleCalibrationTool = ({ imageDataUrl, onCalibrationComplete }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedReference, setSelectedReference] = useState<string>('us_quarter');
-  const [detectedCircles, setDetectedCircles] = useState<any[]>([]);
+  const [detectedCircles, setDetectedCircles] = useState<CircleDetection[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<number>(-1);
   const [isDetecting, setIsDetecting] = useState(false);
   const [pixelsPerMM, setPixelsPerMM] = useState<number | null>(null);

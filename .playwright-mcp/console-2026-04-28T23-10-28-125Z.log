@@ -1,0 +1,27 @@
+[     707ms] [LOG] %cmetric: color:gray {name: LCP, entries: Array(1), value: 1080, rating: good, delta: 1080} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[     707ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[     708ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[     717ms] [LOG] %cmetric: color:gray {name: CLS, entries: Array(1), value: 0.0018196834928027375, rating: good, delta: 0.0018196834928027375} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[     718ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[     719ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[    1159ms] [LOG] %cmetric: color:gray {name: TTFB, entries: Array(1), value: 613.9000000059605, rating: good, delta: 613.9000000059605} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[    1159ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[    1160ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865156ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://unsplash.com/.within.website?redir=%2Fnapi%2Fphotos%2Ftwo-viscous-liquids-overlap-on-a-neutral-background-GeG4U-lAF10:0
+[41865170ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://unsplash.com/.within.website?redir=%2Fnapi%2Fphotos%2Ftwo-viscous-liquids-overlap-on-a-neutral-background-GeG4U-lAF10%2Frelated%3Fpage%3D1%26per_page%3D20:0
+[41865636ms] [LOG] %cmetric: color:gray {name: LCP, entries: Array(1), value: 1300, rating: good, delta: 1300} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865637ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865640ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865652ms] [LOG] %cmetric: color:gray {name: CLS, entries: Array(1), value: 0.0018196834928027375, rating: good, delta: 0.0018196834928027375} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865652ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865653ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41865667ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://unsplash.com/.within.website?redir=%2Fphotos%2Ftwo-viscous-liquids-overlap-on-a-neutral-background-GeG4U-lAF10:0
+[41874167ms] [LOG] %cmetric: color:gray {name: TTFB, entries: Array(1), value: 5376, rating: poor, delta: 5376} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41874167ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[41874168ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[42729022ms] [LOG] %cmetric: color:gray {name: LCP, entries: Array(1), value: 7820, rating: poor, delta: 7820} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[42729023ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[42729023ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[42729027ms] [LOG] %cmetric: color:gray {name: CLS, entries: Array(1), value: 0.0018196834928027375, rating: good, delta: 0.0018196834928027375} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[42729028ms] [LOG] %cusr: color:gray {locale: en-US} @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13
+[42729028ms] [LOG] %croute_data: color:gray Asset @ https://unsplash.com/a/en-US/4142.c4dd6a20.js:13

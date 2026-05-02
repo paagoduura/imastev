@@ -99,11 +99,11 @@ export function AnalysisTypeSelector({ value, onChange }: AnalysisTypeSelectorPr
               <div>
                 <h3 className="text-xl sm:text-2xl font-display font-semibold mb-2">Hair Analysis</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Analyze hair texture, porosity, scalp health, and get personalized hair care for Nigerian hair
+                  Analyze hair texture, curl pattern, porosity, scalp health, and get personalized care recommendations for all hair types
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
-                {['4A-4C', 'Relaxed', 'Natural', 'Scalp Health'].map((tag) => (
+                {['Straight', 'Wavy', 'Curly', 'Coily', 'Scalp Health'].map((tag) => (
                   <span 
                     key={tag}
                     className="px-3 py-1.5 text-xs font-medium rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"

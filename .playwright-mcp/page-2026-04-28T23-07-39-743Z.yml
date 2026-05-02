@@ -1,0 +1,25 @@
+- main [ref=e2]:
+  - heading "Making sure you're not a bot!" [level=1] [ref=e3]
+  - generic [ref=e5]:
+    - img [ref=e6]
+    - paragraph [ref=e7]: Loading...
+    - paragraph [ref=e8]: Please wait a moment while we ensure the security of your connection.
+  - generic [ref=e10]:
+    - paragraph [ref=e11]:
+      - text: Protected by
+      - link "BotStopper" [ref=e12] [cursor=pointer]:
+        - /url: https://anubis.techaro.lol/docs/admin/botstopper
+      - text: From
+      - link "Techaro" [ref=e13] [cursor=pointer]:
+        - /url: https://techaro.lol
+      - text: . Made with ❤️ in 🇨🇦.
+    - paragraph [ref=e14]:
+      - text: Unsplash |
+      - link "Help Center" [ref=e15] [cursor=pointer]:
+        - /url: https://help.unsplash.com/
+      - text: "|"
+      - link "support@unsplash.com" [ref=e16] [cursor=pointer]:
+        - /url: mailto:support@unsplash.com
+      - text: "--"
+      - link "Imprint" [ref=e17] [cursor=pointer]:
+        - /url: /.within.website/x/cmd/anubis/api/imprint

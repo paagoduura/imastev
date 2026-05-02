@@ -1,12 +1,113 @@
 // GlowSense API Client - Compatible interface with Supabase
 // This provides a drop-in replacement that uses the local Express backend
 
-const API_BASE = '/api';
+import { buildApiUrl, buildFunctionUrl } from "@/lib/config";
+
+const SUPABASE_URL =
+  (import.meta.env.VITE_SUPABASE_URL as string) ||
+  (import.meta.env.SUPABASE_URL as string) ||
+  "";
+const SUPABASE_ANON_KEY =
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string) ||
+  (import.meta.env.SUPABASE_ANON_KEY as string) ||
+  "";
+
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // Refresh every 5 minutes of activity
+const toApiRoute = (table: string) => table.replace(/_/g, '-');
+
+type StoredUser = {
+  id: string;
+  email: string;
+  created_at?: string | null;
+};
+
+const USER_STORAGE_KEY = 'glowsense_user';
+const USER_EMAIL_STORAGE_KEY = 'user_email';
+const USER_NAME_STORAGE_KEY = 'user_name';
+
+const getDisplayNameFromEmail = (email: string) => {
+  const localPart = email.split('@')[0] || 'User';
+  const displayName = localPart
+    .replace(/[._-]+/g, ' ')
+    .trim();
+  return displayName || 'User';
+};
+
+const syncLegacyUserFields = (user: StoredUser | null) => {
+  if (user?.email) {
+    localStorage.setItem(USER_EMAIL_STORAGE_KEY, user.email);
+    if (!localStorage.getItem(USER_NAME_STORAGE_KEY)) {
+      localStorage.setItem(USER_NAME_STORAGE_KEY, getDisplayNameFromEmail(user.email));
+    }
+    return;
+  }
+
+  localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
+  localStorage.removeItem(USER_NAME_STORAGE_KEY);
+};
+
+const decodeJwtPayload = (token: string) => {
+  try {
+    const [, payload] = token.split('.');
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+    const decoded = JSON.parse(atob(padded));
+
+    if (!decoded?.id || !decoded?.email) {
+      return null;
+    }
+
+    return decoded as { id: string; email: string; exp?: number };
+  } catch {
+    return null;
+  }
+};
+
+const getStoredUserFromToken = (): StoredUser | null => {
+  const token = getToken();
+  if (!token) return null;
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+
+  if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) {
+    setToken(null);
+    return null;
+  }
+
+  return {
+    id: payload.id,
+    email: payload.email,
+    created_at: null,
+  };
+};
 
 // Token management
 const getToken = () => localStorage.getItem('glowsense_token');
+const getStoredUser = (): StoredUser | null => {
+  const rawUser = localStorage.getItem(USER_STORAGE_KEY);
+  if (!rawUser) return null;
+
+  try {
+    return JSON.parse(rawUser) as StoredUser;
+  } catch {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    return null;
+  }
+};
+
+const setStoredUser = (user: StoredUser | null) => {
+  if (user) {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(USER_STORAGE_KEY);
+  }
+  syncLegacyUserFields(user);
+};
+
 const setToken = (token: string | null) => {
   if (token) {
     localStorage.setItem('glowsense_token', token);
@@ -14,7 +115,15 @@ const setToken = (token: string | null) => {
   } else {
     localStorage.removeItem('glowsense_token');
     localStorage.removeItem('glowsense_last_activity');
+    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
+    localStorage.removeItem(USER_NAME_STORAGE_KEY);
   }
+};
+
+const logoutSession = () => {
+  setToken(null);
+  authListeners.forEach(cb => cb('SIGNED_OUT', null));
 };
 
 // Track last activity
@@ -42,7 +151,7 @@ const refreshTokenIfNeeded = async () => {
   
   // If session expired, clear and don't refresh
   if (isSessionExpired()) {
-    setToken(null);
+    logoutSession();
     window.location.href = '/auth';
     return;
   }
@@ -56,7 +165,7 @@ const refreshTokenIfNeeded = async () => {
     
     refreshPromise = (async () => {
       try {
-        const response = await fetch(`${API_BASE}/auth/refresh`, {
+        const response = await fetch(buildApiUrl('/auth/refresh'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -71,7 +180,7 @@ const refreshTokenIfNeeded = async () => {
           }
         } else if (response.status === 401 || response.status === 403) {
           // Token is invalid, clear and redirect
-          setToken(null);
+          logoutSession();
           window.location.href = '/auth';
         }
       } catch (error) {
@@ -100,15 +209,23 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     ...(options.headers as Record<string, string> || {}),
   };
 
+  if (SUPABASE_ANON_KEY) {
+    headers.apikey = SUPABASE_ANON_KEY;
+  }
+
   const token = getToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${url}`, {
+  const response = await fetch(buildApiUrl(url), {
     ...options,
     headers,
   });
+
+  if (response.status === 401 || response.status === 403) {
+    logoutSession();
+  }
 
   return response;
 };
@@ -185,7 +302,7 @@ class QueryBuilder {
   private async execute() {
     try {
       // Map table names to API routes (handle underscores to hyphens)
-      const apiRoute = this.table.replace(/_/g, '-');
+      const apiRoute = toApiRoute(this.table);
       const response = await fetchWithAuth(`/${apiRoute}`);
       
       if (!response.ok) {
@@ -259,7 +376,7 @@ class UpsertBuilder {
 
   async then(resolve: (value: any) => void, reject?: (reason?: any) => void) {
     try {
-      const response = await fetchWithAuth(`/${this.table}`, {
+      const response = await fetchWithAuth(`/${toApiRoute(this.table)}`, {
         method: 'POST',
         body: JSON.stringify(this.upsertData),
       });
@@ -300,7 +417,7 @@ class InsertBuilder {
 
   async then(resolve: (value: any) => void, reject?: (reason?: any) => void) {
     try {
-      const response = await fetchWithAuth(`/${this.table}`, {
+      const response = await fetchWithAuth(`/${toApiRoute(this.table)}`, {
         method: 'POST',
         body: JSON.stringify(this.insertData),
       });
@@ -348,7 +465,8 @@ class UpdateBuilder {
       const id = this.filters.find(f => f.column === 'id')?.value || 
                  this.filters.find(f => f.column === 'user_id')?.value;
       
-      const response = await fetchWithAuth(`/${this.table}${id ? `/${id}` : ''}`, {
+      const apiRoute = toApiRoute(this.table);
+      const response = await fetchWithAuth(`/${apiRoute}${id ? `/${id}` : ''}`, {
         method: 'PUT',
         body: JSON.stringify(this.updateData),
       });
@@ -375,64 +493,83 @@ const authListeners: AuthCallback[] = [];
 export const supabase = {
   auth: {
     getUser: async () => {
-      const token = getToken();
-      if (!token) {
-        return { data: { user: null }, error: null };
+      const tokenUser = getStoredUserFromToken();
+      const user = tokenUser || getStoredUser();
+      if (tokenUser && (!user || user.id !== tokenUser.id || user.email !== tokenUser.email)) {
+        setStoredUser(tokenUser);
       }
-
-      try {
-        const response = await fetchWithAuth('/auth/user');
-        if (!response.ok) {
-          return { data: { user: null }, error: null };
-        }
-        const data = await response.json();
-        return { data: { user: data.user }, error: null };
-      } catch (error) {
-        return { data: { user: null }, error: null };
-      }
+      return { data: { user: user || null }, error: null };
     },
 
     getSession: async () => {
       const token = getToken();
-      if (!token) {
+      const tokenUser = getStoredUserFromToken();
+      const user = tokenUser || getStoredUser();
+      if (tokenUser && (!user || user.id !== tokenUser.id || user.email !== tokenUser.email)) {
+        setStoredUser(tokenUser);
+      }
+      if (!token || !user) {
         return { data: { session: null }, error: null };
       }
-      
-      try {
-        const response = await fetchWithAuth('/auth/user');
-        if (!response.ok) {
-          return { data: { session: null }, error: null };
-        }
-        const data = await response.json();
-        return { 
-          data: { 
-            session: { 
-              user: data.user,
-              access_token: token
-            } 
-          }, 
-          error: null 
-        };
-      } catch (error) {
-        return { data: { session: null }, error: null };
-      }
+
+      return {
+        data: {
+          session: {
+            user,
+            access_token: token
+          }
+        },
+        error: null
+      };
     },
 
     signUp: async ({ email, password, options }: { email: string; password: string; options?: any }) => {
       try {
-        const response = await fetch(`${API_BASE}/auth/signup`, {
+        const response = await fetch(buildApiUrl('/auth/signup'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          return { data: { user: null, session: null }, error };
+          const body = await response.json().catch(() => ({}));
+          return { data: { user: null, session: null }, error: { message: body.error || body.message || "Sign up failed" } };
+        }
+
+        const data = await response.json();
+        if (data.token) {
+          setToken(data.token);
+        } else {
+          setToken(null);
+        }
+        setStoredUser(data.user ?? null);
+        
+        // Notify listeners
+        const session = data.token ? { user: data.user, access_token: data.token } : null;
+        authListeners.forEach(cb => cb(data.token ? 'SIGNED_IN' : 'SIGNED_OUT', session));
+
+        return { data: { user: data.user, session }, error: null };
+      } catch (error: any) {
+        return { data: { user: null, session: null }, error: { message: error.message } };
+      }
+    },
+
+    signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
+      try {
+        const response = await fetch(buildApiUrl('/auth/signin'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          return { data: { user: null, session: null }, error: { message: body.error || body.message || "Invalid email or password" } };
         }
 
         const data = await response.json();
         setToken(data.token);
+        setStoredUser(data.user ?? null);
         
         // Notify listeners
         const session = { user: data.user, access_token: data.token };
@@ -444,23 +581,23 @@ export const supabase = {
       }
     },
 
-    signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
+    signInWithGoogleIdToken: async ({ credential }: { credential: string }) => {
       try {
-        const response = await fetch(`${API_BASE}/auth/signin`, {
+        const response = await fetch(buildApiUrl('/auth/google'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ credential }),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          return { data: { user: null, session: null }, error };
+          const body = await response.json().catch(() => ({}));
+          return { data: { user: null, session: null }, error: { message: body.error || body.message || "Google sign-in failed" } };
         }
 
         const data = await response.json();
         setToken(data.token);
-        
-        // Notify listeners
+        setStoredUser(data.user ?? null);
+
         const session = { user: data.user, access_token: data.token };
         authListeners.forEach(cb => cb('SIGNED_IN', session));
 
@@ -471,9 +608,52 @@ export const supabase = {
     },
 
     signOut: async () => {
-      setToken(null);
-      authListeners.forEach(cb => cb('SIGNED_OUT', null));
+      logoutSession();
       return { error: null };
+    },
+
+    verifyEmail: async ({ token }: { token: string }) => {
+      try {
+        const response = await fetch(`${buildApiUrl('/auth/verify-email')}?token=${encodeURIComponent(token)}`);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          return { data: { user: null, session: null }, error: { message: data.error || data.message || 'Email verification failed' } };
+        }
+
+        if (data.token) {
+          setToken(data.token);
+        }
+        setStoredUser(data.user ?? null);
+
+        const session = data.token ? { user: data.user, access_token: data.token } : null;
+        if (session) {
+          authListeners.forEach(cb => cb('SIGNED_IN', session));
+        }
+
+        return { data: { user: data.user, session }, error: null };
+      } catch (error: any) {
+        return { data: { user: null, session: null }, error: { message: error.message } };
+      }
+    },
+
+    resendVerificationEmail: async ({ email }: { email: string }) => {
+      try {
+        const response = await fetch(buildApiUrl('/auth/resend-verification'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          return { data: null, error: { message: data.error || data.message || 'Unable to resend verification email' } };
+        }
+
+        return { data, error: null };
+      } catch (error: any) {
+        return { data: null, error: { message: error.message } };
+      }
     },
 
     onAuthStateChange: (callback: AuthCallback) => {
@@ -481,12 +661,9 @@ export const supabase = {
       
       // Check initial state
       const token = getToken();
-      if (token) {
-        supabase.auth.getUser().then(({ data }) => {
-          if (data.user) {
-            callback('INITIAL_SESSION', { user: data.user, access_token: token });
-          }
-        });
+      const user = getStoredUser() || getStoredUserFromToken();
+      if (token && user) {
+        callback('INITIAL_SESSION', { user, access_token: token });
       }
 
       return {
@@ -516,7 +693,7 @@ export const supabase = {
       eq: (column: string, value: any) => ({
         then: async (resolve: (value: any) => void) => {
           try {
-            await fetchWithAuth(`/${table}/${value}`, { method: 'DELETE' });
+            await fetchWithAuth(`/${toApiRoute(table)}/${value}`, { method: 'DELETE' });
             resolve({ error: null });
           } catch (error: any) {
             resolve({ error: { message: error.message } });
@@ -528,33 +705,39 @@ export const supabase = {
 
   storage: {
     from: (bucket: string) => ({
-      upload: async (path: string, file: File) => {
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('type', bucket.replace('-scans', ''));
-
-        const token = getToken();
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+      upload: async (path: string, file: File | Blob, options?: { contentType?: string; upsert?: boolean }) => {
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+          return { data: null, error: { message: 'Supabase storage is not configured' } };
         }
 
-        const response = await fetch(`${API_BASE}/scans`, {
+        const token = getToken();
+        if (!token) {
+          return { data: null, error: { message: 'Authentication required' } };
+        }
+
+        const uploadUrl = `${SUPABASE_URL.replace(/\/+$/, '')}/storage/v1/object/${bucket}/${path}`;
+        const response = await fetch(uploadUrl, {
           method: 'POST',
-          headers,
-          body: formData,
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${token}`,
+            'x-upsert': options?.upsert ? 'true' : 'false',
+            'Content-Type': options?.contentType || file.type || 'application/octet-stream',
+          },
+          body: file,
         });
 
         if (!response.ok) {
-          const error = await response.json();
+          const error = await response.json().catch(() => ({ message: 'Upload failed' }));
           return { data: null, error };
         }
 
         const data = await response.json();
-        return { data: { path: data.image_url }, error: null };
+        return { data: { path: data?.Key || path }, error: null };
       },
       getPublicUrl: (path: string) => {
-        return { data: { publicUrl: path } };
+        const base = SUPABASE_URL.replace(/\/+$/, '');
+        return { data: { publicUrl: `${base}/storage/v1/object/public/${bucket}/${path}` } };
       }
     })
   },
@@ -562,20 +745,22 @@ export const supabase = {
   functions: {
     invoke: async (functionName: string, options?: { body?: any }) => {
       const body = options?.body || {};
-      
-      // Map function names to API endpoints
-      const endpoints: Record<string, string> = {
-        'analyze-skin': '/analyze/skin',
-        'analyze-hair': '/analyze/hair',
-        'generate-formulation': '/formulations/generate',
-        'create-checkout': '/checkout',
-      };
-
-      const endpoint = endpoints[functionName] || `/${functionName}`;
 
       try {
-        const response = await fetchWithAuth(endpoint, {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        const token = getToken();
+        if (SUPABASE_ANON_KEY) {
+          headers.apikey = SUPABASE_ANON_KEY;
+        }
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const response = await fetch(buildFunctionUrl(functionName), {
           method: 'POST',
+          headers,
           body: JSON.stringify(body),
         });
 

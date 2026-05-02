@@ -1,0 +1,134 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - button "Back" [ref=e4] [cursor=pointer]:
+    - img
+    - text: Back
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e8]:
+        - button "IMSTEV NATURALS IMSTEV NATURALS" [ref=e9] [cursor=pointer]:
+          - img "IMSTEV NATURALS" [ref=e12]
+          - generic [ref=e15]: IMSTEV NATURALS
+        - button [ref=e16] [cursor=pointer]:
+          - img
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "IMSTEV NATURALS Shop" [level=1] [ref=e22]
+          - paragraph [ref=e23]: Premium organic hair care products made with love in Nigeria
+        - button "Cart" [ref=e24] [cursor=pointer]:
+          - img
+          - text: Cart
+      - tablist [ref=e26]:
+        - tab [selected] [ref=e27] [cursor=pointer]:
+          - img [ref=e28]
+        - tab [ref=e32] [cursor=pointer]:
+          - img [ref=e33]
+        - tab [ref=e38] [cursor=pointer]:
+          - img [ref=e39]
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - textbox "Search products..." [ref=e50]
+        - combobox [ref=e51] [cursor=pointer]:
+          - generic: All Categories
+          - img [ref=e52]
+    - contentinfo [ref=e128]:
+      - generic [ref=e130]:
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - img "IMSTEV NATURALS" [ref=e137]
+              - generic [ref=e138]:
+                - heading "IMSTEV NATURALS" [level=3] [ref=e139]
+                - paragraph [ref=e140]: Home of Nature's Beauty
+            - paragraph [ref=e141]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+            - generic [ref=e142]:
+              - link "Social link 1" [ref=e143] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e144]
+              - link "Social link 2" [ref=e146] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e147]
+              - link "Social link 3" [ref=e150] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e151]
+          - generic [ref=e153]:
+            - heading "Quick Links" [level=4] [ref=e154]:
+              - img [ref=e155]
+              - text: Quick Links
+            - list [ref=e157]:
+              - listitem [ref=e158]:
+                - link "Home" [ref=e159] [cursor=pointer]:
+                  - /url: /
+                  - text: Home
+              - listitem [ref=e161]:
+                - link "Community" [ref=e162] [cursor=pointer]:
+                  - /url: /community
+                  - text: Community
+              - listitem [ref=e164]:
+                - link "Salon" [ref=e165] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon
+              - listitem [ref=e167]:
+                - link "Shop" [ref=e168] [cursor=pointer]:
+                  - /url: /shop
+                  - text: Shop
+              - listitem [ref=e170]:
+                - link "AI Scan" [ref=e171] [cursor=pointer]:
+                  - /url: /scan
+                  - text: AI Scan
+          - generic [ref=e173]:
+            - heading "Our Services" [level=4] [ref=e174]:
+              - img [ref=e175]
+              - text: Our Services
+            - list [ref=e177]:
+              - listitem [ref=e178]:
+                - link "Hair Analysis" [ref=e179] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Hair Analysis
+              - listitem [ref=e181]:
+                - link "Skin Analysis" [ref=e182] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Skin Analysis
+              - listitem [ref=e184]:
+                - link "Salon Booking" [ref=e185] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon Booking
+              - listitem [ref=e187]:
+                - link "Custom Formulations" [ref=e188] [cursor=pointer]:
+                  - /url: /formulation
+                  - text: Custom Formulations
+          - generic [ref=e190]:
+            - heading "Contact Us" [level=4] [ref=e191]:
+              - img [ref=e192]
+              - text: Contact Us
+            - list [ref=e194]:
+              - listitem [ref=e195]:
+                - img [ref=e196]
+                - generic [ref=e199]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+              - listitem [ref=e200]:
+                - link "+234 903 350 5038" [ref=e201] [cursor=pointer]:
+                  - /url: tel:+2349033505038
+                  - img [ref=e202]
+                  - generic [ref=e204]: +234 903 350 5038
+              - listitem [ref=e205]:
+                - link "contact@imstevnaturals.com" [ref=e206] [cursor=pointer]:
+                  - /url: mailto:contact@imstevnaturals.com
+                  - img [ref=e207]
+                  - generic [ref=e210]: contact@imstevnaturals.com
+            - generic [ref=e211]:
+              - paragraph [ref=e212]: Salon Hours
+              - paragraph [ref=e213]: "Mon - Sat: 9AM - 7PM"
+              - paragraph [ref=e214]: "Sunday: By Appointment"
+        - generic [ref=e216]:
+          - paragraph [ref=e217]: © 2026 IMSTEV NATURALS. All rights reserved.
+          - generic [ref=e218]:
+            - link "Privacy Policy" [ref=e219] [cursor=pointer]:
+              - /url: /shop
+            - link "Terms of Service" [ref=e220] [cursor=pointer]:
+              - /url: /shop
+            - link "Refund Policy" [ref=e221] [cursor=pointer]:
+              - /url: /shop

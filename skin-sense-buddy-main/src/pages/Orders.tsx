@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -27,17 +27,15 @@ interface Order {
   }>;
 }
 
+const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong");
+
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -59,17 +57,21 @@ const Orders = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders(data as any || []);
-    } catch (error: any) {
+      setOrders((data as Order[] | null) || []);
+    } catch (error) {
       toast({
         title: "Error loading orders",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

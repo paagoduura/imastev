@@ -29,11 +29,10 @@
     "nodemailer": "^7.0.11",
     "openai": "^6.10.0",
     "pg": "^8.16.3",
-    "stripe": "^20.0.0",
-    "stripe-replit-sync": "^1.0.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "supabase": "^2.89.1",
     "tsx": "^4.21.0"
   }
 }

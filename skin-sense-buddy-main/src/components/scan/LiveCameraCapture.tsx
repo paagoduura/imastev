@@ -12,6 +12,7 @@ interface Props {
 export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture" }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +46,7 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
         });
       }
     } catch {
+      setPermissionState('unknown');
     }
 
     return true;
@@ -62,8 +64,8 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
     }
 
     try {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
 
       const constraints: MediaStreamConstraints = {
@@ -76,6 +78,7 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
       };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = mediaStream;
       setStream(mediaStream);
       setPermissionState('granted');
 
@@ -101,11 +104,11 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
           setTimeout(() => reject(new Error('Video load timeout')), 10000);
         });
       }
-    } catch (err: any) {
-      console.error('Camera error:', err?.name, err?.message, err);
-      
-      const errorName = err?.name || '';
-      const errorMessage = err?.message || '';
+    } catch (err) {
+      const cameraError = err instanceof Error ? err : new Error('Unknown camera error');
+      const errorName = 'name' in cameraError ? String((cameraError as Error & { name?: string }).name || '') : '';
+      const errorMessage = cameraError.message || '';
+      console.error('Camera error:', errorName, errorMessage, cameraError);
       
       if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
         setErrorType('permission');
@@ -141,17 +144,18 @@ export const LiveCameraCapture = ({ onCapture, onClose, captureLabel = "Capture"
     } finally {
       setIsLoading(false);
     }
-  }, [facingMode, stream, checkCameraSupport]);
+  }, [facingMode, checkCameraSupport]);
 
   useEffect(() => {
     startCamera();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       }
     };
-  }, [facingMode]);
+  }, [startCamera]);
 
   const handleCapture = () => {
     if (!videoRef.current || !canvasRef.current) return;

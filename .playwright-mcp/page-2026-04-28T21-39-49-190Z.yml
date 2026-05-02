@@ -1,0 +1,444 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list [ref=e4]:
+        - status [ref=e5]:
+          - generic [ref=e6]:
+            - generic [ref=e7]: Showing curated catalog
+            - generic [ref=e8]: Live product sync is temporarily unavailable, so the shop is using the full in-app catalog.
+          - button [ref=e9] [cursor=pointer]:
+            - img [ref=e10]
+    - region "Notifications alt+T"
+    - button "Back" [ref=e15] [cursor=pointer]:
+      - img
+      - text: Back
+    - generic [ref=e16]:
+      - navigation [ref=e17]:
+        - generic [ref=e19]:
+          - button "IMSTEV NATURALS IMSTEV NATURALS Home of Nature's Beauty" [ref=e20] [cursor=pointer]:
+            - img "IMSTEV NATURALS" [ref=e23]
+            - generic [ref=e25]:
+              - generic [ref=e26]: IMSTEV NATURALS
+              - generic [ref=e27]: Home of Nature's Beauty
+          - generic [ref=e28]:
+            - button "Dashboard" [ref=e29] [cursor=pointer]:
+              - img [ref=e30]
+              - generic [ref=e35]: Dashboard
+            - button "Scan" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e40]: Scan
+            - button "Timeline" [ref=e41] [cursor=pointer]:
+              - img [ref=e42]
+              - generic [ref=e45]: Timeline
+            - button "Community" [ref=e46] [cursor=pointer]:
+              - img [ref=e47]
+              - generic [ref=e52]: Community
+            - button "Salon" [ref=e53] [cursor=pointer]:
+              - img [ref=e54]
+              - generic [ref=e57]: Salon
+            - button "Shop" [ref=e58] [cursor=pointer]:
+              - img [ref=e59]
+              - generic [ref=e62]: Shop
+          - generic [ref=e63]:
+            - button "Sign In" [ref=e64] [cursor=pointer]
+            - button "Start Scan" [ref=e65] [cursor=pointer]:
+              - img
+              - text: Start Scan
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - generic [ref=e73]: Curated Storefront
+                - heading "IMSTEV NATURALS Shop" [level=1] [ref=e74]
+                - paragraph [ref=e75]: Premium hair and skin essentials, professionally arranged for faster discovery, clearer filtering, and a smoother shopping experience.
+              - button "Cart" [ref=e76] [cursor=pointer]:
+                - img
+                - text: Cart
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - img [ref=e80]
+                - paragraph [ref=e83]: Hair and skin range
+                - paragraph [ref=e84]: One storefront for cleansers, treatments, oils, and targeted care.
+              - generic [ref=e85]:
+                - img [ref=e87]
+                - paragraph [ref=e90]: Catalog protected
+                - paragraph [ref=e91]: Products remain visible even if live sync is briefly unavailable.
+              - generic [ref=e92]:
+                - img [ref=e94]
+                - paragraph [ref=e96]: Cleaner browsing
+                - paragraph [ref=e97]: Tighter filters, balanced cards, and faster scan-to-shop navigation.
+          - generic [ref=e98]:
+            - paragraph [ref=e99]: Catalog Status
+            - paragraph [ref=e100]: "14"
+            - paragraph [ref=e101]: products visible with current filters
+            - generic [ref=e102]: Live sync is temporarily unavailable. The shop is showing the full curated catalog so nothing disappears.
+        - generic [ref=e103]:
+          - tablist [ref=e105]:
+            - tab "All" [selected] [ref=e106] [cursor=pointer]:
+              - img [ref=e107]
+              - generic [ref=e111]: All
+            - tab "Skin Care" [ref=e112] [cursor=pointer]:
+              - img [ref=e113]
+              - generic [ref=e118]: Skin Care
+            - tab "Hair Care" [ref=e119] [cursor=pointer]:
+              - img [ref=e120]
+              - generic [ref=e126]: Hair Care
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - img [ref=e129]
+              - textbox "Search products..." [ref=e132]
+            - combobox [ref=e133] [cursor=pointer]:
+              - generic: All Categories
+              - img [ref=e134]
+      - generic [ref=e137]:
+        - generic [ref=e138]:
+          - generic [ref=e139]:
+            - generic [ref=e140]:
+              - img [ref=e142]
+              - paragraph [ref=e146]: IMSTEV NATURALS
+            - generic [ref=e148]: Skin
+          - generic [ref=e149]:
+            - generic [ref=e150]:
+              - heading "African Black Soap Cleanser" [level=3] [ref=e151]
+              - paragraph [ref=e152]: Traditional Nigerian black soap enriched with shea butter for gentle cleansing. Perfect for oily and acne-prone skin.
+            - generic [ref=e155]:
+              - generic [ref=e156]: N3,500
+              - generic [ref=e157]: Cleansers
+            - button "Add to Cart" [ref=e159] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - img [ref=e164]
+              - paragraph [ref=e168]: IMSTEV NATURALS
+            - generic [ref=e170]: Skin
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - heading "Turmeric Brightening Serum" [level=3] [ref=e173]
+              - paragraph [ref=e174]: Potent turmeric and vitamin C serum for hyperpigmentation and dark spots. Nigerian-formulated.
+            - generic [ref=e177]:
+              - generic [ref=e178]: N8,500
+              - generic [ref=e179]: Serums
+            - button "Add to Cart" [ref=e181] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e182]:
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - img [ref=e186]
+              - paragraph [ref=e190]: IMSTEV NATURALS
+            - generic [ref=e192]: Skin
+          - generic [ref=e193]:
+            - generic [ref=e194]:
+              - heading "Shea Butter Moisturizer" [level=3] [ref=e195]
+              - paragraph [ref=e196]: Rich moisturizer with pure Nigerian shea butter for dry and combination skin.
+            - generic [ref=e199]:
+              - generic [ref=e200]: N4,500
+              - generic [ref=e201]: Moisturizers
+            - button "Add to Cart" [ref=e203] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - img [ref=e208]
+              - paragraph [ref=e212]: IMSTEV NATURALS
+            - generic [ref=e214]: Skin
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - heading "Aloe Vera Soothing Gel" [level=3] [ref=e217]
+              - paragraph [ref=e218]: Pure aloe vera gel for calming irritated and sunburned skin.
+            - generic [ref=e221]:
+              - generic [ref=e222]: N2,500
+              - generic [ref=e223]: Treatments
+            - button "Add to Cart" [ref=e225] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - generic [ref=e228]:
+              - img [ref=e230]
+              - paragraph [ref=e234]: IMSTEV NATURALS
+            - generic [ref=e236]: Skin
+          - generic [ref=e237]:
+            - generic [ref=e238]:
+              - heading "Kojic Acid Dark Spot Corrector" [level=3] [ref=e239]
+              - paragraph [ref=e240]: Targeted treatment for stubborn dark spots and acne scars.
+            - generic [ref=e243]:
+              - generic [ref=e244]: N7,500
+              - generic [ref=e245]: Treatments
+            - button "Add to Cart" [ref=e247] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e248]:
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - img [ref=e252]
+              - paragraph [ref=e256]: IMSTEV NATURALS
+            - generic [ref=e258]: Skin
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - heading "Neem & Tea Tree Acne Treatment" [level=3] [ref=e261]
+              - paragraph [ref=e262]: Powerful anti-acne formula with neem and tea tree oil.
+            - generic [ref=e265]:
+              - generic [ref=e266]: N5,500
+              - generic [ref=e267]: Treatments
+            - button "Add to Cart" [ref=e269] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e270]:
+          - generic [ref=e271]:
+            - img "Deep Moisture Leave-In Conditioner" [ref=e272]
+            - generic [ref=e274]: Hair
+          - generic [ref=e275]:
+            - generic [ref=e276]:
+              - heading "Deep Moisture Leave-In Conditioner" [level=3] [ref=e277]
+              - paragraph [ref=e278]: Intensive moisture treatment for 4A-4C hair types. Perfect for dry, coily hair.
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - generic [ref=e282]: N5,500
+                - generic [ref=e283]: Conditioners
+              - generic [ref=e284]:
+                - generic [ref=e285]: 4A
+                - generic [ref=e286]: 4B
+                - generic [ref=e287]: 4C
+                - generic [ref=e288]: "+1"
+            - button "Add to Cart" [ref=e290] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e291]:
+          - generic [ref=e292]:
+            - img "Jamaican Black Castor Oil" [ref=e293]
+            - generic [ref=e295]: Hair
+          - generic [ref=e296]:
+            - generic [ref=e297]:
+              - heading "Jamaican Black Castor Oil" [level=3] [ref=e298]
+              - paragraph [ref=e299]: Traditional JBCO for hair growth, edges, and scalp health.
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - generic [ref=e303]: N6,500
+                - generic [ref=e304]: Oils
+              - generic [ref=e305]:
+                - generic [ref=e306]: 4A
+                - generic [ref=e307]: 4B
+                - generic [ref=e308]: 4C
+                - generic [ref=e309]: "+3"
+            - button "Add to Cart" [ref=e311] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e312]:
+          - generic [ref=e313]:
+            - img "Clarifying Shampoo" [ref=e314]
+            - generic [ref=e316]: Hair
+          - generic [ref=e317]:
+            - generic [ref=e318]:
+              - heading "Clarifying Shampoo" [level=3] [ref=e319]
+              - paragraph [ref=e320]: Sulfate-free clarifying shampoo to remove product buildup without stripping moisture.
+            - generic [ref=e322]:
+              - generic [ref=e323]:
+                - generic [ref=e324]: N4,000
+                - generic [ref=e325]: Shampoos
+              - generic [ref=e326]:
+                - generic [ref=e327]: 4A
+                - generic [ref=e328]: 4B
+                - generic [ref=e329]: 4C
+                - generic [ref=e330]: "+2"
+            - button "Add to Cart" [ref=e332] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e333]:
+          - generic [ref=e334]:
+            - img "Protein Treatment Mask" [ref=e335]
+            - generic [ref=e337]: Hair
+          - generic [ref=e338]:
+            - generic [ref=e339]:
+              - heading "Protein Treatment Mask" [level=3] [ref=e340]
+              - paragraph [ref=e341]: Strengthening protein mask for damaged and over-processed hair.
+            - generic [ref=e343]:
+              - generic [ref=e344]:
+                - generic [ref=e345]: N7,000
+                - generic [ref=e346]: Treatments
+              - generic [ref=e347]:
+                - generic [ref=e348]: 4A
+                - generic [ref=e349]: 4B
+                - generic [ref=e350]: 4C
+                - generic [ref=e351]: "+2"
+            - button "Add to Cart" [ref=e353] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e354]:
+          - generic [ref=e355]:
+            - img "Edge Control Gel" [ref=e356]
+            - generic [ref=e358]: Hair
+          - generic [ref=e359]:
+            - generic [ref=e360]:
+              - heading "Edge Control Gel" [level=3] [ref=e361]
+              - paragraph [ref=e362]: Non-flaking edge control for sleek styles without buildup.
+            - generic [ref=e364]:
+              - generic [ref=e365]:
+                - generic [ref=e366]: N2,500
+                - generic [ref=e367]: Styling
+              - generic [ref=e368]:
+                - generic [ref=e369]: 4A
+                - generic [ref=e370]: 4B
+                - generic [ref=e371]: 4C
+                - generic [ref=e372]: "+2"
+            - button "Add to Cart" [ref=e374] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e375]:
+          - generic [ref=e376]:
+            - img "Scalp Treatment Oil" [ref=e377]
+            - generic [ref=e379]: Hair
+          - generic [ref=e380]:
+            - generic [ref=e381]:
+              - heading "Scalp Treatment Oil" [level=3] [ref=e382]
+              - paragraph [ref=e383]: Anti-dandruff and scalp-soothing treatment oil with neem and tea tree.
+            - generic [ref=e385]:
+              - generic [ref=e386]:
+                - generic [ref=e387]: N5,000
+                - generic [ref=e388]: Treatments
+              - generic [ref=e389]:
+                - generic [ref=e390]: 4A
+                - generic [ref=e391]: 4B
+                - generic [ref=e392]: 4C
+                - generic [ref=e393]: "+3"
+            - button "Add to Cart" [ref=e395] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e396]:
+          - generic [ref=e397]:
+            - img "Curl Defining Cream" [ref=e398]
+            - generic [ref=e400]: Hair
+          - generic [ref=e401]:
+            - generic [ref=e402]:
+              - heading "Curl Defining Cream" [level=3] [ref=e403]
+              - paragraph [ref=e404]: Lightweight cream for defined, bouncy curls and coils.
+            - generic [ref=e406]:
+              - generic [ref=e407]:
+                - generic [ref=e408]: N4,500
+                - generic [ref=e409]: Styling
+              - generic [ref=e410]:
+                - generic [ref=e411]: 4A
+                - generic [ref=e412]: 4B
+                - generic [ref=e413]: 4C
+                - generic [ref=e414]: "+1"
+            - button "Add to Cart" [ref=e416] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+        - generic [ref=e417]:
+          - generic [ref=e418]:
+            - img "Transitioning Hair Treatment" [ref=e419]
+            - generic [ref=e421]: Hair
+          - generic [ref=e422]:
+            - generic [ref=e423]:
+              - heading "Transitioning Hair Treatment" [level=3] [ref=e424]
+              - paragraph [ref=e425]: Special treatment for hair transitioning from relaxed to natural.
+            - generic [ref=e427]:
+              - generic [ref=e428]:
+                - generic [ref=e429]: N6,000
+                - generic [ref=e430]: Treatments
+              - generic [ref=e432]: transitioning
+            - button "Add to Cart" [ref=e434] [cursor=pointer]:
+              - img
+              - text: Add to Cart
+      - contentinfo [ref=e435]:
+        - generic [ref=e437]:
+          - generic [ref=e439]:
+            - generic [ref=e440]:
+              - generic [ref=e441]:
+                - img "IMSTEV NATURALS" [ref=e444]
+                - generic [ref=e445]:
+                  - heading "IMSTEV NATURALS" [level=3] [ref=e446]
+                  - paragraph [ref=e447]: Home of Nature's Beauty
+              - paragraph [ref=e448]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+              - generic [ref=e449]:
+                - link "Social link 1" [ref=e450] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e451]
+                - link "Social link 2" [ref=e453] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e454]
+                - link "Social link 3" [ref=e457] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e458]
+            - generic [ref=e460]:
+              - heading "Quick Links" [level=4] [ref=e461]:
+                - img [ref=e462]
+                - text: Quick Links
+              - list [ref=e464]:
+                - listitem [ref=e465]:
+                  - link "Home" [ref=e466] [cursor=pointer]:
+                    - /url: /
+                    - text: Home
+                - listitem [ref=e468]:
+                  - link "Community" [ref=e469] [cursor=pointer]:
+                    - /url: /community
+                    - text: Community
+                - listitem [ref=e471]:
+                  - link "Salon" [ref=e472] [cursor=pointer]:
+                    - /url: /salon-booking
+                    - text: Salon
+                - listitem [ref=e474]:
+                  - link "Shop" [ref=e475] [cursor=pointer]:
+                    - /url: /shop
+                    - text: Shop
+                - listitem [ref=e477]:
+                  - link "AI Scan" [ref=e478] [cursor=pointer]:
+                    - /url: /scan
+                    - text: AI Scan
+            - generic [ref=e480]:
+              - heading "Our Services" [level=4] [ref=e481]:
+                - img [ref=e482]
+                - text: Our Services
+              - list [ref=e484]:
+                - listitem [ref=e485]:
+                  - link "Hair Analysis" [ref=e486] [cursor=pointer]:
+                    - /url: /scan
+                    - text: Hair Analysis
+                - listitem [ref=e488]:
+                  - link "Skin Analysis" [ref=e489] [cursor=pointer]:
+                    - /url: /scan
+                    - text: Skin Analysis
+                - listitem [ref=e491]:
+                  - link "Salon Booking" [ref=e492] [cursor=pointer]:
+                    - /url: /salon-booking
+                    - text: Salon Booking
+                - listitem [ref=e494]:
+                  - link "Custom Formulations" [ref=e495] [cursor=pointer]:
+                    - /url: /formulation
+                    - text: Custom Formulations
+            - generic [ref=e497]:
+              - heading "Contact Us" [level=4] [ref=e498]:
+                - img [ref=e499]
+                - text: Contact Us
+              - list [ref=e501]:
+                - listitem [ref=e502]:
+                  - img [ref=e503]
+                  - generic [ref=e506]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+                - listitem [ref=e507]:
+                  - link "+234 903 350 5038" [ref=e508] [cursor=pointer]:
+                    - /url: tel:+2349033505038
+                    - img [ref=e509]
+                    - generic [ref=e511]: +234 903 350 5038
+                - listitem [ref=e512]:
+                  - link "contact@imstevnaturals.com" [ref=e513] [cursor=pointer]:
+                    - /url: mailto:contact@imstevnaturals.com
+                    - img [ref=e514]
+                    - generic [ref=e517]: contact@imstevnaturals.com
+              - generic [ref=e518]:
+                - paragraph [ref=e519]: Salon Hours
+                - paragraph [ref=e520]: "Mon - Sat: 9AM - 7PM"
+                - paragraph [ref=e521]: "Sunday: By Appointment"
+          - generic [ref=e523]:
+            - paragraph [ref=e524]: © 2026 IMSTEV NATURALS. All rights reserved.
+            - generic [ref=e525]:
+              - link "Privacy Policy" [ref=e526] [cursor=pointer]:
+                - /url: /shop
+              - link "Terms of Service" [ref=e527] [cursor=pointer]:
+                - /url: /shop
+              - link "Refund Policy" [ref=e528] [cursor=pointer]:
+                - /url: /shop
+  - status [ref=e529]

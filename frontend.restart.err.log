@@ -1,0 +1,58 @@
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[2m4:59:17 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/community/posts?community=hair[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m4:59:38 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/community/posts?community=hair[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m4:59:44 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/community/posts?community=hair[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:08:37 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/products[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m6:09:32 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/community/posts?community=hair[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:09:56 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/community/posts?community=hair[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:26:12 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/community/posts?community=hair[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:45:19 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/salon/services[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:45:19 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:46:38 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/products[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:46:38 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/cart[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:47:04 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/salon/services[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:47:04 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m6:47:47 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/signin[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)

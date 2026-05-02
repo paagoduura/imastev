@@ -1,37 +1,50 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Camera, History, User, LogOut, TrendingUp, Crown, Video, Users, Sparkles, Stethoscope, ShoppingBag, Package, Scan, ChevronRight, Calendar, ArrowUpRight } from "lucide-react";
+import { Camera, History, User, LogOut, Video, Users, Stethoscope, ShoppingBag, Package, Scan, ChevronRight, Calendar, ArrowUpRight, Loader2, Scissors, FlaskConical, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
+type DashboardProfile = {
+  full_name: string | null;
+  age: number | null;
+  skin_type: string | null;
+  fitzpatrick_scale: string | null;
+};
+
+type DashboardDiagnosis = {
+  primary_condition: string | null;
+  confidence_score: number | null;
+  triage_level: string | null;
+  analysis_type: string | null;
+};
+
+type DashboardScan = {
+  id: string;
+  created_at: string;
+  image_url: string | null;
+  scan_type: string | null;
+  status: string | null;
+  diagnoses: DashboardDiagnosis[] | null;
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [scans, setScans] = useState<any[]>([]);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<DashboardProfile | null>(null);
+  const [scans, setScans] = useState<DashboardScan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [subscription, setSubscription] = useState<any>(null);
   const [isClinician, setIsClinician] = useState(false);
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  useEffect(() => {
-    if (profile && (!profile.full_name || !profile.age || !profile.skin_type || !profile.fitzpatrick_scale)) {
-      navigate("/onboarding");
-    }
-  }, [profile, navigate]);
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       navigate('/auth');
       return;
@@ -45,7 +58,7 @@ const Dashboard = () => {
       .eq('user_id', user.id)
       .single();
 
-    setProfile(profileData);
+    setProfile((profileData as DashboardProfile | null) || null);
 
     const { data: roleData } = await supabase
       .from('user_roles')
@@ -53,20 +66,8 @@ const Dashboard = () => {
       .eq('user_id', user.id)
       .eq('role', 'clinician')
       .maybeSingle();
-    
-    setIsClinician(!!roleData);
 
-    const { data: subData } = await supabase
-      .from('subscriptions')
-      .select(`
-        *,
-        subscription_plans (*)
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .maybeSingle();
-    
-    setSubscription(subData);
+    setIsClinician(!!roleData);
 
     const { data: scansData } = await supabase
       .from('scans')
@@ -83,9 +84,19 @@ const Dashboard = () => {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    setScans(scansData || []);
+    setScans((scansData as DashboardScan[] | null) || []);
     setLoading(false);
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
+
+  useEffect(() => {
+    if (profile && (!profile.full_name || !profile.age || !profile.skin_type || !profile.fitzpatrick_scale)) {
+      navigate("/onboarding");
+    }
+  }, [profile, navigate]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -96,9 +107,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
+          <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" />
           <p className="text-muted-foreground font-medium">Loading your dashboard...</p>
         </div>
       </div>
@@ -106,12 +115,12 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background page-reveal">
       <Navbar />
-      
+
       <div className="gradient-mesh min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center section-reveal">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-amber-500 rounded-2xl blur-lg opacity-40" />
@@ -136,15 +145,13 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          <div className="mb-8">
+          {/* Start New Analysis */}
+          <div className="mb-8 section-reveal">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg sm:text-xl font-display font-semibold">Start New Analysis</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-              <div 
-                className="group card-interactive p-5 sm:p-6 cursor-pointer" 
-                onClick={() => navigate('/scan')}
-              >
+              <div className="group card-interactive p-5 sm:p-6 cursor-pointer" onClick={() => navigate('/scan')}>
                 <div className="flex items-start gap-4">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/25 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                     <Scan className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
@@ -160,13 +167,10 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div 
-                className="group card-interactive p-5 sm:p-6 cursor-pointer" 
-                onClick={() => navigate('/scan')}
-              >
+              <div className="group card-interactive p-5 sm:p-6 cursor-pointer" onClick={() => navigate('/scan')}>
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                    <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <Scissors className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -181,84 +185,87 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="mb-8">
+          {/* Quick Actions */}
+          <div className="mb-8 section-reveal">
             <h2 className="text-lg sm:text-xl font-display font-semibold mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <QuickActionCard 
+              <QuickActionCard
                 icon={<History className="h-5 w-5" />}
                 title="Timeline"
                 subtitle="View progress"
                 gradient="from-purple-500 to-violet-500"
                 onClick={() => navigate('/timeline')}
               />
-              <QuickActionCard 
-                icon={<Video className="h-5 w-5" />}
+              <QuickActionCard
+                icon={<Scissors className="h-5 w-5" />}
                 title="Salon"
                 subtitle="Book visit"
                 gradient="from-amber-500 to-orange-500"
                 onClick={() => navigate('/telehealth')}
               />
-              <QuickActionCard 
+              <QuickActionCard
+                icon={<UserCheck className="h-5 w-5" />}
+                title="Consultation"
+                subtitle="See a specialist"
+                gradient="from-teal-500 to-cyan-500"
+                onClick={() => navigate('/consultation')}
+              />
+              <QuickActionCard
                 icon={<ShoppingBag className="h-5 w-5" />}
                 title="Shop"
                 subtitle="Products"
                 gradient="from-pink-500 to-rose-500"
                 onClick={() => navigate('/shop')}
               />
-              <QuickActionCard 
-                icon={<User className="h-5 w-5" />}
-                title="Profile"
-                subtitle="Settings"
-                gradient="from-violet-500 to-purple-500"
-                onClick={() => navigate('/profile')}
-              />
             </div>
           </div>
 
-          <div className="mb-8">
+          {/* Premium Features */}
+          <div className="mb-8 section-reveal">
             <h2 className="text-lg sm:text-xl font-display font-semibold mb-4">Premium Features</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-              <PremiumCard 
-                icon={<Crown className="h-5 w-5" />}
-                title="Subscription"
-                value={subscription?.subscription_plans?.name || 'Free'}
-                gradient="from-amber-400 to-orange-500"
-                onClick={() => navigate('/subscription')}
-              />
-              <PremiumCard 
+              <PremiumCard
                 icon={<Users className="h-5 w-5" />}
                 title="Family"
                 value="Manage"
                 gradient="from-green-400 to-emerald-500"
                 onClick={() => navigate('/family')}
               />
-              <PremiumCard 
-                icon={<Sparkles className="h-5 w-5" />}
+              <PremiumCard
+                icon={<FlaskConical className="h-5 w-5" />}
                 title="Custom Formula"
                 value="AI-made"
                 gradient="from-purple-400 to-violet-500"
                 onClick={() => navigate('/formulation')}
               />
-              <PremiumCard 
+              <PremiumCard
                 icon={<Package className="h-5 w-5" />}
                 title="Orders"
                 value="History"
                 gradient="from-pink-400 to-rose-500"
                 onClick={() => navigate('/orders')}
               />
-              <PremiumCard 
+              <PremiumCard
                 icon={<Calendar className="h-5 w-5" />}
                 title="Appointments"
                 value="Schedule"
                 gradient="from-sky-400 to-blue-500"
-                onClick={() => navigate('/telehealth')}
+                onClick={() => navigate('/consultation')}
+              />
+              <PremiumCard
+                icon={<User className="h-5 w-5" />}
+                title="Profile"
+                value="Settings"
+                gradient="from-violet-500 to-purple-500"
+                onClick={() => navigate('/profile')}
               />
             </div>
           </div>
 
+          {/* Clinician Dashboard */}
           {isClinician && (
-            <div 
-              className="mb-8 card-premium p-5 sm:p-6 cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/5 to-amber-500/5" 
+            <div
+              className="mb-8 card-premium p-5 sm:p-6 cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/5 to-amber-500/5"
               onClick={() => navigate('/clinician')}
             >
               <div className="flex items-center justify-between">
@@ -279,8 +286,9 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* Complete Profile prompt */}
           {(!profile?.age || !profile?.skin_type) && (
-            <div className="mb-8 card-premium p-5 sm:p-6 border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
+            <div className="mb-8 card-premium p-5 sm:p-6 border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-orange-500/5 section-reveal">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="font-display font-semibold text-lg mb-1">Complete Your Profile</h3>
@@ -293,7 +301,8 @@ const Dashboard = () => {
             </div>
           )}
 
-          <div className="card-premium overflow-hidden">
+          {/* Recent Analyses */}
+          <div className="card-premium overflow-hidden section-reveal">
             <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
@@ -335,27 +344,23 @@ const Dashboard = () => {
                       >
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 relative">
                           {scan.image_url ? (
-                            <img
-                              src={scan.image_url}
-                              alt="Scan"
-                              className="w-full h-full object-cover"
-                            />
+                            <img src={scan.image_url} alt="Scan" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               {isHairScan ? (
-                                <Sparkles className="w-8 h-8 text-amber-400" />
+                                <Scissors className="w-8 h-8 text-primary" />
                               ) : (
                                 <Scan className="w-8 h-8 text-rose-400" />
                               )}
                             </div>
                           )}
                           <div className={`absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-md ${
-                            isHairScan 
-                              ? 'bg-gradient-to-br from-amber-500 to-yellow-500' 
+                            isHairScan
+                              ? 'bg-gradient-to-br from-amber-500 to-yellow-500'
                               : 'bg-gradient-to-br from-rose-500 to-orange-500'
                           }`}>
                             {isHairScan ? (
-                              <Sparkles className="w-3 h-3 text-white" />
+                              <Scissors className="w-3 h-3 text-white" />
                             ) : (
                               <Scan className="w-3 h-3 text-white" />
                             )}
@@ -366,10 +371,10 @@ const Dashboard = () => {
                             <h4 className="font-semibold truncate">
                               {scan.diagnoses?.[0]?.primary_condition || 'Analysis Pending'}
                             </h4>
-                            <Badge 
-                              variant="secondary" 
-                              className={`text-xs ${isHairScan 
-                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' 
+                            <Badge
+                              variant="secondary"
+                              className={`text-xs ${isHairScan
+                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                                 : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
                               }`}
                             >
@@ -392,8 +397,8 @@ const Dashboard = () => {
                           {scan.diagnoses?.[0]?.confidence_score && (
                             <div className="flex items-center gap-2 mt-2">
                               <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-gradient-to-r from-purple-500 to-amber-500 rounded-full" 
+                                <div
+                                  className="h-full bg-gradient-to-r from-purple-500 to-amber-500 rounded-full"
                                   style={{ width: `${scan.diagnoses[0].confidence_score}%` }}
                                 />
                               </div>
@@ -419,23 +424,20 @@ const Dashboard = () => {
   );
 };
 
-const QuickActionCard = ({ 
-  icon, 
-  title, 
-  subtitle, 
-  gradient, 
-  onClick 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  subtitle: string; 
+const QuickActionCard = ({
+  icon,
+  title,
+  subtitle,
+  gradient,
+  onClick
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
   gradient: string;
   onClick: () => void;
 }) => (
-  <div 
-    className="card-interactive p-4 cursor-pointer group"
-    onClick={onClick}
-  >
+  <div className="card-interactive p-4 cursor-pointer group" onClick={onClick}>
     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mb-3 group-hover:scale-110 transition-transform`}>
       {icon}
     </div>
@@ -444,23 +446,20 @@ const QuickActionCard = ({
   </div>
 );
 
-const PremiumCard = ({ 
-  icon, 
-  title, 
-  value, 
-  gradient, 
-  onClick 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  value: string; 
+const PremiumCard = ({
+  icon,
+  title,
+  value,
+  gradient,
+  onClick
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
   gradient: string;
   onClick: () => void;
 }) => (
-  <div 
-    className="card-interactive p-4 cursor-pointer group text-center"
-    onClick={onClick}
-  >
+  <div className="card-interactive p-4 cursor-pointer group text-center" onClick={onClick}>
     <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mx-auto mb-2 group-hover:scale-110 transition-transform`}>
       {icon}
     </div>

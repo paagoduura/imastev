@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -13,7 +14,7 @@ export default {
         md: "768px",
         lg: "1024px",
         xl: "1280px",
-        "2xl": "1400px",
+        "2xl": "1536px",
       },
     },
     extend: {
@@ -154,6 +155,27 @@ export default {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
         },
+        "gradient-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        "slide-down": {
+          "from": { opacity: "0", transform: "translateY(-10px)" },
+          "to": { opacity: "1", transform: "translateY(0)" },
+        },
+        "rotate-in": {
+          "from": { opacity: "0", transform: "rotate(-10deg)" },
+          "to": { opacity: "1", transform: "rotate(0)" },
+        },
+        "blur-in": {
+          "from": { opacity: "0", filter: "blur(10px)" },
+          "to": { opacity: "1", filter: "blur(0)" },
+        },
+        "bounce-smooth": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "40%": { transform: "translateY(-8px)" },
+          "60%": { transform: "translateY(-4px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -170,6 +192,11 @@ export default {
         "shimmer": "shimmer 2s infinite",
         "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
         "spin-slow": "spin-slow 8s linear infinite",
+        "gradient-shift": "gradient-shift 8s ease infinite",
+        "slide-down": "slide-down 0.4s ease-out",
+        "rotate-in": "rotate-in 0.5s ease-out",
+        "blur-in": "blur-in 0.5s ease-out",
+        "bounce-smooth": "bounce-smooth 2s ease-in-out infinite",
       },
       spacing: {
         '18': '4.5rem',
@@ -183,5 +210,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

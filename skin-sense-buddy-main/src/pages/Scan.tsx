@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video, Crown, Loader2 } from "lucide-react";
+import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
@@ -10,87 +10,125 @@ import { supabase } from "@/integrations/supabase/client";
 import { preprocessImage } from "@/lib/imagePreprocessing";
 import { ImageQualityIndicator } from "@/components/scan/ImageQualityIndicator";
 import { MultiAngleCapture } from "@/components/scan/MultiAngleCapture";
-import { ScaleCalibrationTool } from "@/components/scan/ScaleCalibrationTool";
 import { AnalysisTypeSelector } from "@/components/scan/AnalysisTypeSelector";
 import { HairCaptureGuidelines, HAIR_REQUIRED_ANGLES, HAIR_OPTIONAL_ANGLES, HAIR_ANGLE_DESCRIPTIONS } from "@/components/scan/HairCaptureGuidelines";
 import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
 import { PorosityTest } from "@/components/scan/PorosityTest";
-import { Badge } from "@/components/ui/badge";
+import { QuicktellerCheckout } from "@/components/checkout/QuicktellerCheckout";
+import { PaymentOptionsModal } from "@/components/checkout/PaymentOptionsModal";
+import { buildApiUrl } from "@/lib/config";
+import { MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN, ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
+
+type CaptureQuality = {
+  blurScore: number;
+  lightingScore: number;
+  contrastScore: number;
+  exposureScore: number;
+  isAcceptable: boolean;
+  issues: string[];
+  recommendations: string[];
+};
+
+type PorosityResult = {
+  level: string;
+};
+
+type ScanRecord = {
+  id: string;
+  scan_type: "skin" | "hair";
+  image_url: string;
+  multi_angle_urls?: Record<string, string> | null;
+  capture_info?: {
+    image_urls?: Record<string, string>;
+  } | null;
+};
+
+type SubscriptionRecord = {
+  status?: string;
+  scans_used_this_period?: number | null;
+  subscription_plans?: {
+    max_scans_per_month?: number | null;
+  } | null;
+};
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error && error.message) return error.message;
+  if (error && typeof error === "object") {
+    const maybeMessage = "message" in error ? error.message : null;
+    const maybeError = "error" in error ? error.error : null;
+    if (typeof maybeMessage === "string" && maybeMessage.trim()) return maybeMessage;
+    if (typeof maybeError === "string" && maybeError.trim()) return maybeError;
+  }
+  return "Something went wrong";
+};
 
 interface CapturedAngle {
   angle: string;
   dataUrl: string;
   blob: Blob;
-  quality: {
-    blurScore: number;
-    lightingScore: number;
-    contrastScore: number;
-    exposureScore: number;
-    isAcceptable: boolean;
-    issues: string[];
-    recommendations: string[];
-  };
-  metadata: any;
+  quality: CaptureQuality;
+  metadata: Record<string, unknown>;
 }
 
 const SKIN_REQUIRED_ANGLES = ['front', 'close'];
 const SKIN_OPTIONAL_ANGLES = ['left', 'right'];
-
-interface ScanQuota {
-  hasSubscription: boolean;
-  planName: string;
-  tier: string;
-  scansUsed: number;
-  maxScans: number | null;
-  scansRemaining: number | null;
-  isUnlimited: boolean;
-}
+const MONTHLY_SUBSCRIPTION_FEE_NGN = MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN;
 
 const Scan = () => {
-  const [step, setStep] = useState<'type' | 'porosity' | 'capture' | 'review' | 'calibrate' | 'analyze'>('type');
+  const [authChecking, setAuthChecking] = useState(true);
+  const [step, setStep] = useState<'type' | 'porosity' | 'capture' | 'review' | 'analyze'>('type');
   const [analysisType, setAnalysisType] = useState<'skin' | 'hair'>('skin');
   const [currentAngle, setCurrentAngle] = useState<string>('front');
   const [captures, setCaptures] = useState<CapturedAngle[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [calibrationData, setCalibrationData] = useState<{ pixelsPerMM: number; referenceType: string } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [showLiveCamera, setShowLiveCamera] = useState(false);
-  const [porosityResult, setPorosityResult] = useState<any>(null);
-  const [scanQuota, setScanQuota] = useState<ScanQuota | null>(null);
-  const [loadingQuota, setLoadingQuota] = useState(true);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [porosityResult, setPorosityResult] = useState<PorosityResult | null>(null);
+  const [showPaymentOptionsModal, setShowPaymentOptionsModal] = useState(false);
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<"one-time" | "subscription" | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    amount: number;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+  } | null>(null);
+  const [paymentContext, setPaymentContext] = useState<{
+    paymentType: "analysis" | "subscription";
+    planId?: string;
+    scanId?: string;
+  } | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadScanQuota();
-  }, []);
+    let mounted = true;
 
-  const loadScanQuota = async () => {
-    try {
+    const ensureAuthenticated = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+
+      if (!mounted) return;
+
       if (!user) {
-        navigate("/auth");
+        toast({
+          title: "Sign in required",
+          description: "Please sign in or create an account to start a scan.",
+        });
+        navigate('/auth');
         return;
       }
 
-      const response = await fetch('/api/scan-quota', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('glowsense_token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const quota = await response.json();
-        setScanQuota(quota);
-      }
-    } catch (error) {
-      console.error('Error loading scan quota:', error);
-    } finally {
-      setLoadingQuota(false);
-    }
-  };
+      setAuthChecking(false);
+    };
+
+    ensureAuthenticated();
+
+    return () => {
+      mounted = false;
+    };
+  }, [navigate, toast]);
 
   // Get the correct angles based on analysis type
   const REQUIRED_ANGLES = analysisType === 'hair' ? HAIR_REQUIRED_ANGLES : SKIN_REQUIRED_ANGLES;
@@ -111,7 +149,7 @@ const Scan = () => {
     }
   };
 
-  const handlePorosityComplete = (result: any) => {
+  const handlePorosityComplete = (result: PorosityResult) => {
     setPorosityResult(result);
     setStep('capture');
     toast({
@@ -259,8 +297,11 @@ const Scan = () => {
       });
     } finally {
       setProcessing(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = '';
+      }
+      if (uploadInputRef.current) {
+        uploadInputRef.current.value = '';
       }
     }
   };
@@ -295,23 +336,214 @@ const Scan = () => {
     setStep('review');
   };
 
-  const handleCalibrationComplete = (pixelsPerMM: number, referenceType: string) => {
-    setCalibrationData({ pixelsPerMM, referenceType });
-    toast({
-      title: "Calibration complete",
-      description: "Scale reference has been set for accurate measurements",
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 0
+  }).format(amount);
+
+  const getApiAuthToken = async () => {
+    const legacyToken = localStorage.getItem('glowsense_token');
+    if (legacyToken) return legacyToken;
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  };
+
+  const blobToBase64 = async (blob: Blob) => {
+    const buffer = await blob.arrayBuffer();
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let index = 0; index < bytes.length; index += 1) {
+      binary += String.fromCharCode(bytes[index]);
+    }
+    return btoa(binary);
+  };
+
+  const uploadCaptureWithFallback = async (
+    capture: CapturedAngle,
+    userId: string,
+    storageBucket: 'hair-scans' | 'skin-scans',
+    token: string | null,
+  ) => {
+    const fileName = `${userId}/${Date.now()}_${capture.angle}.jpg`;
+    const uploadErrors: string[] = [];
+    const base64Payload = await blobToBase64(capture.blob);
+
+    // Primary path: backend upload endpoint (bypasses strict client-side storage RLS differences).
+    let shouldTryDirectStorageFallback = false;
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const uploadResponse = await fetch(buildApiUrl('/storage/upload-scan'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          bucket: storageBucket,
+          fileName,
+          contentType: 'image/jpeg',
+          base64: base64Payload,
+        }),
+      });
+
+      const uploadPayload = await uploadResponse.json().catch(() => ({}));
+      if (uploadResponse.ok && uploadPayload?.publicUrl) {
+        return {
+          angle: capture.angle,
+          url: String(uploadPayload.publicUrl),
+          quality: capture.quality,
+        };
+      }
+
+      const backendError = uploadPayload?.error || uploadResponse.statusText || 'Upload endpoint error';
+      uploadErrors.push(`backend attempt ${attempt}: ${backendError}`);
+      if (uploadResponse.status === 404 || String(backendError).toLowerCase().includes('not found')) {
+        shouldTryDirectStorageFallback = true;
+        break;
+      }
+    }
+
+    // Secondary path: direct Supabase storage upload (works in environments where auth + RLS are aligned).
+    if (shouldTryDirectStorageFallback || uploadErrors.length > 0) {
+      const { error } = await supabase.storage
+        .from(storageBucket)
+        .upload(fileName, capture.blob, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage
+          .from(storageBucket)
+          .getPublicUrl(fileName);
+        return {
+          angle: capture.angle,
+          url: publicUrl,
+          quality: capture.quality,
+        };
+      }
+
+      uploadErrors.push(`direct storage fallback: ${error.message}`);
+    }
+
+    throw new Error(`${capture.angle}: ${uploadErrors.join(' | ')}`);
+  };
+
+  const getActiveSubscription = async (): Promise<SubscriptionRecord | null> => {
+    const token = await getApiAuthToken();
+    if (!token) return null;
+
+    const response = await fetch(buildApiUrl('/subscriptions'), {
+      headers: { Authorization: `Bearer ${token}` },
     });
-    setStep('analyze');
+
+    if (!response.ok) return null;
+    const data = (await response.json()) as SubscriptionRecord;
+    if (!data || data.status !== 'active') return null;
+    return data;
   };
 
-  const handleSkipCalibration = () => {
-    setStep('analyze');
+  const consumeSubscriptionScan = async () => {
+    const token = await getApiAuthToken();
+    if (!token) throw new Error('Missing auth token');
+
+    const response = await fetch(buildApiUrl('/subscriptions/consume-scan'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload?.error || payload?.message || 'Unable to consume subscription scan');
+    }
+    return payload;
   };
 
-  const handleAnalyze = async () => {
-    setAnalyzing(true);
+  const runAnalysis = async (scan: ScanRecord) => {
+    const imageUrls = scan.capture_info?.image_urls || scan.multi_angle_urls || {};
+    const primaryAngle = scan.scan_type === 'hair' ? 'scalp_parting' : 'close';
+    const functionName = scan.scan_type === 'hair' ? 'analyze-hair' : 'analyze-skin';
+
+    const { data: analysisData, error: analysisError } = await supabase.functions.invoke(functionName, {
+      body: {
+        scanId: scan.id,
+        imageUrl: imageUrls[primaryAngle] || scan.image_url,
+        multiAngleUrls: imageUrls,
+      },
+    });
+
+    if (analysisError || !analysisData?.success) {
+      throw new Error(analysisError?.message || analysisData?.error || 'Analysis failed');
+    }
+  };
+
+  const prepareScan = async (user: { id: string }) => {
+    try {
+      const token = await getApiAuthToken();
+      await fetch(buildApiUrl('/storage/ensure-buckets'), {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch (error) {
+      console.warn('Unable to auto-create storage buckets:', error);
+    }
+
+    const storageBucket = analysisType === 'hair' ? 'hair-scans' : 'skin-scans';
+    const token = await getApiAuthToken();
+    const uploadResults = await Promise.allSettled(captures.map((capture) =>
+      uploadCaptureWithFallback(capture, user.id, storageBucket, token)
+    ));
+
+    const failedUploads = uploadResults.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
+    if (failedUploads.length > 0) {
+      const failedAngles = failedUploads
+        .map((failure) => (failure.reason instanceof Error ? failure.reason.message : 'Unknown error'))
+        .join(', ');
+      throw new Error(`Some images failed to upload: ${failedAngles}`);
+    }
+
+    const uploadedImages = uploadResults
+      .filter((r): r is PromiseFulfilledResult<{ angle: string; url: string; quality: CaptureQuality }> => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    const frontAngle = analysisType === 'hair' ? 'crown' : 'front';
+    const { data: scan, error: scanError } = await supabase
+      .from('scans')
+      .insert({
+        user_id: user.id,
+        image_url: uploadedImages.find(i => i.angle === frontAngle)?.url || uploadedImages[0].url,
+        scan_type: analysisType,
+        status: 'pending',
+        multi_angle_urls: uploadedImages.reduce((acc, img) => ({
+          ...acc,
+          [img.angle]: img.url
+        }), {}),
+        calibration_data: {
+          angles: uploadedImages.map(i => i.angle),
+          quality_scores: uploadedImages.map(i => ({
+            angle: i.angle,
+            blur: i.quality.blurScore,
+            lighting: i.quality.lightingScore,
+            contrast: i.quality.contrastScore
+          })),
+        },
+        porosity_test_result: porosityResult
+      })
+      .select()
+      .single();
+
+    if (scanError) throw scanError;
+    return { scan, uploadedImages };
+  };
+
+  const handlePayAndAnalyze = async () => {
+    if (paymentLoading) return;
     
     try {
+      setPaymentLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -320,135 +552,166 @@ const Scan = () => {
           variant: "destructive",
         });
         navigate('/auth');
+        setPaymentLoading(false);
         return;
       }
 
-      // Determine the storage bucket based on analysis type
-      const storageBucket = analysisType === 'hair' ? 'hair-scans' : 'skin-scans';
-
-      // Upload all captured images with better error handling
-      const uploadResults = await Promise.allSettled(captures.map(async (capture) => {
-        const fileName = `${user.id}/${Date.now()}_${capture.angle}.jpg`;
-        const { data, error } = await supabase.storage
-          .from(storageBucket)
-          .upload(fileName, capture.blob, {
-            contentType: 'image/jpeg',
-            upsert: false
-          });
-
-        if (error) throw new Error(`Failed to upload ${capture.angle}: ${error.message}`);
-
-        const { data: { publicUrl } } = supabase.storage
-          .from(storageBucket)
-          .getPublicUrl(fileName);
-
-        return {
-          angle: capture.angle,
-          url: publicUrl,
-          quality: capture.quality
-        };
-      }));
-
-      // Check for failed uploads
-      const failedUploads = uploadResults.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
-      if (failedUploads.length > 0) {
-        const failedAngles = failedUploads.map(f => f.reason?.message || 'Unknown error').join(', ');
-        throw new Error(`Some images failed to upload: ${failedAngles}`);
-      }
-
-      const uploadedImages = uploadResults
-        .filter((r): r is PromiseFulfilledResult<{ angle: string; url: string; quality: any }> => r.status === 'fulfilled')
-        .map(r => r.value);
-
-      // Get the primary image (close-up for skin, scalp_parting for hair)
-      const primaryAngle = analysisType === 'hair' ? 'scalp_parting' : 'close';
-      const frontAngle = analysisType === 'hair' ? 'crown' : 'front';
-
-      // Create scan record with scan_type
-      const { data: scan, error: scanError } = await supabase
-        .from('scans')
-        .insert({
-          user_id: user.id,
-          image_url: uploadedImages.find(i => i.angle === frontAngle)?.url || uploadedImages[0].url,
-          body_area: analysisType === 'hair' ? 'scalp' : 'face',
-          scan_type: analysisType,
-          status: 'pending',
-          capture_info: {
-            angles: uploadedImages.map(i => i.angle),
-            quality_scores: uploadedImages.map(i => ({
-              angle: i.angle,
-              blur: i.quality.blurScore,
-              lighting: i.quality.lightingScore,
-              contrast: i.quality.contrastScore
-            })),
-            calibration: calibrationData,
-            image_urls: uploadedImages.reduce((acc, img) => ({
-              ...acc,
-              [img.angle]: img.url
-            }), {})
-          }
-        })
-        .select()
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('user_id', user.id)
         .single();
 
-      if (scanError) throw scanError;
-
-      toast({
-        title: "Images uploaded",
-        description: `Starting AI ${analysisType} analysis...`,
-      });
-
-      // Get the session for authorization
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!profileData?.phone) {
         toast({
-          title: "Session expired",
-          description: "Please sign in again",
+          title: "Phone number required",
+          description: "Please add your phone number in your profile before making a payment.",
           variant: "destructive",
         });
-        navigate('/auth');
+        navigate('/profile');
+        setPaymentLoading(false);
         return;
       }
 
-      // Call the appropriate AI analysis function
-      const functionName = analysisType === 'hair' ? 'analyze-hair' : 'analyze-skin';
-      const { data: analysisData, error: analysisError } = await supabase.functions.invoke(functionName, {
-        body: { 
-          scanId: scan.id,
-          imageUrl: uploadedImages.find(i => i.angle === primaryAngle)?.url || uploadedImages[0].url,
-          multiAngleUrls: uploadedImages.reduce((acc, img) => ({
-            ...acc,
-            [img.angle]: img.url
-          }), {}),
-          calibration: calibrationData
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      // If user has an active scan subscription with remaining quota, skip payment and run analysis now.
+      const activeSubscription = await getActiveSubscription();
+      const rawMaxScans = activeSubscription?.subscription_plans?.max_scans_per_month;
+      const maxScans = rawMaxScans === null || rawMaxScans === undefined ? null : Number(rawMaxScans);
+      const scansUsed = Number(activeSubscription?.scans_used_this_period ?? 0);
+      const hasRemainingSubscriptionScans =
+        !!activeSubscription &&
+        (maxScans === null || (maxScans > 0 && scansUsed < maxScans));
 
-      if (analysisError) throw analysisError;
+      if (hasRemainingSubscriptionScans) {
+        const { scan } = await prepareScan(user);
+        await consumeSubscriptionScan();
+        await runAnalysis(scan);
 
-      if (!analysisData.success) {
-        throw new Error(analysisData.error || 'Analysis failed');
+        toast({
+          title: "Analysis Complete",
+          description: "Your scan was processed using your active monthly subscription.",
+        });
+        navigate(`/results/${scan.id}`);
+        setPaymentLoading(false);
+        return;
       }
 
-      toast({
-        title: "Analysis complete!",
-        description: "Redirecting to results...",
-      });
-
-      navigate(`/results/${scan.id}`);
+      // Show payment options modal first
+      setShowPaymentOptionsModal(true);
+      setPaymentLoading(false);
 
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('Payment error:', error);
       toast({
-        title: "Analysis failed",
-        description: error instanceof Error ? error.message : "Please try again later",
+        title: "Error",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
-    } finally {
-      setAnalyzing(false);
+      setPaymentLoading(false);
+    }
+  };
+
+  const handlePaymentOptionSelect = async (option: "one-time" | "subscription") => {
+    setSelectedPaymentOption(option);
+    setShowPaymentOptionsModal(false);
+    setPaymentLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User information missing");
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profileData?.phone) throw new Error("Phone number not found");
+
+      let formattedPhone = profileData.phone;
+      if (formattedPhone.startsWith('234')) {
+        formattedPhone = '0' + formattedPhone.slice(3);
+      }
+
+      // Determine payment details based on selected option
+      const amount = option === 'one-time' ? ONE_TIME_ANALYSIS_FEE_NGN : MONTHLY_SUBSCRIPTION_FEE_NGN;
+      const paymentType = option === 'one-time' ? 'analysis' : 'subscription';
+      const { scan } = await prepareScan(user);
+
+      // Store payment details and show payment modal
+      setPaymentDetails({
+        amount,
+        customerEmail: user.email!,
+        customerName: profileData?.full_name || user.email?.split('@')[0] || 'IMSTEV User',
+        customerPhone: formattedPhone,
+      });
+
+      setPaymentContext({
+        paymentType,
+        scanId: scan.id,
+      });
+
+      // Keep scan/payment context available even if checkout redirects away from this page.
+      sessionStorage.setItem('pendingPaymentType', paymentType);
+      sessionStorage.setItem('pendingAnalysisScanId', scan.id);
+      sessionStorage.setItem('paymentOption', option);
+      if (paymentType === 'subscription') {
+        sessionStorage.setItem('pendingSubscriptionPlanId', 'monthly-scan-plan');
+      } else {
+        sessionStorage.removeItem('pendingSubscriptionPlanId');
+      }
+      
+      setShowPaymentModal(true);
+      setPaymentLoading(false);
+
+    } catch (error) {
+      console.error('Payment option error:', error);
+      toast({
+        title: "Payment Error",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      });
+      setPaymentLoading(false);
+      setSelectedPaymentOption(null);
+      setPaymentContext(null);
+    }
+  };
+
+  const handlePaymentSuccess = async (transactionRef: string) => {
+    try {
+      setShowPaymentModal(false);
+
+      toast({
+        title: "Payment Successful",
+        description: "Preparing your scan and continuing analysis...",
+      });
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User session not found. Please sign in and try again.");
+      const scanId = paymentContext?.scanId;
+      const pendingType = paymentContext?.paymentType || (selectedPaymentOption === 'subscription' ? 'subscription' : 'analysis');
+      if (!scanId) {
+        throw new Error("Scan information missing. Please try payment again.");
+      }
+
+      sessionStorage.setItem('pendingPaymentType', pendingType);
+      sessionStorage.setItem('pendingAnalysisScanId', scanId);
+      sessionStorage.setItem('paymentOption', selectedPaymentOption || 'one-time');
+      sessionStorage.setItem('paymentTransactionRef', transactionRef);
+      navigate(`/payment-callback?txnref=${encodeURIComponent(transactionRef)}`);
+
+      setSelectedPaymentOption(null);
+      setPaymentContext(null);
+    } catch (error) {
+      console.error('Error processing payment and images:', error);
+      toast({
+        title: "Error",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      });
+      setShowPaymentModal(false);
+      setSelectedPaymentOption(null);
+      setPaymentContext(null);
     }
   };
 
@@ -457,13 +720,12 @@ const Scan = () => {
     porosity: 'Test your hair porosity for personalized recommendations',
     capture: 'Capture high-quality images for accurate AI analysis',
     review: 'Review your images before analysis',
-    calibrate: 'Optional: Calibrate for precise measurements',
     analyze: 'Ready to analyze your images'
   };
 
   const steps = analysisType === 'hair' 
-    ? ['type', 'porosity', 'capture', 'review', 'calibrate', 'analyze'] 
-    : ['type', 'capture', 'review', 'calibrate', 'analyze'];
+    ? ['type', 'porosity', 'capture', 'review', 'analyze'] 
+    : ['type', 'capture', 'review', 'analyze'];
 
   const renderTypeStep = () => (
     <div className="space-y-6">
@@ -550,10 +812,17 @@ const Scan = () => {
           </div>
 
           <input
-            ref={fileInputRef}
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+          <input
+            ref={uploadInputRef}
+            type="file"
+            accept="image/*"
             onChange={handleImageSelect}
             className="hidden"
           />
@@ -580,7 +849,7 @@ const Scan = () => {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => cameraInputRef.current?.click()}
               disabled={processing}
             >
               <Camera className="mr-2 h-5 w-5" />
@@ -589,7 +858,7 @@ const Scan = () => {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => uploadInputRef.current?.click()}
               disabled={processing}
             >
               <Upload className="mr-2 h-5 w-5" />
@@ -676,50 +945,15 @@ const Scan = () => {
         </Button>
         <Button
           size="lg"
-          onClick={() => setStep('calibrate')}
+          onClick={() => setStep('analyze')}
           className="flex-1"
         >
-          Continue to Calibration
+          Continue to Analysis
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
     </div>
   );
-
-  const renderCalibrateStep = () => {
-    const closeImage = analysisType === 'hair' 
-      ? captures.find(c => c.angle === 'scalp_parting') || captures.find(c => c.angle === 'strand_closeup')
-      : captures.find(c => c.angle === 'close');
-    
-    return (
-      <div className="space-y-6">
-        <ScaleCalibrationTool
-          imageDataUrl={closeImage?.dataUrl || captures[0]?.dataUrl || ''}
-          onCalibrationComplete={handleCalibrationComplete}
-        />
-
-        <div className="flex gap-4">
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => setStep('review')}
-            className="flex-1"
-          >
-            <ArrowLeft className="mr-2 h-5 w-5" />
-            Back
-          </Button>
-          <Button
-            size="lg"
-            variant="secondary"
-            onClick={handleSkipCalibration}
-            className="flex-1"
-          >
-            Skip Calibration
-          </Button>
-        </div>
-      </div>
-    );
-  };
 
   const renderAnalyzeStep = () => (
     <div className="space-y-6">
@@ -730,7 +964,6 @@ const Scan = () => {
             <h3 className="text-2xl font-bold mb-2">Ready for {analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis</h3>
             <p className="text-muted-foreground">
               {captures.length} image{captures.length > 1 ? 's' : ''} captured
-              {calibrationData && ' • Scale calibrated'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 justify-center">
@@ -747,7 +980,7 @@ const Scan = () => {
         <Button
           size="lg"
           variant="outline"
-          onClick={() => setStep('calibrate')}
+          onClick={() => setStep('review')}
           className="flex-1"
         >
           <ArrowLeft className="mr-2 h-5 w-5" />
@@ -755,19 +988,19 @@ const Scan = () => {
         </Button>
         <Button
           size="lg"
-          onClick={handleAnalyze}
-          disabled={analyzing}
+          onClick={handlePayAndAnalyze}
+          disabled={paymentLoading}
           className="flex-1 bg-gradient-to-r from-primary to-primary/80"
         >
-          {analyzing ? (
+          {paymentLoading ? (
             <>
               <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-              Analyzing...
+              Starting payment...
             </>
           ) : (
             <>
               <Sparkles className="mr-2 h-5 w-5" />
-              Start AI Analysis
+              Continue to Payment
             </>
           )}
         </Button>
@@ -775,54 +1008,8 @@ const Scan = () => {
     </div>
   );
 
-  // Show loading state - this check must come first
-  if (loadingQuota) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-purple-500" />
-        </div>
-      </div>
-    );
-  }
-
-  // Show upgrade prompt if scan limit reached
-  if (scanQuota && !scanQuota.isUnlimited && scanQuota.scansRemaining !== null && scanQuota.scansRemaining <= 0) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="gradient-mesh min-h-[calc(100vh-80px)]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-2xl">
-            <Card className="text-center p-8 sm:p-12 premium-card border-purple-100 dark:border-purple-900/30">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-600 to-amber-500 rounded-2xl flex items-center justify-center">
-                <Crown className="h-10 w-10 text-white" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">Scan Limit Reached</h2>
-              <p className="text-muted-foreground mb-2">
-                You've used all <strong>{scanQuota.maxScans}</strong> scans available on your <strong>{scanQuota.planName}</strong> plan.
-              </p>
-              <p className="text-muted-foreground mb-6">
-                Upgrade to Premium for unlimited AI-powered hair and skin analysis.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button 
-                  onClick={() => navigate("/subscription")} 
-                  className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white"
-                >
-                  <Crown className="mr-2 h-4 w-4" />
-                  Upgrade Now
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                  Back to Dashboard
-                </Button>
-              </div>
-            </Card>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+  if (authChecking) {
+    return null;
   }
 
   return (
@@ -830,7 +1017,7 @@ const Scan = () => {
       <Navbar />
       
       <div className="gradient-mesh min-h-screen">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8">
+        <div className={`container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8 transition-all ${showPaymentModal ? 'pointer-events-none opacity-50' : ''}`}>
           <div className="mb-6 sm:mb-8 flex items-center justify-between">
             <Button 
               variant="ghost" 
@@ -840,14 +1027,6 @@ const Scan = () => {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Button>
-            {scanQuota && (
-              <Badge variant="outline" className={`${scanQuota.isUnlimited ? 'border-purple-500 text-purple-600' : 'border-slate-300'}`}>
-                {scanQuota.isUnlimited 
-                  ? '✨ Unlimited Scans' 
-                  : `${scanQuota.scansRemaining} of ${scanQuota.maxScans} scans left`
-                }
-              </Badge>
-            )}
           </div>
 
           <div className="text-center mb-6 sm:mb-8">
@@ -881,12 +1060,60 @@ const Scan = () => {
               />
             )}
             {step === 'capture' && renderCaptureStep()}
-            {step === 'review' && renderReviewStep()}
-            {step === 'calibrate' && renderCalibrateStep()}
+            {step === 'review' && !showPaymentModal && renderReviewStep()}
             {step === 'analyze' && renderAnalyzeStep()}
           </div>
         </div>
       </div>
+
+      {/* Payment Options Modal */}
+      <PaymentOptionsModal
+        isOpen={showPaymentOptionsModal}
+        onClose={() => setShowPaymentOptionsModal(false)}
+        onSelect={handlePaymentOptionSelect}
+        isLoading={paymentLoading}
+        userEmail={''}
+      />
+
+      {/* Payment Modal */}
+      {showPaymentModal && paymentDetails && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 flex justify-between items-center">
+              <h2 className="text-lg font-bold">Complete Payment</h2>
+              <button 
+                onClick={() => setShowPaymentModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <QuicktellerCheckout
+                amount={paymentDetails.amount}
+                customerName={paymentDetails.customerName}
+                customerEmail={paymentDetails.customerEmail}
+                customerPhone={paymentDetails.customerPhone}
+                description={`${analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis - ${selectedPaymentOption === 'subscription' ? 'Monthly Subscription' : 'Single Scan'}`}
+                paymentType={paymentContext?.paymentType || "analysis"}
+                planId={paymentContext?.planId}
+                scanId={paymentContext?.scanId}
+                metadata={
+                  selectedPaymentOption
+                    ? {
+                        source: "scan_flow",
+                        paymentOption: selectedPaymentOption,
+                        scanId: paymentContext?.scanId,
+                      }
+                    : { source: "scan_flow", scanId: paymentContext?.scanId }
+                }
+                onPaymentSuccess={handlePaymentSuccess}
+                onDismiss={() => setShowPaymentModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

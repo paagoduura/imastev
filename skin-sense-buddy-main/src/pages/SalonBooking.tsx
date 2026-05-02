@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { QuicktellerCheckout } from "@/components/checkout/QuicktellerCheckout";
 import { 
-  Scissors, Clock, Calendar as CalendarIcon, Check, Star, 
+  Scissors, Clock, Calendar as CalendarIcon, Check, 
   ChevronRight, User, Phone, Mail, Crown, Sparkles, 
-  CheckCircle2, ArrowLeft, Timer, MapPin, Loader2
+  CheckCircle2, ArrowLeft, Timer, MapPin, Loader2, X
 } from "lucide-react";
 import { format, addDays, isBefore, startOfToday, isToday } from "date-fns";
-import { useInterswitchCheckout } from "@/hooks/useInterswitchCheckout";
+import { API_BASE } from "@/lib/config";
+import { fallbackSalonServices } from "@/lib/fallbackSalonServices";
 
 interface Service {
   id: string;
@@ -31,13 +33,13 @@ interface BookingData {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  serviceId: string;
+  serviceIds: string[];
   appointmentDate: string;
   timeSlot: string;
   notes: string;
 }
 
-const API_BASE = '/api';
+const isSalonClosedDay = (date: Date) => date.getDay() === 1;
 
 export default function SalonBooking() {
   const navigate = useNavigate();
@@ -45,32 +47,35 @@ export default function SalonBooking() {
   
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<Service[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [servicesLoading, setServicesLoading] = useState(true);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [checkoutScriptUrl, setCheckoutScriptUrl] = useState<string | null>(null);
-  const [paymentConfig, setPaymentConfig] = useState<any>(null);
-  
-  const { isLoaded: checkoutLoaded, launchCheckout } = useInterswitchCheckout(checkoutScriptUrl);
-  
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentData, setPaymentData] = useState<{
+    amount: number;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+  } | null>(null);
   const [formData, setFormData] = useState<BookingData>({
     customerName: "",
     customerEmail: "",
     customerPhone: "",
-    serviceId: "",
+    serviceIds: [],
     appointmentDate: "",
     timeSlot: "",
     notes: ""
   });
+
 
   useEffect(() => {
     loadServices();
@@ -116,14 +121,22 @@ export default function SalonBooking() {
   };
 
   const loadServices = async () => {
+    setServicesLoading(true);
     try {
       const response = await fetch(`${API_BASE}/salon/services`);
       if (response.ok) {
         const data = await response.json();
-        setServices(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setServices(data);
+          return;
+        }
       }
+      setServices(fallbackSalonServices);
     } catch (error) {
       console.error('Failed to load services:', error);
+      setServices(fallbackSalonServices);
+    } finally {
+      setServicesLoading(false);
     }
   };
 
@@ -144,10 +157,42 @@ export default function SalonBooking() {
     }
   };
 
-  const handleServiceSelect = (service: Service) => {
-    setSelectedService(service);
-    setFormData(prev => ({ ...prev, serviceId: service.id }));
+  const handleServiceToggle = (service: Service) => {
+    setSelectedServices((prev) => {
+      const exists = prev.some((item) => item.id === service.id);
+      const next = exists
+        ? prev.filter((item) => item.id !== service.id)
+        : [...prev, service];
+      setFormData((current) => ({ ...current, serviceIds: next.map((item) => item.id) }));
+      return next;
+    });
+  };
+
+  const continueToSchedule = () => {
+    if (!selectedServices.length) {
+      toast({
+        title: "Select Services",
+        description: "Choose at least one service before continuing.",
+        variant: "destructive",
+      });
+      return;
+    }
     setStep(2);
+  };
+
+  const removeSelectedService = (serviceIdToRemove: string) => {
+    setSelectedServices((prev) => {
+      const next = prev.filter((service) => service.id !== serviceIdToRemove);
+      setFormData((current) => ({ ...current, serviceIds: next.map((service) => service.id) }));
+      if (!next.length) {
+        setStep(1);
+        toast({
+          title: "No Services Selected",
+          description: "Select at least one service to continue booking.",
+        });
+      }
+      return next;
+    });
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -163,7 +208,7 @@ export default function SalonBooking() {
     setFormData(prev => ({ ...prev, timeSlot: slot }));
   };
 
-  const handleBooking = async () => {
+  const handleBooking = () => {
     if (!formData.customerName || !formData.customerPhone) {
       toast({
         title: "Missing Information",
@@ -173,45 +218,48 @@ export default function SalonBooking() {
       return;
     }
 
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('glowsense_token');
-      const headers: any = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE}/salon/book`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setBookingDetails(data.booking);
-        setBookingSuccess(true);
-        toast({
-          title: "Booking Confirmed!",
-          description: "Your appointment has been successfully booked.",
-        });
-      } else {
-        toast({
-          title: "Booking Failed",
-          description: data.error || "Unable to complete booking. Please try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
+    if (!selectedServices.length) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Missing Services",
+        description: "Please select at least one service.",
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    // Format phone number: convert 234 to 0 if needed
+    let formattedPhone = formData.customerPhone;
+    if (formattedPhone.startsWith('234')) {
+      formattedPhone = '0' + formattedPhone.slice(3);
+    }
+
+    const customerEmail = formData.customerEmail || `${formData.customerPhone.replace(/\D/g, '')}@guest.imstevnaturals.com`;
+    
+    // Calculate 50% of the selected services total as deposit
+    const depositAmount = Math.ceil(totalPrice / 2);
+
+    // Store booking data for use after payment
+    sessionStorage.setItem('pendingPaymentType', 'salon_booking');
+    sessionStorage.setItem('pendingSalonBooking', JSON.stringify({
+      formData: {
+        ...formData,
+        serviceIds: selectedServices.map((service) => service.id),
+      },
+    }));
+
+    // Show payment modal
+    setPaymentData({
+      amount: depositAmount,
+      customerEmail,
+      customerName: formData.customerName,
+      customerPhone: formattedPhone,
+    });
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (transactionRef: string) => {
+    setShowPaymentModal(false);
+    navigate(`/payment-callback?txnref=${encodeURIComponent(transactionRef)}`);
   };
 
   const formatPrice = (price: number, priceMax?: number) => {
@@ -243,6 +291,15 @@ export default function SalonBooking() {
     return acc;
   }, {} as Record<string, Service[]>);
 
+  const totalDuration = useMemo(
+    () => selectedServices.reduce((sum, service) => sum + Number(service.duration || 0), 0),
+    [selectedServices]
+  );
+  const totalPrice = useMemo(
+    () => selectedServices.reduce((sum, service) => sum + Number(service.price || 0), 0),
+    [selectedServices]
+  );
+
   const categoryIcons: Record<string, string> = {
     'Hairdo': '💇‍♀️',
     'Colouring': '🎨',
@@ -269,7 +326,7 @@ export default function SalonBooking() {
                 Booking Confirmed!
               </h1>
               <p className="text-muted-foreground">
-                Your appointment has been successfully scheduled
+                Your deposit has been received. Please pay the balance when you arrive.
               </p>
             </div>
 
@@ -305,14 +362,25 @@ export default function SalonBooking() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Total Amount</span>
-                      <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
+                      <span className="text-muted-foreground">Service Total</span>
+                      <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
                         {formatPrice(bookingDetails.price_ngn)}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">Pay now online or pay at the salon</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Deposit Paid (50%)</span>
+                      <span className="text-xl font-bold text-amber-700">
+                        {formatPrice(Math.ceil(bookingDetails.price_ngn / 2))}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Balance Due at Appointment</span>
+                      <span className="text-xl font-bold text-purple-700">
+                        {formatPrice(Math.max(bookingDetails.price_ngn - Math.ceil(bookingDetails.price_ngn / 2), 0))}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="p-4 rounded-xl bg-purple-50 border border-purple-100">
@@ -325,83 +393,24 @@ export default function SalonBooking() {
 
                   <div className="flex flex-col gap-3 pt-4">
                     <Button 
-                      onClick={async () => {
-                        setPaymentLoading(true);
-                        try {
-                          const customerEmail = bookingDetails.customer_email || formData.customerEmail || `${bookingDetails.customer_phone.replace(/\D/g, '')}@guest.imstevnaturals.com`;
-                          
-                          const response = await fetch(`${API_BASE}/payment/initialize`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              amount: bookingDetails.price_ngn,
-                              customerEmail,
-                              customerName: bookingDetails.customer_name,
-                              customerPhone: bookingDetails.customer_phone,
-                              description: `Salon Booking: ${bookingDetails.service_name}`,
-                              bookingId: bookingDetails.id,
-                            }),
-                          });
-                          
-                          if (!response.ok) {
-                            throw new Error(`Server error: ${response.status}`);
-                          }
-                          
-                          const data = await response.json();
-                          
-                          if (data.success && data.paymentUrl) {
-                            window.location.href = data.paymentUrl;
-                          } else {
-                            setPaymentLoading(false);
-                            toast({
-                              title: "Payment Error",
-                              description: data.error || "Unable to process payment",
-                              variant: "destructive"
-                            });
-                          }
-                        } catch (error: any) {
-                          setPaymentLoading(false);
-                          console.error('Payment error:', error);
-                          toast({
-                            title: "Connection Error",
-                            description: "Unable to connect to payment gateway. Please try again.",
-                            variant: "destructive"
-                          });
-                        }
-                      }}
-                      disabled={paymentLoading}
-                      className="w-full h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-lg font-semibold disabled:opacity-50"
+                      onClick={() => navigate('/dashboard')}
+                      className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-lg font-semibold"
                     >
-                      {paymentLoading ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Processing Payment...
-                        </>
-                      ) : (
-                        `Pay Now - ${formatPrice(bookingDetails.price_ngn)}`
-                      )}
+                      Go to Dashboard
                     </Button>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button 
-                        onClick={() => navigate('/')}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        Pay at Salon Instead
-                      </Button>
-                      <Button 
-                        onClick={() => {
-                          setBookingSuccess(false);
-                          setStep(1);
-                          setSelectedService(null);
-                          setSelectedDate(undefined);
-                          setSelectedSlot("");
-                        }}
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
-                      >
-                        Book Another Appointment
-                      </Button>
-                    </div>
+                    <Button 
+                      onClick={() => {
+                        setBookingSuccess(false);
+                        setStep(1);
+                        setSelectedServices([]);
+                        setFormData((prev) => ({ ...prev, serviceIds: [] }));
+                        setSelectedDate(undefined);
+                        setSelectedSlot("");
+                      }}
+                      className="w-full bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
+                    >
+                      Book Another Appointment
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -417,7 +426,7 @@ export default function SalonBooking() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-amber-50/20">
       <Navbar />
       
-      <div className="pt-24 pb-16">
+      <div className={`pt-24 pb-16 transition-all ${showPaymentModal ? 'pointer-events-none opacity-50' : ''}`}>
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-8 sm:mb-12">
@@ -476,9 +485,16 @@ export default function SalonBooking() {
               <div className="space-y-8 animate-fade-in">
                 <div className="text-center">
                   <h2 className="text-2xl font-display font-bold mb-2">Choose Your Service</h2>
-                  <p className="text-muted-foreground">Select the service you'd like to book</p>
+                  <p className="text-muted-foreground">Select one or more services before choosing date and time</p>
                 </div>
 
+                {servicesLoading ? (
+                  <div className="flex items-center justify-center rounded-2xl border border-purple-100 bg-white/80 p-10 text-muted-foreground">
+                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                    Loading services...
+                  </div>
+                ) : (
+                  <>
                 {Object.entries(groupedServices).map(([category, categoryServices]) => (
                   <div key={category}>
                     <div className="flex items-center gap-2 mb-4">
@@ -490,18 +506,21 @@ export default function SalonBooking() {
                         <Card 
                           key={service.id}
                           className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 ${
-                            selectedService?.id === service.id 
+                            selectedServices.some((item) => item.id === service.id)
                               ? 'border-purple-500 bg-purple-50 shadow-lg shadow-purple-500/20' 
                               : 'border-transparent hover:border-purple-200'
                           }`}
-                          onClick={() => handleServiceSelect(service)}
+                          onClick={() => handleServiceToggle(service)}
                         >
                           <CardContent className="p-5">
                             <div className="flex justify-between items-start mb-3">
                               <h4 className="font-semibold text-foreground">{service.name}</h4>
+                              {selectedServices.some((item) => item.id === service.id) && (
+                                <Badge className="bg-purple-600 text-white">Selected</Badge>
+                              )}
                               {category === 'Premium' && (
                                 <Badge className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
-                                  <Star className="w-3 h-3 mr-1" />
+                                  <Crown className="w-3 h-3 mr-1" />
                                   Premium
                                 </Badge>
                               )}
@@ -521,6 +540,27 @@ export default function SalonBooking() {
                     </div>
                   </div>
                 ))}
+
+                <div className="flex items-center justify-between rounded-xl border border-purple-100 bg-purple-50 p-4">
+                  <div>
+                    <p className="font-medium text-purple-900">
+                      {selectedServices.length} service{selectedServices.length === 1 ? "" : "s"} selected
+                    </p>
+                    <p className="text-sm text-purple-700">
+                      Total duration: {formatDuration(totalDuration)} • Total: {formatPrice(totalPrice)}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={continueToSchedule}
+                    disabled={!selectedServices.length}
+                    className="bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
+                  >
+                    Continue
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -535,15 +575,45 @@ export default function SalonBooking() {
                   Back to Services
                 </Button>
 
-                {selectedService && (
+                {selectedServices.length > 0 && (
+                  <div className="mb-4 rounded-xl border border-purple-100 bg-white p-4">
+                    <p className="mb-3 text-sm font-medium text-muted-foreground">Selected services (tap x to remove):</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedServices.map((service) => (
+                        <Badge
+                          key={`chip-${service.id}`}
+                          variant="secondary"
+                          className="flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-purple-800"
+                        >
+                          <span>{service.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedService(service.id)}
+                            className="rounded-full p-0.5 text-purple-700 transition-colors hover:bg-purple-200"
+                            aria-label={`Remove ${service.name}`}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedServices.length > 0 && (
                   <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-amber-50 border border-purple-100 mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center">
                         <Scissors className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold">{selectedService.name}</p>
-                        <p className="text-sm text-muted-foreground">{formatDuration(selectedService.duration)} • {formatPrice(selectedService.price, selectedService.priceMax)}</p>
+                        <p className="font-semibold">
+                          {selectedServices.length} service{selectedServices.length === 1 ? "" : "s"} selected
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedServices.map((service) => service.name).join(", ")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{formatDuration(totalDuration)} • {formatPrice(totalPrice)}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
@@ -567,7 +637,7 @@ export default function SalonBooking() {
                         onSelect={handleDateSelect}
                         disabled={(date) => 
                           isBefore(date, startOfToday()) || 
-                          date.getDay() === 0 ||
+                          isSalonClosedDay(date) ||
                           isBefore(addDays(new Date(), 60), date)
                         }
                         className="rounded-xl border shadow-sm"
@@ -581,6 +651,9 @@ export default function SalonBooking() {
                           <div className="w-3 h-3 rounded-full bg-purple-500" />
                           <span>Selected</span>
                         </div>
+                      </div>
+                      <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-muted-foreground">
+                        Monday is closed. Tuesday to Saturday and Sunday appointments start from 2:00 PM.
                       </div>
                     </CardContent>
                   </Card>
@@ -643,7 +716,7 @@ export default function SalonBooking() {
                                 >
                                   {slot}
                                   {isPriority && selectedSlot !== slot && (
-                                    <Star className="w-3 h-3 absolute -top-1 -right-1 text-amber-500 fill-amber-500" />
+                                    <Crown className="w-3 h-3 absolute -top-1 -right-1 text-amber-500" />
                                   )}
                                 </Button>
                               );
@@ -774,12 +847,14 @@ export default function SalonBooking() {
                       <CardContent className="p-6 space-y-4">
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Service</span>
-                            <span className="font-medium text-right">{selectedService?.name}</span>
+                            <span className="text-muted-foreground">Services</span>
+                            <span className="font-medium text-right">
+                              {selectedServices.length} item{selectedServices.length === 1 ? "" : "s"}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Duration</span>
-                            <span className="font-medium">{selectedService && formatDuration(selectedService.duration)}</span>
+                            <span className="font-medium">{formatDuration(totalDuration)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Date</span>
@@ -792,35 +867,38 @@ export default function SalonBooking() {
                         </div>
 
                         <div className="border-t pt-4">
+                          {!!selectedServices.length && (
+                            <div className="mb-3 space-y-1 text-sm">
+                              {selectedServices.map((service) => (
+                                <div key={service.id} className="flex items-center justify-between">
+                                  <span className="text-muted-foreground">{service.name}</span>
+                                  <span>{formatPrice(service.price, service.priceMax)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                           <div className="flex justify-between items-center">
                             <span className="font-semibold">Total</span>
                             <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
-                              {selectedService && formatPrice(selectedService.price, selectedService.priceMax)}
+                              {formatPrice(totalPrice)}
                             </span>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">{selectedService?.priceMax ? 'Final price depends on hair length/complexity • ' : ''}Pay at the salon</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Deposit required to confirm booking
+                          </p>
                         </div>
 
                         <Button
-                          className="w-full h-12 bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-lg font-semibold"
+                          className="w-full font-semibold bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-700 hover:to-amber-600"
                           onClick={handleBooking}
-                          disabled={loading || !formData.customerName || !formData.customerPhone}
+                          disabled={!formData.customerName || !formData.customerPhone || !selectedServices.length}
                         >
-                          {loading ? (
-                            <>
-                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                              Booking...
-                            </>
-                          ) : (
-                            <>
-                              <Check className="w-5 h-5 mr-2" />
-                              Confirm Booking
-                            </>
-                          )}
+                          <Check className="w-4 h-4 mr-2" />
+                          Pay & Confirm
                         </Button>
 
                         <p className="text-xs text-center text-muted-foreground">
-                          By booking, you agree to our cancellation policy
+                          50% upfront to confirm. Balance due at your appointment.
                         </p>
                       </CardContent>
                     </Card>
@@ -831,6 +909,34 @@ export default function SalonBooking() {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && paymentData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 flex justify-between items-center">
+              <h2 className="text-lg font-bold">Complete Payment</h2>
+              <button 
+                onClick={() => setShowPaymentModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <QuicktellerCheckout
+                amount={paymentData.amount}
+                customerName={paymentData.customerName}
+                customerEmail={paymentData.customerEmail}
+                customerPhone={paymentData.customerPhone}
+                description={`Salon Booking - ${selectedServices.map((service) => service.name).join(", ")}`}
+                onPaymentSuccess={handlePaymentSuccess}
+                onDismiss={() => setShowPaymentModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       
       <Footer />
     </div>

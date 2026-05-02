@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, UserPlus, Users, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, UserPlus, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FamilyMember {
@@ -19,13 +19,14 @@ interface FamilyMember {
   profiles: any;
 }
 
+const DEFAULT_MAX_MEMBERS = 5;
+
 export default function FamilyAccounts() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [hasAccess, setHasAccess] = useState(false);
-  const [maxMembers, setMaxMembers] = useState(1);
+  const [maxMembers, setMaxMembers] = useState(DEFAULT_MAX_MEMBERS);
   const [adding, setAdding] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberName, setNewMemberName] = useState("");
@@ -43,21 +44,6 @@ export default function FamilyAccounts() {
         navigate("/auth");
         return;
       }
-
-      // Check subscription access
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select(`
-          *,
-          subscription_plans (max_family_members)
-        `)
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .single();
-
-      const maxFamilyMembers = subData?.subscription_plans?.max_family_members || 1;
-      setMaxMembers(maxFamilyMembers);
-      setHasAccess(maxFamilyMembers > 1);
 
       // Load family members
       const { data: membersData, error: membersError } = await supabase
@@ -94,7 +80,7 @@ export default function FamilyAccounts() {
     if (familyMembers.length >= maxMembers - 1) {
       toast({
         title: "Limit reached",
-        description: `Your plan allows up to ${maxMembers} members`,
+        description: `You can add up to ${maxMembers} members`,
         variant: "destructive",
       });
       return;
@@ -177,29 +163,6 @@ export default function FamilyAccounts() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <Card className="text-center p-12">
-            <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-2">Upgrade to Family Plan</h2>
-            <p className="text-muted-foreground mb-6">
-              Manage your family's skin health all in one place with our Family Plan
-            </p>
-            <Button onClick={() => navigate("/subscription")}>
-              View Subscription Plans
-            </Button>
-          </Card>
-        </div>
       </div>
     );
   }

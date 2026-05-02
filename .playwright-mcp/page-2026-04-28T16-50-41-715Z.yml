@@ -1,0 +1,375 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e6]:
+        - button "IMSTEV NATURALS IMSTEV NATURALS" [ref=e7] [cursor=pointer]:
+          - img "IMSTEV NATURALS" [ref=e10]
+          - generic [ref=e13]: IMSTEV NATURALS
+        - button [ref=e14] [cursor=pointer]:
+          - img
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - img [ref=e25]
+          - generic [ref=e27]: Clinical-Grade AI Analysis
+        - heading "Your Hair & Skin's Personal AI Expert" [level=1] [ref=e31]:
+          - text: Your Hair & Skin's
+          - generic [ref=e32]: Personal AI Expert
+        - paragraph [ref=e33]: Get instant, accurate hair and skin analysis powered by medical-grade AI. Specialized expertise for 4A-4C hair types with personalized treatment plans.
+        - generic [ref=e34]:
+          - button "Start Scan" [ref=e35] [cursor=pointer]:
+            - img
+            - text: Start Scan
+            - img
+          - button "Sign In" [ref=e36] [cursor=pointer]
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - generic [ref=e41]: A
+              - generic [ref=e43]: B
+              - generic [ref=e45]: C
+              - generic [ref=e47]: D
+            - generic [ref=e48]: 100K+ Users
+          - generic [ref=e49]:
+            - img [ref=e50]
+            - img [ref=e52]
+            - img [ref=e54]
+            - img [ref=e56]
+            - img [ref=e58]
+            - generic [ref=e60]: 4.9/5
+      - generic [ref=e65]:
+        - img "Hair Analysis Preview" [ref=e66]
+        - generic [ref=e77]:
+          - generic [ref=e78]: 4C COILS
+          - generic [ref=e79]: Detected
+        - generic [ref=e89]:
+          - generic [ref=e90]: HEALTHY
+          - generic [ref=e91]: Scalp
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - img [ref=e96]
+            - generic [ref=e98]:
+              - paragraph [ref=e99]: AI Analysis Complete
+              - paragraph [ref=e100]: 4C Natural Hair Detected
+            - generic [ref=e102]: 98% Match
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]: Porosity
+              - generic [ref=e106]: Normal
+            - generic [ref=e107]:
+              - generic [ref=e108]: Moisture
+              - generic [ref=e109]: 85%
+            - generic [ref=e110]:
+              - generic [ref=e111]: Health
+              - generic [ref=e112]: Great
+    - generic [ref=e116]:
+      - generic [ref=e117]:
+        - generic [ref=e118]:
+          - img [ref=e119]
+          - text: 100% Organic Products
+        - heading "IMSTEV NATURALS Organic Collection" [level=2] [ref=e122]
+        - paragraph [ref=e123]: Premium handcrafted organic hair care products made with love in Nigeria. Nourish your natural beauty with nature's finest ingredients.
+      - generic [ref=e124]:
+        - generic [ref=e127]:
+          - img "IMSTEV NATURALS Organic Products" [ref=e128]
+          - generic [ref=e132]:
+            - img [ref=e134]
+            - generic [ref=e137]:
+              - paragraph [ref=e138]: Complete Hair Care Range
+              - paragraph [ref=e139]: Shampoo, Conditioner, Oils & More
+            - button "Shop Now" [ref=e140] [cursor=pointer]
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - generic [ref=e144]: "1"
+              - generic [ref=e145]:
+                - heading "Deep Cleanse Shampoo" [level=4] [ref=e146]
+                - paragraph [ref=e147]: African Black Soap with Tea Tree Oil
+            - generic [ref=e148]:
+              - generic [ref=e149]: "2"
+              - generic [ref=e150]:
+                - heading "Deep Conditioner" [level=4] [ref=e151]
+                - paragraph [ref=e152]: Protein & Moisture Rich Formula
+            - generic [ref=e153]:
+              - generic [ref=e154]: "3"
+              - generic [ref=e155]:
+                - heading "Scalp & Hair Growth Oil" [level=4] [ref=e156]
+                - paragraph [ref=e157]: Argan, Jojoba & Castor Oil Infused
+            - generic [ref=e158]:
+              - generic [ref=e159]: "4"
+              - generic [ref=e160]:
+                - heading "Leave-In Conditioner" [level=4] [ref=e161]
+                - paragraph [ref=e162]: Clove Oil & Goat Milk Extract
+            - generic [ref=e163]:
+              - generic [ref=e164]: "5"
+              - generic [ref=e165]:
+                - heading "Hair Softening Butter" [level=4] [ref=e166]
+                - paragraph [ref=e167]: For Strong & Healthy Roots
+            - generic [ref=e168]:
+              - generic [ref=e169]: "6"
+              - generic [ref=e170]:
+                - heading "Organic Coconut Oil" [level=4] [ref=e171]
+                - paragraph [ref=e172]: Pure Cold-Pressed Formula
+          - button "View All Products" [ref=e173] [cursor=pointer]:
+            - img
+            - text: View All Products
+    - generic [ref=e175]:
+      - generic [ref=e176]:
+        - generic [ref=e177]: Our Services
+        - heading "What We Offer" [level=2] [ref=e178]
+        - paragraph [ref=e179]: From AI-powered analysis to premium salon services and organic products
+      - generic [ref=e180]:
+        - generic [ref=e181] [cursor=pointer]:
+          - img [ref=e183]
+          - heading "AI Hair Analysis" [level=3] [ref=e189]
+          - paragraph [ref=e190]: Advanced AI technology to analyze your hair type, porosity, and health. Get personalized recommendations for 4A-4C hair types.
+        - generic [ref=e191] [cursor=pointer]:
+          - img [ref=e193]
+          - heading "Specialist Salon" [level=3] [ref=e199]
+          - paragraph [ref=e200]: Book appointments at our Hair Specialist Salon for professional styling, treatments, and personalized hair care services.
+        - generic [ref=e201] [cursor=pointer]:
+          - img [ref=e203]
+          - heading "Organic Products" [level=3] [ref=e206]
+          - paragraph [ref=e207]: Shop our premium range of handcrafted organic hair care products made with natural Nigerian ingredients.
+        - generic [ref=e208] [cursor=pointer]:
+          - img [ref=e210]
+          - heading "Appointment Booking" [level=3] [ref=e212]
+          - paragraph [ref=e213]: Easy online booking system. Request an appointment and receive a confirmed date for your salon visit.
+        - generic [ref=e214] [cursor=pointer]:
+          - img [ref=e216]
+          - heading "Track Your Journey" [level=3] [ref=e219]
+          - paragraph [ref=e220]: Monitor your hair growth and health progress with before/after comparisons and AI-measured tracking.
+        - generic [ref=e221] [cursor=pointer]:
+          - img [ref=e223]
+          - heading "Custom Treatments" [level=3] [ref=e225]
+          - paragraph [ref=e226]: Get personalized treatment formulas and regimens based on your AI analysis results and specific hair concerns.
+    - generic [ref=e229]:
+      - generic [ref=e230]:
+        - generic [ref=e231]:
+          - img [ref=e232]
+          - text: Hair Specialist Salon
+        - heading "IMSTEV NATURALS Hair Specialist Salon" [level=2] [ref=e238]
+        - paragraph [ref=e239]: Experience premium hair care services by our expert stylists. Book an appointment today and let us transform your natural beauty.
+      - generic [ref=e240]:
+        - generic [ref=e241]:
+          - generic [ref=e242] [cursor=pointer]:
+            - img "Protective Styling" [ref=e244]
+            - generic [ref=e248]:
+              - generic [ref=e249]: 4C Twist Updo
+              - paragraph [ref=e250]: Protective Styling
+            - img [ref=e252]
+          - generic [ref=e254] [cursor=pointer]:
+            - img "Kids Natural" [ref=e256]
+            - generic [ref=e260]:
+              - generic [ref=e261]: Beaded Twists
+              - paragraph [ref=e262]: Kids Natural
+            - img [ref=e264]
+          - generic [ref=e266] [cursor=pointer]:
+            - img "Cornrow Art" [ref=e268]
+            - generic [ref=e272]:
+              - generic [ref=e273]: Flat Twist Style
+              - paragraph [ref=e274]: Cornrow Art
+            - img [ref=e276]
+          - generic [ref=e278] [cursor=pointer]:
+            - img "Loc Maintenance" [ref=e280]
+            - generic [ref=e284]:
+              - generic [ref=e285]: Professional Locs
+              - paragraph [ref=e286]: Loc Maintenance
+            - img [ref=e288]
+        - generic [ref=e290]:
+          - generic [ref=e291]:
+            - heading "How Booking Works" [level=3] [ref=e292]:
+              - img [ref=e293]
+              - text: How Booking Works
+            - generic [ref=e295]:
+              - generic [ref=e296]:
+                - generic [ref=e297]: "1"
+                - generic [ref=e298]:
+                  - heading "Request Appointment" [level=4] [ref=e299]
+                  - paragraph [ref=e300]: Fill out our booking form with your preferred dates and services
+              - generic [ref=e301]:
+                - generic [ref=e302]: "2"
+                - generic [ref=e303]:
+                  - heading "Confirmation Call" [level=4] [ref=e304]
+                  - paragraph [ref=e305]: Our team will contact you to confirm your appointment slot
+              - generic [ref=e306]:
+                - generic [ref=e307]: "3"
+                - generic [ref=e308]:
+                  - heading "Visit Our Salon" [level=4] [ref=e309]
+                  - paragraph [ref=e310]: Come in on your scheduled date and enjoy our premium services
+          - generic [ref=e311]:
+            - generic [ref=e312]:
+              - img [ref=e313]
+              - paragraph [ref=e316]: Opening Hours
+              - paragraph [ref=e317]: 9AM - 7PM
+            - generic [ref=e318]:
+              - img [ref=e319]
+              - paragraph [ref=e321]: Call Us
+              - paragraph [ref=e322]: Contact
+          - button "Book Appointment" [ref=e323] [cursor=pointer]:
+            - img
+            - text: Book Appointment
+    - generic [ref=e327]:
+      - generic [ref=e329]:
+        - generic [ref=e330]:
+          - generic [ref=e331]:
+            - img [ref=e332]
+            - heading "95%" [level=4] [ref=e334]
+            - paragraph [ref=e335]: Accuracy Rate
+          - generic [ref=e336]:
+            - img [ref=e337]
+            - heading "100K+" [level=4] [ref=e342]
+            - paragraph [ref=e343]: Happy Users
+        - generic [ref=e344]:
+          - generic [ref=e345]:
+            - img [ref=e346]
+            - heading "HIPAA" [level=4] [ref=e348]
+            - paragraph [ref=e349]: Compliant
+          - generic [ref=e350]:
+            - img [ref=e351]
+            - heading "4.9/5" [level=4] [ref=e353]
+            - paragraph [ref=e354]: User Rating
+      - generic [ref=e355]:
+        - generic [ref=e356]: Why IMSTEV NATURALS?
+        - heading "Trusted by Thousands for Natural Beauty" [level=2] [ref=e357]
+        - paragraph [ref=e358]: Our AI is trained on diverse datasets specifically including African hair types and skin tones, ensuring accurate analysis for everyone.
+        - list [ref=e359]:
+          - listitem [ref=e360]:
+            - img [ref=e362]
+            - generic [ref=e365]: Expert AI trained for African hair types
+          - listitem [ref=e366]:
+            - img [ref=e368]
+            - generic [ref=e371]: Premium organic products made in Nigeria
+          - listitem [ref=e372]:
+            - img [ref=e374]
+            - generic [ref=e377]: Professional salon with certified stylists
+          - listitem [ref=e378]:
+            - img [ref=e380]
+            - generic [ref=e383]: Personalized hair care recommendations
+        - button "Try Scan" [ref=e384] [cursor=pointer]:
+          - text: Try Scan
+          - img
+    - generic [ref=e388]:
+      - heading "Start Your Natural Beauty Journey" [level=2] [ref=e389]
+      - paragraph [ref=e390]: Join thousands who trust IMSTEV NATURALS for their hair care needs. From AI analysis to organic products and expert salon services.
+      - generic [ref=e391]:
+        - button "Get Your Analysis" [ref=e392] [cursor=pointer]:
+          - img
+          - text: Get Your Analysis
+        - button "Book Salon Appointment" [ref=e393] [cursor=pointer]:
+          - img
+          - text: Book Salon Appointment
+    - generic [ref=e396]:
+      - generic [ref=e397]:
+        - generic [ref=e398]:
+          - img "IMSTEV NATURALS" [ref=e400]
+          - generic [ref=e401]:
+            - text: IMSTEV NATURALS
+            - paragraph [ref=e402]: Home of Nature's Beauty
+        - generic [ref=e403]:
+          - generic [ref=e404]: Organic Products
+          - generic [ref=e405]: Hair Specialist Salon
+          - generic [ref=e406]: AI Analysis
+      - paragraph [ref=e408]:
+        - strong [ref=e409]: "Disclaimer:"
+        - text: IMSTEV NATURALS AI is a hair care guidance tool and wellness assistant. It is not a substitute for professional medical advice. For serious scalp or skin conditions, please consult a licensed dermatologist.
+    - contentinfo [ref=e410]:
+      - generic [ref=e412]:
+        - generic [ref=e414]:
+          - generic [ref=e415]:
+            - generic [ref=e416]:
+              - img "IMSTEV NATURALS" [ref=e419]
+              - generic [ref=e420]:
+                - heading "IMSTEV NATURALS" [level=3] [ref=e421]
+                - paragraph [ref=e422]: Home of Nature's Beauty
+            - paragraph [ref=e423]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+            - generic [ref=e424]:
+              - link "Social link 1" [ref=e425] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e426]
+              - link "Social link 2" [ref=e428] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e429]
+              - link "Social link 3" [ref=e432] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e433]
+          - generic [ref=e435]:
+            - heading "Quick Links" [level=4] [ref=e436]:
+              - img [ref=e437]
+              - text: Quick Links
+            - list [ref=e439]:
+              - listitem [ref=e440]:
+                - link "Home" [ref=e441] [cursor=pointer]:
+                  - /url: /
+                  - text: Home
+              - listitem [ref=e443]:
+                - link "Community" [ref=e444] [cursor=pointer]:
+                  - /url: /community
+                  - text: Community
+              - listitem [ref=e446]:
+                - link "Salon" [ref=e447] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon
+              - listitem [ref=e449]:
+                - link "Shop" [ref=e450] [cursor=pointer]:
+                  - /url: /shop
+                  - text: Shop
+              - listitem [ref=e452]:
+                - link "AI Scan" [ref=e453] [cursor=pointer]:
+                  - /url: /scan
+                  - text: AI Scan
+          - generic [ref=e455]:
+            - heading "Our Services" [level=4] [ref=e456]:
+              - img [ref=e457]
+              - text: Our Services
+            - list [ref=e459]:
+              - listitem [ref=e460]:
+                - link "Hair Analysis" [ref=e461] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Hair Analysis
+              - listitem [ref=e463]:
+                - link "Skin Analysis" [ref=e464] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Skin Analysis
+              - listitem [ref=e466]:
+                - link "Salon Booking" [ref=e467] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon Booking
+              - listitem [ref=e469]:
+                - link "Custom Formulations" [ref=e470] [cursor=pointer]:
+                  - /url: /formulation
+                  - text: Custom Formulations
+          - generic [ref=e472]:
+            - heading "Contact Us" [level=4] [ref=e473]:
+              - img [ref=e474]
+              - text: Contact Us
+            - list [ref=e476]:
+              - listitem [ref=e477]:
+                - img [ref=e478]
+                - generic [ref=e481]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+              - listitem [ref=e482]:
+                - link "+234 903 350 5038" [ref=e483] [cursor=pointer]:
+                  - /url: tel:+2349033505038
+                  - img [ref=e484]
+                  - generic [ref=e486]: +234 903 350 5038
+              - listitem [ref=e487]:
+                - link "contact@imstevnaturals.com" [ref=e488] [cursor=pointer]:
+                  - /url: mailto:contact@imstevnaturals.com
+                  - img [ref=e489]
+                  - generic [ref=e492]: contact@imstevnaturals.com
+            - generic [ref=e493]:
+              - paragraph [ref=e494]: Salon Hours
+              - paragraph [ref=e495]: "Mon - Sat: 9AM - 7PM"
+              - paragraph [ref=e496]: "Sunday: By Appointment"
+        - generic [ref=e498]:
+          - paragraph [ref=e499]: © 2026 IMSTEV NATURALS. All rights reserved.
+          - generic [ref=e500]:
+            - link "Privacy Policy" [ref=e501] [cursor=pointer]:
+              - /url: /
+            - link "Terms of Service" [ref=e502] [cursor=pointer]:
+              - /url: /
+            - link "Refund Policy" [ref=e503] [cursor=pointer]:
+              - /url: /

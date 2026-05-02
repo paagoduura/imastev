@@ -36,7 +36,6 @@ export default function CustomFormulation() {
   const [formulations, setFormulations] = useState<Formulation[]>([]);
   const [recentDiagnoses, setRecentDiagnoses] = useState<Diagnosis[]>([]);
   const [generating, setGenerating] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -49,20 +48,6 @@ export default function CustomFormulation() {
         navigate("/auth");
         return;
       }
-
-      // Check subscription access
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select(`
-          *,
-          subscription_plans (includes_custom_formulations)
-        `)
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .single();
-
-      const hasFormulationAccess = subData?.subscription_plans?.includes_custom_formulations || false;
-      setHasAccess(hasFormulationAccess);
 
       // Load existing formulations
       const { data: formulationsData, error: formulationsError } = await supabase
@@ -131,29 +116,6 @@ export default function CustomFormulation() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <Card className="text-center p-12">
-            <Sparkles className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-2">Upgrade to Access Custom Formulations</h2>
-            <p className="text-muted-foreground mb-6">
-              Get AI-powered personalized skincare formulations with Premium or Family plans
-            </p>
-            <Button onClick={() => navigate("/subscription")}>
-              View Subscription Plans
-            </Button>
-          </Card>
-        </div>
       </div>
     );
   }

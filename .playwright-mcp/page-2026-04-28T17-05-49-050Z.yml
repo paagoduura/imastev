@@ -1,0 +1,212 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - button "Back" [ref=e4] [cursor=pointer]:
+    - img
+    - text: Back
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e8]:
+        - button "IMSTEV NATURALS IMSTEV NATURALS" [ref=e9] [cursor=pointer]:
+          - img "IMSTEV NATURALS" [ref=e12]
+          - generic [ref=e15]: IMSTEV NATURALS
+        - button [ref=e16] [cursor=pointer]:
+          - img
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - generic [ref=e24]:
+          - img "Radiant skin, softly defined natural texture" [ref=e25]
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - img [ref=e30]
+              - text: Melanin glow
+            - heading "Radiant skin, softly defined natural texture" [level=2] [ref=e32]
+            - paragraph [ref=e33]: A premium editorial moment celebrating healthy melanin-rich skin and beautifully maintained curls.
+        - generic [ref=e35]:
+          - img "Protective styling with polish and presence" [ref=e36]
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - img [ref=e41]
+              - text: Protective style
+            - heading "Protective styling with polish and presence" [level=2] [ref=e43]
+            - paragraph [ref=e44]: Elegant braid and twist artistry framed with the calm confidence of a modern beauty studio.
+        - generic [ref=e46]:
+          - img "Healthy coils, rich shine, effortless beauty" [ref=e47]
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - img [ref=e52]
+              - text: Natural texture
+            - heading "Healthy coils, rich shine, effortless beauty" [level=2] [ref=e54]
+            - paragraph [ref=e55]: Beautiful African and Black hair in a clean, aspirational composition that still feels natural and warm.
+        - generic [ref=e57]:
+          - img "Classic salon luxury for textured hair" [ref=e58]
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - img [ref=e63]
+              - text: Salon finish
+            - heading "Classic salon luxury for textured hair" [level=2] [ref=e65]
+            - paragraph [ref=e66]: A refined, world-class visual cue that keeps every page feeling elevated without overpowering the interface.
+      - generic [ref=e68]:
+        - button "Go to slide 1" [ref=e69] [cursor=pointer]
+        - button "Go to slide 2" [ref=e70] [cursor=pointer]
+        - button "Go to slide 3" [ref=e71] [cursor=pointer]
+        - button "Go to slide 4" [ref=e72] [cursor=pointer]
+    - main [ref=e73]:
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - generic [ref=e78]: Community Hub
+          - heading "A calmer, smarter space for hair and skin conversations" [level=1] [ref=e79]
+          - paragraph [ref=e80]: Share polished progress updates, ask focused questions, and learn from routines that are actually working for people like you.
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - img [ref=e84]
+            - generic [ref=e89]:
+              - paragraph [ref=e90]: Thoughtful posts
+              - paragraph [ref=e91]: Tighter image framing and cleaner conversations.
+          - generic [ref=e92]:
+            - img [ref=e94]
+            - generic [ref=e96]:
+              - paragraph [ref=e97]: Mobile ready
+              - paragraph [ref=e98]: Built for fast replies and clean reading on phones.
+      - generic [ref=e99]:
+        - button "Hair circle Hair Community Protective styling, growth progress, scalp care, moisture routines, and salon wisdom." [ref=e100] [cursor=pointer]:
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - img [ref=e104]
+              - generic [ref=e106]: Hair circle
+            - paragraph [ref=e107]: Hair Community
+            - paragraph [ref=e108]: Protective styling, growth progress, scalp care, moisture routines, and salon wisdom.
+        - button "Skin circle Skin Community Barrier repair, acne support, glow routines, sensitive-skin care, and trusted progress notes." [ref=e109] [cursor=pointer]:
+          - generic [ref=e110]:
+            - generic [ref=e111]:
+              - img [ref=e113]
+              - generic [ref=e118]: Skin circle
+            - paragraph [ref=e119]: Skin Community
+            - paragraph [ref=e120]: Barrier repair, acne support, glow routines, sensitive-skin care, and trusted progress notes.
+      - generic [ref=e121]:
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125]: New post
+            - heading "Share Your Hair Journey" [level=3] [ref=e126]
+            - paragraph [ref=e127]: Share a routine update, question, progress shot, or styling win.
+          - generic [ref=e128]:
+            - textbox "Your display name" [ref=e129]: Community Member
+            - textbox "What's new in your hair journey?" [ref=e130]
+            - generic [ref=e131]:
+              - button "😀" [ref=e132] [cursor=pointer]
+              - button "😍" [ref=e133] [cursor=pointer]
+              - button "🔥" [ref=e134] [cursor=pointer]
+              - button "💧" [ref=e135] [cursor=pointer]
+              - button "✨" [ref=e136] [cursor=pointer]
+              - button "👏" [ref=e137] [cursor=pointer]
+              - button "💪" [ref=e138] [cursor=pointer]
+              - button "💚" [ref=e139] [cursor=pointer]
+            - generic [ref=e141] [cursor=pointer]:
+              - img [ref=e143]
+              - generic [ref=e147]:
+                - paragraph [ref=e148]: Add a polished image
+                - paragraph [ref=e149]: Best with portrait or balanced landscape framing. Up to 10MB.
+            - generic [ref=e150]:
+              - paragraph [ref=e151]: Clear, close-up images get better community feedback.
+              - button "Publish" [ref=e152] [cursor=pointer]:
+                - img
+                - text: Publish
+        - generic [ref=e155]: Loading community posts...
+    - contentinfo [ref=e156]:
+      - generic [ref=e158]:
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - img "IMSTEV NATURALS" [ref=e165]
+              - generic [ref=e166]:
+                - heading "IMSTEV NATURALS" [level=3] [ref=e167]
+                - paragraph [ref=e168]: Home of Nature's Beauty
+            - paragraph [ref=e169]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+            - generic [ref=e170]:
+              - link "Social link 1" [ref=e171] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e172]
+              - link "Social link 2" [ref=e174] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e175]
+              - link "Social link 3" [ref=e178] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e179]
+          - generic [ref=e181]:
+            - heading "Quick Links" [level=4] [ref=e182]:
+              - img [ref=e183]
+              - text: Quick Links
+            - list [ref=e185]:
+              - listitem [ref=e186]:
+                - link "Home" [ref=e187] [cursor=pointer]:
+                  - /url: /
+                  - text: Home
+              - listitem [ref=e189]:
+                - link "Community" [ref=e190] [cursor=pointer]:
+                  - /url: /community
+                  - text: Community
+              - listitem [ref=e192]:
+                - link "Salon" [ref=e193] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon
+              - listitem [ref=e195]:
+                - link "Shop" [ref=e196] [cursor=pointer]:
+                  - /url: /shop
+                  - text: Shop
+              - listitem [ref=e198]:
+                - link "AI Scan" [ref=e199] [cursor=pointer]:
+                  - /url: /scan
+                  - text: AI Scan
+          - generic [ref=e201]:
+            - heading "Our Services" [level=4] [ref=e202]:
+              - img [ref=e203]
+              - text: Our Services
+            - list [ref=e205]:
+              - listitem [ref=e206]:
+                - link "Hair Analysis" [ref=e207] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Hair Analysis
+              - listitem [ref=e209]:
+                - link "Skin Analysis" [ref=e210] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Skin Analysis
+              - listitem [ref=e212]:
+                - link "Salon Booking" [ref=e213] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon Booking
+              - listitem [ref=e215]:
+                - link "Custom Formulations" [ref=e216] [cursor=pointer]:
+                  - /url: /formulation
+                  - text: Custom Formulations
+          - generic [ref=e218]:
+            - heading "Contact Us" [level=4] [ref=e219]:
+              - img [ref=e220]
+              - text: Contact Us
+            - list [ref=e222]:
+              - listitem [ref=e223]:
+                - img [ref=e224]
+                - generic [ref=e227]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+              - listitem [ref=e228]:
+                - link "+234 903 350 5038" [ref=e229] [cursor=pointer]:
+                  - /url: tel:+2349033505038
+                  - img [ref=e230]
+                  - generic [ref=e232]: +234 903 350 5038
+              - listitem [ref=e233]:
+                - link "contact@imstevnaturals.com" [ref=e234] [cursor=pointer]:
+                  - /url: mailto:contact@imstevnaturals.com
+                  - img [ref=e235]
+                  - generic [ref=e238]: contact@imstevnaturals.com
+            - generic [ref=e239]:
+              - paragraph [ref=e240]: Salon Hours
+              - paragraph [ref=e241]: "Mon - Sat: 9AM - 7PM"
+              - paragraph [ref=e242]: "Sunday: By Appointment"
+        - generic [ref=e244]:
+          - paragraph [ref=e245]: © 2026 IMSTEV NATURALS. All rights reserved.
+          - generic [ref=e246]:
+            - link "Privacy Policy" [ref=e247] [cursor=pointer]:
+              - /url: /community
+            - link "Terms of Service" [ref=e248] [cursor=pointer]:
+              - /url: /community
+            - link "Refund Policy" [ref=e249] [cursor=pointer]:
+              - /url: /community

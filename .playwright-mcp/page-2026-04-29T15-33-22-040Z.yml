@@ -1,0 +1,62 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list [ref=e4]:
+        - status [ref=e5]:
+          - generic [ref=e6]:
+            - generic [ref=e7]: Sign in required
+            - generic [ref=e8]: Please sign in or create an account to start a scan.
+          - button [ref=e9] [cursor=pointer]:
+            - img [ref=e10]
+    - region "Notifications alt+T"
+    - button "Back" [ref=e15] [cursor=pointer]:
+      - img
+      - text: Back
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - img "IMSTEV NATURALS" [ref=e27]
+        - heading "Welcome to IMSTEV NATURALS" [level=1] [ref=e28]
+        - paragraph [ref=e29]: Home of Nature's Beauty
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - img [ref=e34]
+          - generic [ref=e36]: Secure Authentication
+        - generic [ref=e37]:
+          - tablist [ref=e38]:
+            - tab "Sign In" [selected] [ref=e39] [cursor=pointer]
+            - tab "Sign Up" [ref=e40] [cursor=pointer]
+          - tabpanel "Sign In" [ref=e41]:
+            - generic [ref=e42]:
+              - generic [ref=e43]:
+                - text: Email Address
+                - generic [ref=e44]:
+                  - img [ref=e45]
+                  - textbox "Email Address" [ref=e48]:
+                    - /placeholder: you@example.com
+              - generic [ref=e49]:
+                - text: Password
+                - generic [ref=e50]:
+                  - img [ref=e51]
+                  - textbox "Password" [ref=e54]:
+                    - /placeholder: Enter your password
+                  - button "Show password" [ref=e55] [cursor=pointer]:
+                    - img [ref=e56]
+              - button "Sign In" [ref=e59] [cursor=pointer]:
+                - generic [ref=e60]:
+                  - text: Sign In
+                  - img
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - img [ref=e64]
+          - paragraph [ref=e66]: Secure
+          - paragraph [ref=e67]: Data Protected
+        - generic [ref=e68]:
+          - img [ref=e70]
+          - paragraph [ref=e75]: 100K+
+          - paragraph [ref=e76]: Happy Users
+        - generic [ref=e77]:
+          - img [ref=e79]
+          - paragraph [ref=e81]: 4.9/5
+          - paragraph [ref=e82]: Rating
+      - paragraph [ref=e83]: By continuing, you agree to our Terms of Service and Privacy Policy
+  - status [ref=e84]

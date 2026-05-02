@@ -1,0 +1,157 @@
+- generic [ref=e1]:
+  - dialog [ref=e2]:
+    - button "Close" [ref=e3] [cursor=pointer]:
+      - img [ref=e4]
+    - paragraph [ref=e6]:
+      - text: Unsplash uses cookies and similar technologies to secure our site, provide useful features to free and paying users, and to ensure optimal performance. By clicking "Accept all cookies" or closing this prompt, you consent to the use of all cookies. By clicking "Accept essential only", you consent only to the use of cookies that are strictly necessary for the site to function. See our
+      - link "Cookie Policy" [ref=e7] [cursor=pointer]:
+        - /url: /cookies
+      - text: for more info.
+    - link "Manage cookies" [ref=e9] [cursor=pointer]:
+      - /url: /cookies#manage-consent
+    - generic [ref=e10]:
+      - button "Accept essential only" [ref=e11] [cursor=pointer]
+      - button "Accept all cookies" [active] [ref=e12] [cursor=pointer]
+  - generic [ref=e15]:
+    - navigation [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - link "Unsplash Home" [ref=e19] [cursor=pointer]:
+            - /url: /
+            - img "Unsplash Home" [ref=e20]
+          - link "Photos" [ref=e22] [cursor=pointer]:
+            - /url: /
+            - img [ref=e23]
+          - link "Illustrations" [ref=e25] [cursor=pointer]:
+            - /url: /illustrations
+            - img [ref=e26]
+        - generic [ref=e28]:
+          - button "Explore" [ref=e29] [cursor=pointer]:
+            - img [ref=e30]
+          - button "Collections" [ref=e32] [cursor=pointer]:
+            - img [ref=e33]
+          - button "Download History" [ref=e35] [cursor=pointer]:
+            - img [ref=e36]
+        - button "Bookmarks" [ref=e39] [cursor=pointer]:
+          - img [ref=e40]
+      - generic [ref=e42]:
+        - link "Log in / Sign up" [ref=e43] [cursor=pointer]:
+          - /url: /login?referrer=%2Fphotos%2Fa-young-black-woman-with-dark-skin-and-short-hair-I0FCLHZYd54
+          - img [ref=e44]
+        - button "Language" [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+        - button "Menu" [ref=e49] [cursor=pointer]:
+          - img [ref=e50]
+    - generic [ref=e52]:
+      - generic [ref=e53]:
+        - navigation [ref=e54]:
+          - search "Find visuals sitewide" [ref=e56]:
+            - button "Search Unsplash" [ref=e57] [cursor=pointer]:
+              - img [ref=e58]
+            - combobox [ref=e60]:
+              - searchbox "Search Unsplash" [ref=e61]
+              - listbox
+            - button "Visual search" [ref=e63] [cursor=pointer]:
+              - img [ref=e64]
+          - generic [ref=e66]:
+            - link "Get Unsplash+" [ref=e67] [cursor=pointer]:
+              - /url: /plus
+            - link "Log in" [ref=e68] [cursor=pointer]:
+              - /url: /login?referrer=%2Fphotos%2Fa-young-black-woman-with-dark-skin-and-short-hair-I0FCLHZYd54
+          - button "Submit an image" [ref=e70] [cursor=pointer]
+        - generic [ref=e72]:
+          - banner [ref=e74]:
+            - generic [ref=e76]:
+              - link [ref=e77] [cursor=pointer]:
+                - /url: /@justbeingblythe
+              - generic [ref=e80]:
+                - link "Eze Joseph" [ref=e81] [cursor=pointer]:
+                  - /url: /@justbeingblythe
+                - link "Available for hire" [ref=e83] [cursor=pointer]:
+                  - /url: /@justbeingblythe
+                  - text: Available for hire
+                  - img [ref=e84]
+            - generic [ref=e86]:
+              - button "Bookmark" [ref=e87] [cursor=pointer]:
+                - img [ref=e88]
+              - button "Add to Collection" [ref=e90] [cursor=pointer]:
+                - img [ref=e91]
+              - link "Edit image" [ref=e93] [cursor=pointer]:
+                - /url: /plus?referrer=%2Fphotos%2Fa-young-black-woman-with-dark-skin-and-short-hair-I0FCLHZYd54
+                - text: Edit image
+                - img [ref=e94]
+              - generic [ref=e97]:
+                - link "Download free" [ref=e98] [cursor=pointer]:
+                  - /url: https://unsplash.com/photos/I0FCLHZYd54/download?force=true
+                - button "Choose download size" [ref=e100] [cursor=pointer]:
+                  - img [ref=e101]
+          - button "Zoom in on this image" [disabled] [ref=e106]:
+            - img "A young black woman with dark skin and short hair." [ref=e107]
+          - generic [ref=e108]:
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - generic [ref=e111]:
+                  - generic [ref=e112]: ––– –– ––
+                  - text: ––– –––– ––––
+                - generic [ref=e113]:
+                  - generic [ref=e114]: ––– –– ––
+                  - text: ––– –––– ––––
+              - generic [ref=e115]:
+                - button "Share this image" [ref=e116] [cursor=pointer]:
+                  - img [ref=e117]
+                  - generic [ref=e119]: Share
+                - button "Stats about this image" [ref=e120] [cursor=pointer]:
+                  - img [ref=e121]
+                  - generic [ref=e123]: Info
+                - button "More Actions" [ref=e124] [cursor=pointer]:
+                  - img [ref=e125]
+            - generic [ref=e128]:
+              - heading "A young black woman with dark skin and short hair." [level=1] [ref=e130]
+              - paragraph [ref=e134]: Download this free HD photo of portrait, face, beauty, and wellness by Eze Joseph (@justbeingblythe)
+              - generic [ref=e136]:
+                - generic [ref=e137]:
+                  - img [ref=e138]
+                  - generic [ref=e141]:
+                    - text: Published on
+                    - time [ref=e142]: December 13, 2025 (UTC)
+                - generic [ref=e143]:
+                  - img [ref=e144]
+                  - generic [ref=e146]:
+                    - text: Free to use under the
+                    - link "Unsplash License" [ref=e147] [cursor=pointer]:
+                      - /url: /license
+            - generic [ref=e149]:
+              - link "portrait" [ref=e150] [cursor=pointer]:
+                - /url: /s/photos/portrait
+              - link "face" [ref=e151] [cursor=pointer]:
+                - /url: /s/photos/face
+              - link "beauty" [ref=e152] [cursor=pointer]:
+                - /url: /s/photos/beauty
+              - link "wellness" [ref=e153] [cursor=pointer]:
+                - /url: /s/photos/wellness
+              - link "skincare" [ref=e154] [cursor=pointer]:
+                - /url: /s/photos/skincare
+              - link "skin" [ref=e155] [cursor=pointer]:
+                - /url: /s/photos/skin
+              - link "makeup" [ref=e156] [cursor=pointer]:
+                - /url: /s/photos/makeup
+              - link "self care" [ref=e157] [cursor=pointer]:
+                - /url: /s/photos/self-care
+              - link "cosmetics" [ref=e158] [cursor=pointer]:
+                - /url: /s/photos/cosmetics
+              - link "natural beauty" [ref=e159] [cursor=pointer]:
+                - /url: /s/photos/natural-beauty
+              - link "earring" [ref=e160] [cursor=pointer]:
+                - /url: /s/photos/earring
+              - link "elegance" [ref=e161] [cursor=pointer]:
+                - /url: /s/photos/elegance
+              - link "one person" [ref=e162] [cursor=pointer]:
+                - /url: /s/photos/one-person
+              - link "studio shot" [ref=e163] [cursor=pointer]:
+                - /url: /s/photos/studio-shot
+              - link "dark skin" [ref=e164] [cursor=pointer]:
+                - /url: /s/photos/dark-skin
+              - link "sophistication" [ref=e165] [cursor=pointer]:
+                - /url: /s/photos/sophistication
+      - generic:
+        - region "Notifications"

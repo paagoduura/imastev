@@ -1,15 +1,85 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, Download, TrendingUp, Calendar, ArrowLeft, Sparkles, Scan, ShoppingBag, Star, UserCheck } from "lucide-react";
+import { AlertCircle, Download, TrendingUp, Calendar, ArrowLeft, Sparkles, Scan, ShoppingBag, ThumbsUp, UserCheck, Lock } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { HeatmapVisualization } from "@/components/results/HeatmapVisualization";
 import { HairResultsDisplay } from "@/components/results/HairResultsDisplay";
 import { Footer } from "@/components/layout/Footer";
+import { buildApiUrl } from "@/lib/config";
+import { ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
+
+type AnalysisCondition = {
+  condition?: string;
+  name?: string;
+  severity?: string;
+  confidence?: number;
+  explanation?: string;
+};
+
+type SkinProfile = {
+  skin_type?: string;
+  fitzpatrick_scale?: string;
+};
+
+type DiagnosisRecord = {
+  id: string;
+  analysis_type?: string;
+  confidence_score?: number;
+  triage_level?: string;
+  analysis_data?: Record<string, unknown>;
+  conditions?: AnalysisCondition[];
+  hair_profile?: Record<string, unknown> | null;
+  skin_profile?: SkinProfile | null;
+  heatmap_regions?: Array<{
+    x: number;
+    y: number;
+    radius: number;
+    feature: string;
+    importance: number;
+    color?: string;
+  }> | null;
+};
+
+type ScanRecord = {
+  id: string;
+  scan_type?: string;
+  image_url?: string;
+};
+
+type ProductRecommendation = {
+  id?: string;
+  name: string;
+  category: string;
+  description: string;
+  price_ngn?: number;
+};
+
+type TreatmentPlanRecord = {
+  id: string;
+  recommendations?: string;
+  lifestyle_changes?: string;
+  product_recommendations?: ProductRecommendation[];
+  ingredients_to_use?: string[];
+  ingredients_to_avoid?: string[];
+  lifestyle_tips?: string[];
+  follow_up_days?: number;
+};
+
+type ProfileRecord = {
+  full_name?: string;
+  phone?: string;
+};
+
+type PaymentStatusResponse = {
+  paid?: boolean;
+};
+
+const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong");
 
 const Results = () => {
   const navigate = useNavigate();
@@ -17,19 +87,14 @@ const Results = () => {
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(true);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
-  const [scan, setScan] = useState<any>(null);
-  const [treatmentPlan, setTreatmentPlan] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [imstevProducts, setImstevProducts] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (scanId) {
-      fetchResults();
-    } else {
-      navigate('/dashboard');
-    }
-  }, [scanId]);
+  const [paymentStatus, setPaymentStatus] = useState<'checking' | 'paid' | 'unpaid' | 'error'>('checking');
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [diagnosis, setDiagnosis] = useState<DiagnosisRecord | null>(null);
+  const [scan, setScan] = useState<ScanRecord | null>(null);
+  const [treatmentPlan, setTreatmentPlan] = useState<TreatmentPlanRecord | null>(null);
+  const [products, setProducts] = useState<ProductRecommendation[]>([]);
+  const [imstevProducts, setImstevProducts] = useState<ProductRecommendation[]>([]);
+  const [profile, setProfile] = useState<ProfileRecord | null>(null);
 
   const downloadReport = () => {
     if (!diagnosis || !scan) {
@@ -41,7 +106,7 @@ const Results = () => {
       return;
     }
 
-    const isHair = scan?.analysis_type === 'hair';
+    const isHair = scan?.scan_type === 'hair';
     const analysisData = diagnosis?.analysis_data || {};
     const conditions = diagnosis?.conditions || [];
     const triageLevel = diagnosis?.triage_level || 'self_care';
@@ -110,8 +175,8 @@ DETECTED CONDITIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 `;
-      conditions.forEach((condition: any, index: number) => {
-        reportContent += `${index + 1}. ${condition.name || condition}
+      conditions.forEach((condition, index: number) => {
+        reportContent += `${index + 1}. ${condition.name || condition.condition || "Condition"}
    Severity: ${condition.severity || 'Moderate'}
    Confidence: ${condition.confidence || diagnosis?.confidence_score || 0}%
    
@@ -144,7 +209,7 @@ RECOMMENDED PRODUCTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 `;
-      products.forEach((product: any, index: number) => {
+      products.forEach((product, index: number) => {
         reportContent += `${index + 1}. ${product.name}
    Category: ${product.category}
    ${product.description}
@@ -197,6 +262,16 @@ www.imstevnaturals.com
       if (scanError) throw scanError;
       setScan(scanData);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('user_id', user.id)
+          .single();
+        setProfile(profileData || null);
+      }
+
       // Fetch diagnosis
       const { data: diagnosisData, error: diagnosisError } = await supabase
         .from('diagnoses')
@@ -224,10 +299,10 @@ www.imstevnaturals.com
       }
 
       // Fetch IMSTEV products for hair analysis
-      if (scanData?.analysis_type === 'hair') {
+      if (scanData?.scan_type === 'hair') {
         const token = localStorage.getItem('glowsense_token');
         try {
-          const response = await fetch('/api/products?category=Hair%20Care', {
+          const response = await fetch(buildApiUrl('/products?category=Hair%20Care'), {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           if (response.ok) {
@@ -239,6 +314,12 @@ www.imstevnaturals.com
         }
       }
 
+      if (diagnosisData) {
+        setPaymentStatus('paid');
+      } else if (scanId) {
+        await checkPaymentStatus(scanId);
+      }
+
     } catch (error) {
       console.error('Error fetching results:', error);
       toast({
@@ -248,6 +329,95 @@ www.imstevnaturals.com
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkPaymentStatus = async (id: string) => {
+    try {
+      setPaymentStatus('checking');
+      const token = localStorage.getItem('glowsense_token');
+      const response = await fetch(buildApiUrl(`/analysis/payment-status?scanId=${id}`), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to check payment (${response.status})`);
+      }
+      const data = await response.json();
+      setPaymentStatus(data.paid ? 'paid' : 'unpaid');
+    } catch (error) {
+      console.error('Payment status check failed:', error);
+      setPaymentStatus('error');
+    }
+  };
+
+  const handlePayForResults = async () => {
+    if (!scanId || !scan) return;
+    setPaymentLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !user.email) {
+        navigate('/auth');
+        return;
+      }
+
+      const customerPhone = profile?.phone;
+      if (!customerPhone) {
+        toast({
+          title: "Phone number required",
+          description: "Please add your phone number in your profile before making a payment.",
+          variant: "destructive",
+        });
+        navigate('/profile');
+        return;
+      }
+
+      const customerName = profile?.full_name || user.email.split('@')[0] || 'IMSTEV User';
+      const legacyToken = localStorage.getItem('glowsense_token');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = legacyToken || session?.access_token || null;
+      if (!token) {
+        throw new Error("Authentication is required for payment.");
+      }
+
+      const response = await fetch(buildApiUrl('/payment/initialize'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          paymentType: 'analysis',
+          amount: ONE_TIME_ANALYSIS_FEE_NGN,
+          scanId,
+          customerEmail: user.email,
+          customerName,
+          customerPhone,
+          description: `${scan.scan_type === 'hair' ? 'Hair' : 'Skin'} Analysis Results`,
+          metadata: { scanId },
+          redirectPath: `/payment-callback?scanId=${scanId}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Payment initialization failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      if (data.success && data.paymentUrl) {
+        sessionStorage.setItem('pendingPaymentType', 'analysis');
+        sessionStorage.setItem('pendingAnalysisScanId', scanId);
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error(data.error || 'Unable to initialize payment');
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: error.message || "Unable to start payment. Please try again.",
+        variant: "destructive",
+      });
+      setPaymentLoading(false);
     }
   };
 
@@ -317,6 +487,12 @@ www.imstevnaturals.com
     return "bg-destructive";
   };
 
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 0
+  }).format(amount);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center">
@@ -341,6 +517,74 @@ www.imstevnaturals.com
             <Button onClick={() => navigate('/dashboard')}>
               Back to Dashboard
             </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (paymentStatus === 'checking') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Verifying payment status...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentStatus === 'error') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Unable to confirm payment</h3>
+            <p className="text-muted-foreground mb-6">
+              We couldn't verify your payment status right now. Please try again.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={() => scanId && checkPaymentStatus(scanId)}>Retry</Button>
+              <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                Back to Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (paymentStatus === 'unpaid') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
+        <Card className="max-w-lg w-full">
+          <CardContent className="pt-6 text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Unlock Your Results</h3>
+              <p className="text-muted-foreground">
+                Complete a one-time payment to view your {scan?.scan_type === 'hair' ? 'hair' : 'skin'} analysis.
+              </p>
+            </div>
+            <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+              <p className="text-sm text-muted-foreground">Analysis fee</p>
+              <p className="text-3xl font-bold text-primary">{formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}</p>
+            </div>
+            <div className="space-y-2">
+              <Button onClick={handlePayForResults} className="w-full" disabled={paymentLoading}>
+                {paymentLoading ? 'Starting payment...' : `Pay ${formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}`}
+              </Button>
+              <Button variant="outline" onClick={() => scanId && checkPaymentStatus(scanId)} className="w-full">
+                I've already paid
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Payments are processed securely. Your results unlock immediately after verification.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -467,7 +711,7 @@ www.imstevnaturals.com
                     <div className="mb-3">
                       <div className="flex items-center gap-1 mb-2">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <ThumbsUp key={i} className="h-3 w-3 text-amber-400" />
                         ))}
                         <span className="text-xs text-muted-foreground ml-1">5.0</span>
                       </div>
@@ -529,7 +773,7 @@ www.imstevnaturals.com
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
-                      <Star className="h-4 w-4 text-purple-600" />
+                      <Scan className="h-4 w-4 text-purple-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-sm">Expert Hair Analysis</h4>

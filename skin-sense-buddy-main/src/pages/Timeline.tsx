@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Camera, TrendingUp, TrendingDown, Calendar, Activity, AlertCircle, Loader2, Sparkles, Droplets, Leaf } from "lucide-react";
+import { Camera, TrendingUp, TrendingDown, Calendar, Activity, AlertCircle, Loader2, Sparkles, Droplets, Leaf } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +42,8 @@ interface Scan {
   }>;
 }
 
+const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong");
+
 export default function Timeline() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -57,10 +59,6 @@ export default function Timeline() {
   const currentScans = journeyTab === "skin" ? skinScans : hairScans;
 
   useEffect(() => {
-    loadScans();
-  }, []);
-
-  useEffect(() => {
     // Auto-select first comparison pair for current journey
     if (currentScans.length >= 2) {
       setComparisonPair({
@@ -70,9 +68,9 @@ export default function Timeline() {
     } else {
       setComparisonPair(null);
     }
-  }, [currentScans.length, journeyTab]);
+  }, [currentScans]);
 
-  const loadScans = async () => {
+  const loadScans = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -101,16 +99,20 @@ export default function Timeline() {
       if (error) throw error;
 
       setScans((data as Scan[]) || []);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error loading scans",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    loadScans();
+  }, [loadScans]);
 
   const calculateStats = (scanList: Scan[]) => {
     if (scanList.length === 0) return null;

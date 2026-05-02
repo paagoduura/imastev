@@ -1,0 +1,46 @@
+- generic [ref=e1]:
+  - dialog [ref=e2]:
+    - button "Close" [ref=e3] [cursor=pointer]:
+      - img [ref=e4]
+    - paragraph [ref=e6]:
+      - text: Unsplash uses cookies and similar technologies to secure our site, provide useful features to free and paying users, and to ensure optimal performance. By clicking "Accept all cookies" or closing this prompt, you consent to the use of all cookies. By clicking "Accept essential only", you consent only to the use of cookies that are strictly necessary for the site to function. See our
+      - link "Cookie Policy" [ref=e7] [cursor=pointer]:
+        - /url: /cookies
+      - text: for more info.
+    - link "Manage cookies" [ref=e9] [cursor=pointer]:
+      - /url: /cookies#manage-consent
+    - generic [ref=e10]:
+      - button "Accept essential only" [ref=e11] [cursor=pointer]
+      - button "Accept all cookies" [active] [ref=e12] [cursor=pointer]
+  - generic [ref=e14]:
+    - img [ref=e15]
+    - generic [ref=e18]:
+      - link "Unsplash Home" [ref=e20] [cursor=pointer]:
+        - /url: /
+        - img "Unsplash Home" [ref=e21]
+      - generic [ref=e24]:
+        - heading "Page not found" [level=1] [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: P
+            - generic [ref=e28]: a
+            - generic [ref=e29]: g
+            - generic [ref=e30]: e
+          - generic [ref=e31]:
+            - generic [ref=e32]: "n"
+            - generic [ref=e33]: o
+            - generic [ref=e34]: t
+          - generic [ref=e35]:
+            - generic [ref=e36]: f
+            - generic [ref=e37]: o
+            - generic [ref=e38]: u
+            - generic [ref=e39]: "n"
+            - generic [ref=e40]: d
+        - paragraph [ref=e41]: Hmm, the page you were looking for doesn’t seem to exist anymore.
+        - link "Back to Unsplash" [ref=e43] [cursor=pointer]:
+          - /url: /
+      - contentinfo [ref=e44]:
+        - generic [ref=e45]:
+          - text: Photo by
+          - link "@alexcgorham" [ref=e46] [cursor=pointer]:
+            - /url: /@alexcgorham
+        - generic [ref=e47]: "404"

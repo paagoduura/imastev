@@ -2,10 +2,32 @@ import OpenAI from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL
-});
+let openaiClient: OpenAI | null = null;
+let hasWarnedAboutMissingApiKey = false;
+
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+  const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || process.env.OPENAI_BASE_URL;
+
+  if (!apiKey) {
+    if (!hasWarnedAboutMissingApiKey) {
+      console.warn(
+        'OpenAI API key not configured. Set AI_INTEGRATIONS_OPENAI_API_KEY or OPENAI_API_KEY to enable AI analysis. Falling back to default analysis.'
+      );
+      hasWarnedAboutMissingApiKey = true;
+    }
+    return null;
+  }
+
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey,
+      ...(baseURL ? { baseURL } : {})
+    });
+  }
+
+  return openaiClient;
+}
 
 interface AnalysisResult {
   conditions: Array<{
@@ -34,6 +56,11 @@ export async function analyzeWithAI(
   imagePaths: string[]
 ): Promise<AnalysisResult> {
   const startTime = Date.now();
+  const openai = getOpenAIClient();
+
+  if (!openai) {
+    return getFallbackAnalysis(type, profile, startTime);
+  }
 
   const systemPrompt = type === 'hair' ? getHairSystemPrompt() : getSkinSystemPrompt();
   const userPrompt = type === 'hair' ? getHairUserPrompt(profile) : getSkinUserPrompt(profile);

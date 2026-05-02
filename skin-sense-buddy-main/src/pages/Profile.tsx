@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +29,8 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong");
+
 export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,11 +47,7 @@ export default function Profile() {
     resolver: zodResolver(profileSchema),
   });
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -82,16 +80,20 @@ export default function Profile() {
         setMedications(profile.current_medications || []);
         setAllergies(profile.allergies || []);
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error loading profile",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, navigate, toast]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const onSubmit = async (data: ProfileFormData) => {
     setSaving(true);
@@ -118,10 +120,10 @@ export default function Profile() {
         title: "Profile updated!",
         description: "Your changes have been saved successfully.",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {

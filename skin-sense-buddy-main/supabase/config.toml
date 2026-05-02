@@ -1,4 +1,7 @@
-project_id = "hebroahptlnoqwzoydoi"
+project_id = "lmhlxixwmtsojmvyglfb"
+
+[functions.api]
+verify_jwt = false
 
 [functions.analyze-skin]
 verify_jwt = true

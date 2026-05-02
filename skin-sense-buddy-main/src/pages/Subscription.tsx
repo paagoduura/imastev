@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Users, Sparkles, ArrowLeft, Loader2, Star, Zap, Shield, Gift } from "lucide-react";
+import { Check, Crown, Users, Sparkles, ArrowLeft, Loader2, RotateCcw, Zap, Shield, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
+import { API_BASE } from "@/lib/config";
 
 interface Plan {
   id: string;
@@ -109,13 +110,51 @@ export default function Subscription() {
         const plan = plans.find(p => p.id === planId);
         if (!plan) throw new Error("Plan not found");
 
-        const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: { planId, planName: plan.name, price: plan.price_ngn },
+        const legacyToken = localStorage.getItem('glowsense_token');
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = legacyToken || session?.access_token || null;
+        if (!token) throw new Error("Not authenticated");
+
+        let customerPhone = (localStorage.getItem('customer_phone') || '').trim();
+        if (!customerPhone) {
+          const inputPhone = window.prompt("Enter your phone number for payment (e.g. +2348012345678):", "");
+          customerPhone = (inputPhone || '').trim();
+        }
+
+        if (!/^(\+234|0)[0-9]{10}$/.test(customerPhone.replace(/\s/g, ""))) {
+          throw new Error("A valid Nigerian phone number is required for payment");
+        }
+
+        localStorage.setItem('customer_phone', customerPhone);
+
+        const response = await fetch(`${API_BASE}/payment/initialize`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            paymentType: "subscription",
+            planId,
+            amount: plan.price_ngn,
+            customerEmail: user.email,
+            customerName: user.email.split("@")[0],
+            customerPhone,
+            description: `Subscription upgrade: ${plan.name}`,
+          }),
         });
 
-        if (error) throw error;
-        if (data?.url) {
-          window.location.href = data.url;
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Unable to initialize Quickteller payment");
+        }
+
+        if (data.paymentUrl) {
+          sessionStorage.setItem('pendingPaymentType', 'subscription');
+          sessionStorage.setItem('pendingSubscriptionPlanId', planId);
+          window.location.href = data.paymentUrl;
+        } else {
+          throw new Error("Payment URL was not returned by Quickteller");
         }
       }
     } catch (error: any) {
@@ -165,11 +204,11 @@ export default function Subscription() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background page-reveal">
       <Navbar />
       
       <div className="gradient-mesh min-h-[calc(100vh-80px)]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
+        <div className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           <Button
             variant="ghost"
             onClick={() => navigate(-1)}
@@ -179,9 +218,9 @@ export default function Subscription() {
             Back
           </Button>
 
-          <div className="text-center mb-12">
+          <div className="mb-10 text-center section-reveal sm:mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium mb-4">
-              <Star className="h-4 w-4" />
+              <Crown className="h-4 w-4" />
               IMSTEV NATURALS Membership
             </div>
             <h1 className="text-4xl sm:text-5xl font-display font-bold bg-gradient-to-r from-purple-700 via-purple-600 to-amber-600 bg-clip-text text-transparent mb-4">
@@ -193,7 +232,7 @@ export default function Subscription() {
           </div>
 
           {currentSubscription && (
-            <Card className="mb-10 border-0 shadow-xl bg-gradient-to-r from-purple-50 to-amber-50 dark:from-purple-900/20 dark:to-amber-900/20">
+            <Card className="mb-8 border-0 bg-gradient-to-r from-purple-50 to-amber-50 shadow-xl dark:from-purple-900/20 dark:to-amber-900/20 section-reveal sm:mb-10">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-gradient-to-br from-purple-600 to-amber-500">
@@ -237,7 +276,7 @@ export default function Subscription() {
             </Card>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 section-reveal">
             {plans.map((plan, index) => {
               const isCurrentPlan = currentSubscription?.plan_id === plan.id;
               const isPremium = plan.tier === 'premium';
@@ -378,7 +417,7 @@ export default function Subscription() {
             })}
           </div>
 
-          <div className="mt-16 text-center">
+          <div className="mt-12 text-center section-reveal sm:mt-16">
             <div className="inline-flex items-center gap-6 flex-wrap justify-center">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Shield className="h-4 w-4 text-green-500" />
@@ -389,7 +428,7 @@ export default function Subscription() {
                 Instant Activation
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Star className="h-4 w-4 text-purple-500" />
+                <RotateCcw className="h-4 w-4 text-purple-500" />
                 Cancel Anytime
               </div>
             </div>

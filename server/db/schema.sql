@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    email_verified_at TIMESTAMP WITH TIME ZONE,
+    email_verification_token_hash VARCHAR(255),
+    email_verification_sent_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -75,6 +78,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     status VARCHAR(20) DEFAULT 'active',
     current_period_start TIMESTAMP WITH TIME ZONE,
     current_period_end TIMESTAMP WITH TIME ZONE,
+    scans_used_this_period INTEGER DEFAULT 0,
     stripe_subscription_id VARCHAR(255),
     stripe_customer_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -251,27 +255,135 @@ CREATE TABLE IF NOT EXISTS user_roles (
     UNIQUE(user_id, role)
 );
 
+-- Salon appointments
+CREATE TABLE IF NOT EXISTS salon_appointments (
+    id SERIAL PRIMARY KEY,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255),
+    customer_phone VARCHAR(50) NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    service_type VARCHAR(100) NOT NULL,
+    service_name VARCHAR(255) NOT NULL,
+    appointment_date DATE NOT NULL,
+    time_slot VARCHAR(20) NOT NULL,
+    duration_minutes INTEGER NOT NULL DEFAULT 30,
+    price_ngn DECIMAL(12, 2) NOT NULL,
+    notes TEXT,
+    is_registered_user BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'confirmed',
+    payment_status VARCHAR(20) DEFAULT 'unpaid',
+    payment_ref VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Payment transactions for Quickteller
 CREATE TABLE IF NOT EXISTS payment_transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_ref VARCHAR(100) UNIQUE NOT NULL,
+    payment_type VARCHAR(50) DEFAULT 'general',
     amount DECIMAL(12, 2) NOT NULL,
     customer_email VARCHAR(255) NOT NULL,
     customer_name VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(50) NOT NULL,
     booking_id INTEGER REFERENCES salon_appointments(id) ON DELETE SET NULL,
+    plan_id UUID REFERENCES subscription_plans(id) ON DELETE SET NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     status VARCHAR(20) DEFAULT 'pending',
     payment_ref VARCHAR(255),
+    response_code VARCHAR(20),
+    verified_response JSONB,
     verified_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Community posts (local backend tables tied to legacy users table)
+CREATE TABLE IF NOT EXISTS app_community_posts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    community_type VARCHAR(20) NOT NULL CHECK (community_type IN ('hair', 'skin')),
+    author_name VARCHAR(255) NOT NULL,
+    author_role VARCHAR(100) NOT NULL DEFAULT 'Community Member',
+    content TEXT NOT NULL,
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Community comments (supports replies with parent_comment_id)
+CREATE TABLE IF NOT EXISTS app_community_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID NOT NULL REFERENCES app_community_posts(id) ON DELETE CASCADE,
+    parent_comment_id UUID REFERENCES app_community_comments(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    author_name VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Community reactions (like/love) on posts or comments
+CREATE TABLE IF NOT EXISTS app_community_reactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    post_id UUID REFERENCES app_community_posts(id) ON DELETE CASCADE,
+    comment_id UUID REFERENCES app_community_comments(id) ON DELETE CASCADE,
+    reaction VARCHAR(20) NOT NULL CHECK (reaction IN ('like', 'love')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT community_reaction_target_check CHECK (
+      (post_id IS NOT NULL AND comment_id IS NULL)
+      OR
+      (post_id IS NULL AND comment_id IS NOT NULL)
+    )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_community_reactions_user_post_unique
+    ON app_community_reactions(user_id, post_id)
+    WHERE post_id IS NOT NULL AND comment_id IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_community_reactions_user_comment_unique
+    ON app_community_reactions(user_id, comment_id)
+    WHERE comment_id IS NOT NULL AND post_id IS NULL;
+
 -- Add payment columns to salon_appointments if not exists
 DO $$ BEGIN
     ALTER TABLE salon_appointments ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid';
     ALTER TABLE salon_appointments ADD COLUMN IF NOT EXISTS payment_ref VARCHAR(255);
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Add missing community columns when table already exists
+DO $$ BEGIN
+    ALTER TABLE app_community_posts ADD COLUMN IF NOT EXISTS image_url TEXT;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Add missing payment transaction columns when table already exists
+DO $$ BEGIN
+    ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS payment_type VARCHAR(50) DEFAULT 'general';
+    ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS plan_id UUID REFERENCES subscription_plans(id) ON DELETE SET NULL;
+    ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS response_code VARCHAR(20);
+    ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS verified_response JSONB;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Add missing subscription and scan columns when older tables already exist
+DO $$ BEGIN
+    ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS scans_used_this_period INTEGER DEFAULT 0;
+    ALTER TABLE scans ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
+    ALTER TABLE scans ADD COLUMN IF NOT EXISTS multi_angle_urls JSONB;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Add missing email verification columns when older users table already exists
+DO $$ BEGIN
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMP WITH TIME ZONE;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token_hash VARCHAR(255);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_sent_at TIMESTAMP WITH TIME ZONE;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
@@ -287,3 +399,12 @@ CREATE INDEX IF NOT EXISTS idx_appointments_clinician ON appointments(clinician_
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_payment_transactions_ref ON payment_transactions(transaction_ref);
 CREATE INDEX IF NOT EXISTS idx_payment_transactions_booking ON payment_transactions(booking_id);
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_type ON payment_transactions(payment_type);
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_plan_id ON payment_transactions(plan_id);
+CREATE INDEX IF NOT EXISTS idx_salon_appointments_date ON salon_appointments(appointment_date);
+CREATE INDEX IF NOT EXISTS idx_salon_appointments_user_id ON salon_appointments(user_id);
+CREATE INDEX IF NOT EXISTS idx_community_posts_type_created ON app_community_posts(community_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_comments_post_created ON app_community_comments(post_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_community_comments_parent ON app_community_comments(parent_comment_id);
+CREATE INDEX IF NOT EXISTS idx_community_reactions_post ON app_community_reactions(post_id);
+CREATE INDEX IF NOT EXISTS idx_community_reactions_comment ON app_community_reactions(comment_id);

@@ -28,7 +28,7 @@ export const REFERENCE_OBJECTS: Record<string, ReferenceObject> = {
   'ruler_cm': { type: 'ruler', name: 'Ruler (1cm)', length_mm: 10 }
 };
 
-interface CircleDetection {
+export interface CircleDetection {
   x: number;
   y: number;
   radius: number;

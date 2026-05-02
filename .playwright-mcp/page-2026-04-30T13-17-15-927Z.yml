@@ -1,0 +1,259 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - button "Back" [ref=e4] [cursor=pointer]:
+    - img
+    - text: Back
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e8]:
+        - button "IMSTEV NATURALS IMSTEV NATURALS Home of Nature's Beauty" [ref=e9] [cursor=pointer]:
+          - img "IMSTEV NATURALS" [ref=e12]
+          - generic [ref=e14]:
+            - generic [ref=e15]: IMSTEV NATURALS
+            - generic [ref=e16]: Home of Nature's Beauty
+        - generic [ref=e17]:
+          - button "Dashboard" [ref=e18] [cursor=pointer]:
+            - img [ref=e19]
+            - generic [ref=e24]: Dashboard
+          - button "Scan" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+            - generic [ref=e29]: Scan
+          - button "Timeline" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - generic [ref=e34]: Timeline
+          - button "Community" [ref=e35] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e41]: Community
+          - button "Salon" [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+            - generic [ref=e46]: Salon
+          - button "Shop" [ref=e47] [cursor=pointer]:
+            - img [ref=e48]
+            - generic [ref=e51]: Shop
+        - button "Profile" [ref=e53] [cursor=pointer]:
+          - generic [ref=e54]:
+            - img
+          - generic [ref=e55]: Profile
+    - generic [ref=e59]:
+      - generic [ref=e61]:
+        - generic [ref=e63]:
+          - img "Clear, radiant skin shown in a cleaner premium frame" [ref=e64]
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - img [ref=e69]
+              - text: Skin focus
+            - heading "Clear, radiant skin shown in a cleaner premium frame" [level=2] [ref=e71]
+        - generic [ref=e73]:
+          - img "Refined twist styling with better scalp and texture visibility" [ref=e74]
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - img [ref=e79]
+              - text: Twist styling
+            - heading "Refined twist styling with better scalp and texture visibility" [level=2] [ref=e81]
+        - generic [ref=e83]:
+          - img "Side-swept rope twists shown in a cleaner mobile frame" [ref=e84]
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - img [ref=e89]
+              - text: Rope twists
+            - heading "Side-swept rope twists shown in a cleaner mobile frame" [level=2] [ref=e91]
+        - generic [ref=e93]:
+          - img "Kids twists captured more clearly with a cleaner salon look" [ref=e94]
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - img [ref=e99]
+              - text: Kids styling
+            - heading "Kids twists captured more clearly with a cleaner salon look" [level=2] [ref=e101]
+        - generic [ref=e103]:
+          - img "Professional loc maintenance shown more clearly on mobile" [ref=e104]
+          - generic [ref=e107]:
+            - generic [ref=e108]:
+              - img [ref=e109]
+              - text: Loc maintenance
+            - heading "Professional loc maintenance shown more clearly on mobile" [level=2] [ref=e111]
+        - generic [ref=e113]:
+          - img "Natural twist styling with a cleaner premium presentation" [ref=e114]
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - img [ref=e119]
+              - text: Natural twist style
+            - heading "Natural twist styling with a cleaner premium presentation" [level=2] [ref=e121]
+        - generic [ref=e123]:
+          - img "A 4C twist updo that feels cleaner and more premium on phones" [ref=e124]
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - img [ref=e129]
+              - text: 4C twist updo
+            - heading "A 4C twist updo that feels cleaner and more premium on phones" [level=2] [ref=e131]
+      - generic [ref=e132]:
+        - generic [ref=e133]:
+          - button "Go to slide 1" [ref=e134] [cursor=pointer]
+          - button "Go to slide 2" [ref=e135] [cursor=pointer]
+          - button "Go to slide 3" [ref=e136] [cursor=pointer]
+          - button "Go to slide 4" [ref=e137] [cursor=pointer]
+          - button "Go to slide 5" [ref=e138] [cursor=pointer]
+          - button "Go to slide 6" [ref=e139] [cursor=pointer]
+          - button "Go to slide 7" [ref=e140] [cursor=pointer]
+        - generic [ref=e141]:
+          - button [ref=e142] [cursor=pointer]:
+            - img
+          - button [ref=e143] [cursor=pointer]:
+            - img
+    - main [ref=e144]:
+      - generic [ref=e148]:
+        - generic [ref=e149]: Community Hub
+        - heading "A calmer, smarter space for hair and skin conversations" [level=1] [ref=e150]
+        - paragraph [ref=e151]: Share polished progress updates, ask focused questions, and learn from routines that are actually working for people like you.
+      - generic [ref=e152]:
+        - button "Hair circle Hair Community Protective styling, growth progress, scalp care, moisture routines, and salon wisdom." [ref=e153] [cursor=pointer]:
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - img [ref=e157]
+              - generic [ref=e159]: Hair circle
+            - paragraph [ref=e160]: Hair Community
+            - paragraph [ref=e161]: Protective styling, growth progress, scalp care, moisture routines, and salon wisdom.
+        - button "Skin circle Skin Community Barrier repair, acne support, glow routines, sensitive-skin care, and trusted progress notes." [ref=e162] [cursor=pointer]:
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - img [ref=e166]
+              - generic [ref=e171]: Skin circle
+            - paragraph [ref=e172]: Skin Community
+            - paragraph [ref=e173]: Barrier repair, acne support, glow routines, sensitive-skin care, and trusted progress notes.
+      - generic [ref=e174]:
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - generic [ref=e178]: New post
+            - heading "Share Your Hair Journey" [level=3] [ref=e179]
+            - paragraph [ref=e180]: Share a routine update, question, progress shot, or styling win.
+          - generic [ref=e181]:
+            - textbox "Your display name" [ref=e182]: biara
+            - textbox "What's new in your hair journey?" [ref=e183]
+            - generic [ref=e184]:
+              - button "😀" [ref=e185] [cursor=pointer]
+              - button "😍" [ref=e186] [cursor=pointer]
+              - button "🔥" [ref=e187] [cursor=pointer]
+              - button "💧" [ref=e188] [cursor=pointer]
+              - button "✨" [ref=e189] [cursor=pointer]
+              - button "👏" [ref=e190] [cursor=pointer]
+              - button "💪" [ref=e191] [cursor=pointer]
+              - button "💚" [ref=e192] [cursor=pointer]
+            - generic [ref=e194] [cursor=pointer]:
+              - img [ref=e196]
+              - generic [ref=e200]:
+                - paragraph [ref=e201]: Add a polished image
+                - paragraph [ref=e202]: Best with portrait or balanced landscape framing. Up to 10MB.
+            - generic [ref=e203]:
+              - paragraph [ref=e204]: Clear, close-up images get better community feedback.
+              - button "Publish" [ref=e205] [cursor=pointer]:
+                - img
+                - text: Publish
+        - generic [ref=e208]: Loading community posts...
+    - contentinfo [ref=e209]:
+      - generic [ref=e211]:
+        - generic [ref=e213]:
+          - generic [ref=e214]:
+            - generic [ref=e215]:
+              - img "IMSTEV NATURALS" [ref=e218]
+              - generic [ref=e219]:
+                - heading "IMSTEV NATURALS" [level=3] [ref=e220]
+                - paragraph [ref=e221]: Home of Nature's Beauty
+            - paragraph [ref=e222]: Nigeria's premier AI-powered hair and skin analysis platform, specializing in 4A-4C African hair types with personalized treatment plans and organic solutions.
+            - generic [ref=e223]:
+              - link "Social link 1" [ref=e224] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e225]
+              - link "Social link 2" [ref=e227] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e228]
+              - link "Social link 3" [ref=e231] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e232]
+              - link "Social link 4" [ref=e234] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e235]
+              - link "Social link 5" [ref=e239] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e240]
+              - link "Social link 6" [ref=e243] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e244]
+          - generic [ref=e247]:
+            - heading "Quick Links" [level=4] [ref=e248]:
+              - img [ref=e249]
+              - text: Quick Links
+            - list [ref=e251]:
+              - listitem [ref=e252]:
+                - link "Home" [ref=e253] [cursor=pointer]:
+                  - /url: /
+                  - text: Home
+              - listitem [ref=e255]:
+                - link "Community" [ref=e256] [cursor=pointer]:
+                  - /url: /community
+                  - text: Community
+              - listitem [ref=e258]:
+                - link "Salon" [ref=e259] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon
+              - listitem [ref=e261]:
+                - link "Shop" [ref=e262] [cursor=pointer]:
+                  - /url: /shop
+                  - text: Shop
+              - listitem [ref=e264]:
+                - link "AI Scan" [ref=e265] [cursor=pointer]:
+                  - /url: /scan
+                  - text: AI Scan
+          - generic [ref=e267]:
+            - heading "Our Services" [level=4] [ref=e268]:
+              - img [ref=e269]
+              - text: Our Services
+            - list [ref=e271]:
+              - listitem [ref=e272]:
+                - link "Hair Analysis" [ref=e273] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Hair Analysis
+              - listitem [ref=e275]:
+                - link "Skin Analysis" [ref=e276] [cursor=pointer]:
+                  - /url: /scan
+                  - text: Skin Analysis
+              - listitem [ref=e278]:
+                - link "Salon Booking" [ref=e279] [cursor=pointer]:
+                  - /url: /salon-booking
+                  - text: Salon Booking
+              - listitem [ref=e281]:
+                - link "Custom Formulations" [ref=e282] [cursor=pointer]:
+                  - /url: /formulation
+                  - text: Custom Formulations
+          - generic [ref=e284]:
+            - heading "Contact Us" [level=4] [ref=e285]:
+              - img [ref=e286]
+              - text: Contact Us
+            - list [ref=e288]:
+              - listitem [ref=e289]:
+                - img [ref=e290]
+                - generic [ref=e293]: 40 Law School Road, Opp FirstBank, Bwari, Abuja, Nigeria
+              - listitem [ref=e294]:
+                - link "+234 903 350 5038" [ref=e295] [cursor=pointer]:
+                  - /url: tel:+2349033505038
+                  - img [ref=e296]
+                  - generic [ref=e298]: +234 903 350 5038
+              - listitem [ref=e299]:
+                - link "contact@imstevnaturals.com" [ref=e300] [cursor=pointer]:
+                  - /url: mailto:contact@imstevnaturals.com
+                  - img [ref=e301]
+                  - generic [ref=e304]: contact@imstevnaturals.com
+            - generic [ref=e305]:
+              - paragraph [ref=e306]: Salon Hours
+              - paragraph [ref=e307]: "Monday: Closed"
+              - paragraph [ref=e308]: "Tuesday - Saturday: 2PM onward"
+              - paragraph [ref=e309]: "Sunday: By appointment from 2PM"
+        - generic [ref=e311]:
+          - paragraph [ref=e312]: © 2026 IMSTEV NATURALS. All rights reserved.
+          - generic [ref=e313]:
+            - link "Privacy Policy" [ref=e314] [cursor=pointer]:
+              - /url: /community
+            - link "Terms of Service" [ref=e315] [cursor=pointer]:
+              - /url: /community
+            - link "Refund Policy" [ref=e316] [cursor=pointer]:
+              - /url: /community

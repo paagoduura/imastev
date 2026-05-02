@@ -1,0 +1,71 @@
+
+> vite_react_shadcn_ts@0.0.0 dev
+> vite
+
+Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m666[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.173.243.185:[1m5000[22m/[39m
+[2m12:35:55 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m12:35:58 PM[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mtailwind.config.ts[22m
+[2m4:13:36 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Shop.tsx, /src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Scan.tsx, /src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Timeline.tsx, /src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Telehealth.tsx, /src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Consultation.tsx, /src/index.css[22m
+[2m4:15:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Subscription.tsx, /src/index.css[22m
+[2m4:16:37 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Navbar.tsx, /src/index.css[22m
+[2m4:16:44 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Index.tsx, /src/index.css[22m
+[2m4:16:58 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Navbar.tsx, /src/index.css[22m
+[2m4:17:36 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Onboarding.tsx, /src/index.css[22m
+[2m4:18:51 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Subscription.tsx, /src/index.css[22m
+[2m4:18:51 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Shop.tsx, /src/index.css[22m
+[2m4:19:24 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Shop.tsx, /src/index.css[22m
+[2m4:19:39 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Shop.tsx, /src/index.css[22m
+[2m4:19:46 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Auth.tsx, /src/index.css[22m
+[2m4:19:56 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Auth.tsx, /src/index.css[22m
+[2m4:20:15 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Auth.tsx, /src/index.css[22m
+[2m4:20:15 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Auth.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Shop.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Navbar.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Scan.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Timeline.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Telehealth.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Consultation.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Subscription.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Index.tsx, /src/index.css[22m
+[2m4:36:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Onboarding.tsx, /src/index.css[22m
+[2m4:55:38 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m4:56:32 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m4:56:33 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m4:57:35 PM[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m4:59:16 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/Community.tsx, /src/pages/Scan.tsx, /src/pages/Results.tsx, /src/pages/Consultation.tsx, /src/pages/Shop.tsx, /src/pages/Cart.tsx, /src/pages/Subscription.tsx, /src/pages/PaymentCallback.tsx, /src/pages/SalonBooking.tsx, /src/pages/Inventory.tsx, /src/pages/Auth.tsx, /src/pages/Timeline.tsx, /src/pages/Dashboard.tsx, /src/pages/FamilyAccounts.tsx, /src/pages/CustomFormulation.tsx, /src/pages/ClinicianDashboard.tsx, /src/pages/Orders.tsx, /src/pages/Profile.tsx, /src/pages/Onboarding.tsx, /src/components/layout/Navbar.tsx, /src/components/checkout/QuicktellerCheckout.tsx, /src/pages/AdminLogin.tsx, /src/pages/AdminDashboard.tsx[22m
+[2m4:59:16 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/Community.tsx, /src/pages/Scan.tsx, /src/pages/Results.tsx, /src/pages/Consultation.tsx, /src/pages/Shop.tsx, /src/pages/Cart.tsx, /src/pages/Subscription.tsx, /src/pages/PaymentCallback.tsx, /src/pages/SalonBooking.tsx, /src/pages/Inventory.tsx, /src/pages/Auth.tsx, /src/pages/Timeline.tsx, /src/pages/Dashboard.tsx, /src/pages/FamilyAccounts.tsx, /src/pages/CustomFormulation.tsx, /src/pages/ClinicianDashboard.tsx, /src/pages/Orders.tsx, /src/pages/Profile.tsx, /src/pages/Onboarding.tsx, /src/components/layout/Navbar.tsx, /src/components/checkout/QuicktellerCheckout.tsx, /src/pages/AdminLogin.tsx, /src/pages/AdminDashboard.tsx[22m
+[2m4:59:38 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m4:59:44 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m5:05:25 PM[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m5:05:31 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+Re-optimizing dependencies because vite config has changed
+[2m5:05:31 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m5:14:09 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m5:35:21 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m5:35:31 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m5:35:35 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m5:37:48 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m5:48:55 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m5:49:10 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Navbar.tsx, /src/index.css[22m
+[2m5:49:24 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Footer.tsx, /src/index.css[22m
+[2m5:49:37 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Index.tsx, /src/index.css[22m
+[2m5:49:48 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Dashboard.tsx, /src/index.css[22m
+[2m5:50:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Shop.tsx, /src/index.css[22m
+[2m5:50:10 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Subscription.tsx, /src/index.css[22m
+[2m5:50:22 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Community.tsx, /src/index.css[22m
+[2m6:05:28 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Navbar.tsx, /src/index.css[22m
+[2m6:05:31 PM[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33membla-carousel-react[32m[39m
+[2m6:05:31 PM[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m

@@ -17,9 +17,11 @@ interface Props {
   regions: HeatmapRegion[];
 }
 
+type HeatmapView = 'heatmap' | 'original';
+
 export const HeatmapVisualization = ({ imageUrl, regions }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [activeView, setActiveView] = useState<'heatmap' | 'original'>('heatmap');
+  const [activeView, setActiveView] = useState<HeatmapView>('heatmap');
   const [hoveredRegion, setHoveredRegion] = useState<number | null>(null);
 
   useEffect(() => {
@@ -113,6 +115,10 @@ export const HeatmapVisualization = ({ imageUrl, regions }: Props) => {
     return 'bg-primary';
   };
 
+  const handleViewChange = (value: string) => {
+    setActiveView(value === 'original' ? 'original' : 'heatmap');
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -128,7 +134,7 @@ export const HeatmapVisualization = ({ imageUrl, regions }: Props) => {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* View toggle */}
-        <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)}>
+        <Tabs value={activeView} onValueChange={handleViewChange}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="heatmap">Heatmap View</TabsTrigger>
             <TabsTrigger value="original">Original Image</TabsTrigger>

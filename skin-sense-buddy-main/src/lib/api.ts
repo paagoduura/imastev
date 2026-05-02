@@ -1,7 +1,7 @@
 // GlowSense API Client
 // Replaces Supabase client with local backend API
 
-const API_BASE = '/api';
+import { buildApiUrl } from "@/lib/config";
 
 // Token management
 let authToken: string | null = localStorage.getItem('glowsense_token');
@@ -28,11 +28,11 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const response = await fetch(`${API_BASE}${url}`, {
+  const response = await fetch(buildApiUrl(url), {
     ...options,
     headers,
   });
-
+  
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Request failed' }));
     throw new Error(error.error || 'Request failed');
@@ -144,7 +144,7 @@ export const scans = {
     if (authToken) {
       headers['Authorization'] = `Bearer ${authToken}`;
     }
-    const response = await fetch(`${API_BASE}/scans`, {
+    const response = await fetch(buildApiUrl('/scans'), {
       method: 'POST',
       headers,
       body: formData,
@@ -167,11 +167,6 @@ export const diagnoses = {
   list: async () => fetchWithAuth('/diagnoses'),
 };
 
-// Subscriptions API
-export const subscriptions = {
-  getPlans: async () => fetchWithAuth('/subscription-plans'),
-  getCurrent: async () => fetchWithAuth('/subscriptions'),
-};
 
 // Clinicians API
 export const clinicians = {
@@ -220,7 +215,6 @@ const api = {
   cart,
   scans,
   diagnoses,
-  subscriptions,
   clinicians,
   appointments,
   familyAccounts,
