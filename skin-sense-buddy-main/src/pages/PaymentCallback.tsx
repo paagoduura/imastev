@@ -17,9 +17,28 @@ export default function PaymentCallback() {
   const [paymentType, setPaymentType] = useState<string | null>(null);
   const [postPaymentMessage, setPostPaymentMessage] = useState<string>("");
   const [analysisScanId, setAnalysisScanId] = useState<string | null>(null);
+  const [analysisDone, setAnalysisDone] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { verifyPayment(); }, []);
+
+  // Auto-redirect to results page after analysis completes
+  useEffect(() => {
+    if (!analysisDone || !analysisScanId) return;
+    let seconds = 3;
+    setRedirectCountdown(seconds);
+    const interval = setInterval(() => {
+      seconds -= 1;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        navigate(`/results/${analysisScanId}`, { replace: true });
+      } else {
+        setRedirectCountdown(seconds);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [analysisDone, analysisScanId, navigate]);
 
   const getApiToken = async (): Promise<string | null> => {
     const legacyToken = localStorage.getItem('glowsense_token');
@@ -77,6 +96,7 @@ export default function PaymentCallback() {
         ? `Payment verified, your monthly scan plan is active, and analysis is completed. You now have ${MONTHLY_SCAN_SUBSCRIPTION_LIMIT} scans available this cycle.`
         : "Payment verified and analysis completed."
     );
+    setAnalysisDone(true);
   };
 
   const finalizePostPayment = async (verifiedTransactionRef: string) => {
@@ -326,6 +346,11 @@ export default function PaymentCallback() {
                 )}
                 {postPaymentMessage && (
                   <p className="text-sm text-emerald-700 mb-6">{postPaymentMessage}</p>
+                )}
+                {redirectCountdown !== null && analysisScanId && (
+                  <p className="text-xs text-muted-foreground mb-4 animate-pulse">
+                    Redirecting to your results in {redirectCountdown}s...
+                  </p>
                 )}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button

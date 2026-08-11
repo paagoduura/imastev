@@ -481,22 +481,31 @@ const Scan = () => {
   };
 
   const runAnalysis = async (scan: ScanRecord) => {
-    const imageUrls = scan.capture_info?.image_urls || scan.multi_angle_urls || {};
-    const primaryAngle = scan.scan_type === 'hair' ? 'scalp_parting' : 'close';
-    const functionName = scan.scan_type === 'hair' ? 'analyze-hair' : 'analyze-skin';
+    const token = await getApiAuthToken();
+    if (!token) throw new Error('Authentication required to run analysis');
 
-    const { data: analysisData, error: analysisError } = await supabase.functions.invoke(functionName, {
-      body: {
-        scanId: scan.id,
-        imageUrl: imageUrls[primaryAngle] || scan.image_url,
-        multiAngleUrls: imageUrls,
+    const analysisType = scan.scan_type === 'hair' ? 'hair' : 'skin';
+
+    const response = await fetch(buildApiUrl(`/analyze/${analysisType}`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({ scanId: scan.id }),
     });
 
-    if (analysisError || !analysisData?.success) {
-      throw new Error(analysisError?.message || analysisData?.error || 'Analysis failed');
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.error || `Analysis failed (${response.status})`);
+    }
+
+    const analysisData = await response.json();
+    if (!analysisData?.success) {
+      throw new Error(analysisData?.error || 'Analysis failed');
     }
   };
+
 
   const prepareScan = async (user: { id: string }) => {
     try {

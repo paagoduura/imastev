@@ -1956,13 +1956,15 @@ app.post('/api/analyze/:type', authenticateToken, async (req: any, res) => {
     if (scan.multi_angle_urls && typeof scan.multi_angle_urls === 'object') {
       for (const url of Object.values(scan.multi_angle_urls)) {
         if (typeof url === 'string' && url.trim()) {
-          const localPath = url.replace(/^\//, './');
-          imagePaths.push(localPath);
+          // If it's a full URL (http/https), pass as-is; otherwise treat as a local relative path
+          const path = /^https?:\/\//i.test(url) ? url : url.replace(/^\//, './');
+          imagePaths.push(path);
         }
       }
     }
     if (scan.image_url && imagePaths.length === 0) {
-      imagePaths.push(scan.image_url.replace(/^\//, './'));
+      const singleUrl = scan.image_url;
+      imagePaths.push(/^https?:\/\//i.test(singleUrl) ? singleUrl : singleUrl.replace(/^\//, './'));
     }
     
     console.log(`Starting AI analysis for ${analysisType} with ${imagePaths.length} images`);
