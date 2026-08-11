@@ -1,0 +1,48 @@
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+skin-sense-buddy-main/.env
+skin-sense-buddy-main/.env.local
+skin-sense-buddy-main/.env.production
+skin-sense-buddy-main/.env.development
+
+# Dependencies
+node_modules/
+skin-sense-buddy-main/node_modules/
+
+# Frontend build output
+skin-sense-buddy-main/dist/
+
+# Uploaded user files
+uploads/
+
+# PM2 logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Playwright MCP snapshots
+.playwright-mcp/
+
+# Runtime / debug files
+*.pid
+.server-pid
+
+# Root-level screenshots and temp images
+*.png
+*.jpg
+*.jpeg
+*.zip
+
+# Replit runtime
+.replit
+replit.md
+
+# Test output
+test_out.txt

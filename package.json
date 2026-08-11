@@ -1,0 +1,48 @@
+{
+  "name": "glowsense-ai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "server": "npx tsx server/index.ts",
+    "dev": "npm run server",
+    "build:frontend": "cd skin-sense-buddy-main && npm run build",
+    "build": "npm run build:frontend",
+    "start": "NODE_ENV=production npx tsx server/index.ts",
+    "start:pm2": "pm2 start pm2.ecosystem.config.cjs --env production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "GlowSense AI - Hair & Skin Analysis Platform",
+  "dependencies": {
+    "@daily-co/daily-js": "^0.85.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.0.0",
+    "@types/pg": "^8.15.6",
+    "@types/uuid": "^10.0.0",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.11",
+    "openai": "^6.10.0",
+    "pg": "^8.16.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "supabase": "^2.89.1",
+    "tsx": "^4.21.0"
+  }
+}

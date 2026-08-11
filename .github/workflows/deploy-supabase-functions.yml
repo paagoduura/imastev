@@ -1,0 +1,48 @@
+name: Deploy Supabase Edge Functions
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install supabase CLI
+        run: |
+          set -e
+          URL="https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz"
+          curl -sL "$URL" -o supabase.tar.gz
+          sudo tar -xzf supabase.tar.gz -C /usr/local/bin supabase
+          sudo chmod +x /usr/local/bin/supabase
+          supabase --version || true
+
+      - name: Deploy Edge Functions
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          set -e
+          if [ -z "$SUPABASE_PROJECT_REF" ]; then
+            echo "Missing SUPABASE_PROJECT_REF secret"; exit 1
+          fi
+
+          # Link project (creates local supabase/config.toml)
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" || true
+
+          # Deploy all functions under supabase/functions
+          if [ -d "skin-sense-buddy-main/supabase/functions" ]; then
+            for fn in skin-sense-buddy-main/supabase/functions/*; do
+              if [ -d "$fn" ]; then
+                name=$(basename "$fn")
+                echo "Deploying function: $name"
+                supabase functions deploy "$name" --project-ref "$SUPABASE_PROJECT_REF" --no-verify-jwt
+              fi
+            done
+          else
+            echo "No functions directory found at skin-sense-buddy-main/supabase/functions"; exit 0
+          fi
