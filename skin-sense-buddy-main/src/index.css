@@ -685,6 +685,27 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   .signature-carousel__content { padding-right: clamp(3rem, 5vw, 5.5rem); padding-left: clamp(3rem, 5vw, 5.5rem); }
 }
 
+/* Final phone composition: keep the care story and visual card in one first-screen edit. */
+@media (max-width: 640px) {
+  .signature-carousel { min-height: 0; }
+  .signature-carousel__content { min-height: 0; align-content: start; gap: .8rem; padding: 1rem .9rem .8rem; }
+  .signature-carousel__copy h2 { max-width: 20rem; margin: .62rem 0 .62rem; font-size: clamp(1.82rem, 9.7vw, 2.58rem); line-height: 1.02; }
+  .signature-carousel__copy p { max-width: 23rem; font-size: .82rem; line-height: 1.46; }
+  .signature-carousel__actions { gap: .5rem; margin-top: .9rem; }
+  .signature-carousel__primary, .signature-carousel__secondary { font-size: .72rem; }
+  .signature-carousel__primary { min-height: 2.62rem; padding: .68rem .86rem; }
+  .signature-carousel__secondary { padding: .68rem .25rem; }
+  .signature-carousel__stage { margin-top: 0; }
+  .signature-carousel__stage-label { padding-bottom: .48rem; }
+  .signature-carousel__cards { height: clamp(205px, 55vw, 230px); margin-right: -.55rem; margin-left: -.55rem; }
+  .signature-carousel__card { width: min(8.8rem, 37vw); height: clamp(12.7rem, 39vw, 14rem); }
+  .signature-carousel__card.is-next { transform: translate(-50%,-50%) translateX(52%) translateZ(-58px) rotateY(-23deg) scale(.68); }
+  .signature-carousel__card.is-previous { transform: translate(-50%,-50%) translateX(-52%) translateZ(-58px) rotateY(23deg) scale(.68); }
+  .signature-carousel__stage-footer { padding-top: .5rem; }
+  .signature-carousel__stage-note { max-width: 8rem; font-size: .55rem; }
+  .signature-carousel__controls { gap: .45rem; }
+  .signature-carousel__controls button { width: 1.78rem; height: 1.78rem; }
+}
 
 /* Specialist video carousel: contained replacement for the method image panel */
 .specialist-video-carousel { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 2rem; background: #8a5a3b; box-shadow: 0 28px 55px rgba(72,43,22,.22); isolation: isolate; }
