@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { QuicktellerCheckout } from "@/components/checkout/QuicktellerCheckout";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PhoneNumberPrompt } from "@/components/checkout/PhoneNumberPrompt";
 
 type CheckoutPaymentType = "analysis" | "subscription" | "salon_booking" | "telehealth";
 
@@ -50,6 +51,15 @@ export default function Payment() {
   const handlePaymentSuccess = (transactionRef: string) => {
     sessionStorage.removeItem("pendingPaymentPage");
     navigate(`/payment-callback?txnref=${encodeURIComponent(transactionRef)}`);
+  };
+
+  const handlePaymentPhoneSaved = (phone: string) => {
+    setPendingPayment((current) => {
+      if (!current) return current;
+      const nextPayment = { ...current, customerPhone: phone };
+      sessionStorage.setItem("pendingPaymentPage", JSON.stringify(nextPayment));
+      return nextPayment;
+    });
   };
 
   const isSalonBooking = pendingPayment?.paymentType === "salon_booking";
@@ -110,20 +120,28 @@ export default function Payment() {
 
               <section className="payment-checkout-card">
                 <div className="payment-checkout-header"><span>{isSalonBooking ? "Deposit due" : isTelehealth ? "Session fee" : "Amount due"}</span><strong>₦{pendingPayment.amount.toLocaleString("en-NG")}</strong></div>
-                <QuicktellerCheckout
-                  amount={pendingPayment.amount}
-                  customerName={pendingPayment.customerName}
-                  customerEmail={pendingPayment.customerEmail}
-                  customerPhone={pendingPayment.customerPhone}
-                  description={pendingPayment.description || (isSalonBooking ? `Salon Booking - ${pendingPayment.serviceNames?.join(", ") || "Appointment"}` : isTelehealth ? "IMSTEV specialist consultation" : "IMSTEV NATURALS Scan Analysis")}
-                  paymentType={pendingPayment.paymentType}
-                  planId={pendingPayment.planId}
-                  scanId={pendingPayment.scanId}
-                  metadata={{ source: isSalonBooking ? "salon_booking_flow" : isTelehealth ? "telehealth_flow" : "scan_flow", scanId: pendingPayment.scanId, paymentOption: pendingPayment.paymentType }}
-                  redirectPath="/payment-callback"
-                  onPaymentSuccess={handlePaymentSuccess}
-                  onDismiss={() => navigate(isSalonBooking ? "/salon-booking" : isTelehealth ? "/consultation" : "/scan")}
-                />
+                {pendingPayment.customerPhone ? (
+                  <QuicktellerCheckout
+                    amount={pendingPayment.amount}
+                    customerName={pendingPayment.customerName}
+                    customerEmail={pendingPayment.customerEmail}
+                    customerPhone={pendingPayment.customerPhone}
+                    description={pendingPayment.description || (isSalonBooking ? `Salon Booking - ${pendingPayment.serviceNames?.join(", ") || "Appointment"}` : isTelehealth ? "IMSTEV specialist consultation" : "IMSTEV NATURALS Scan Analysis")}
+                    paymentType={pendingPayment.paymentType}
+                    planId={pendingPayment.planId}
+                    scanId={pendingPayment.scanId}
+                    metadata={{ source: isSalonBooking ? "salon_booking_flow" : isTelehealth ? "telehealth_flow" : "scan_flow", scanId: pendingPayment.scanId, paymentOption: pendingPayment.paymentType }}
+                    redirectPath="/payment-callback"
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onDismiss={() => navigate(isSalonBooking ? "/salon-booking" : isTelehealth ? "/consultation" : "/scan")}
+                  />
+                ) : (
+                  <PhoneNumberPrompt
+                    isOpen
+                    onClose={() => navigate(isSalonBooking ? "/salon-booking" : isTelehealth ? "/consultation" : "/scan")}
+                    onSaved={handlePaymentPhoneSaved}
+                  />
+                )}
               </section>
             </div>
           ) : (

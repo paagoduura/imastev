@@ -15,6 +15,7 @@ import { HairCaptureGuidelines, HAIR_REQUIRED_ANGLES, HAIR_OPTIONAL_ANGLES, HAIR
 import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
 import { PorosityTest } from "@/components/scan/PorosityTest";
 import { PaymentOptionsModal } from "@/components/checkout/PaymentOptionsModal";
+import { PhoneNumberPrompt } from "@/components/checkout/PhoneNumberPrompt";
 import { buildApiUrl } from "@/lib/config";
 import { MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN, ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
 
@@ -84,6 +85,7 @@ const Scan = () => {
   const [showLiveCamera, setShowLiveCamera] = useState(false);
   const [porosityResult, setPorosityResult] = useState<PorosityResult | null>(null);
   const [showPaymentOptionsModal, setShowPaymentOptionsModal] = useState(false);
+  const [showPhonePrompt, setShowPhonePrompt] = useState(false);
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<"one-time" | "subscription" | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
@@ -581,12 +583,7 @@ const Scan = () => {
         .single();
 
       if (!profileData?.phone) {
-        toast({
-          title: "Phone number required",
-          description: "Please add your phone number in your profile before making a payment.",
-          variant: "destructive",
-        });
-        navigate('/profile');
+        setShowPhonePrompt(true);
         setPaymentLoading(false);
         return;
       }
@@ -1063,6 +1060,15 @@ const Scan = () => {
           </div>
         </div>
       </div>
+
+      <PhoneNumberPrompt
+        isOpen={showPhonePrompt}
+        onClose={() => setShowPhonePrompt(false)}
+        onSaved={() => {
+          setShowPhonePrompt(false);
+          setShowPaymentOptionsModal(true);
+        }}
+      />
 
       {/* Payment Options Modal */}
       <PaymentOptionsModal

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { HeatmapVisualization } from "@/components/results/HeatmapVisualization";
 import { HairResultsDisplay } from "@/components/results/HairResultsDisplay";
 import { Footer } from "@/components/layout/Footer";
+import { PhoneNumberPrompt } from "@/components/checkout/PhoneNumberPrompt";
 import { buildApiUrl } from "@/lib/config";
 import { ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
 
@@ -96,6 +97,7 @@ const Results = () => {
   const [loading, setLoading] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<'checking' | 'paid' | 'unpaid' | 'error'>('checking');
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [showPhonePrompt, setShowPhonePrompt] = useState(false);
   const [diagnosis, setDiagnosis] = useState<DiagnosisRecord | null>(null);
   const [scan, setScan] = useState<ScanRecord | null>(null);
   const [treatmentPlan, setTreatmentPlan] = useState<TreatmentPlanRecord | null>(null);
@@ -358,7 +360,7 @@ www.imstevnaturals.com
     }
   };
 
-  const handlePayForResults = async () => {
+  const handlePayForResults = async (phoneOverride?: string) => {
     if (!scanId || !scan) return;
     setPaymentLoading(true);
     try {
@@ -368,14 +370,10 @@ www.imstevnaturals.com
         return;
       }
 
-      const customerPhone = profile?.phone;
+      const customerPhone = phoneOverride || profile?.phone;
       if (!customerPhone) {
-        toast({
-          title: "Phone number required",
-          description: "Please add your phone number in your profile before making a payment.",
-          variant: "destructive",
-        });
-        navigate('/profile');
+        setShowPhonePrompt(true);
+        setPaymentLoading(false);
         return;
       }
 
@@ -529,6 +527,7 @@ www.imstevnaturals.com
 
   if (paymentStatus === 'unpaid') {
     return (
+      <>
       <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
         <Card className="max-w-lg w-full">
           <CardContent className="pt-6 text-center space-y-4">
@@ -546,7 +545,7 @@ www.imstevnaturals.com
               <p className="text-3xl font-bold text-primary">{formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}</p>
             </div>
             <div className="space-y-2">
-              <Button onClick={handlePayForResults} className="w-full" disabled={paymentLoading}>
+              <Button onClick={() => { void handlePayForResults(); }} className="w-full" disabled={paymentLoading}>
                 {paymentLoading ? 'Starting payment...' : `Pay ${formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}`}
               </Button>
               <Button variant="outline" onClick={() => scanId && checkPaymentStatus(scanId)} className="w-full">
@@ -559,6 +558,17 @@ www.imstevnaturals.com
           </CardContent>
         </Card>
       </div>
+      <PhoneNumberPrompt
+        isOpen={showPhonePrompt}
+        onClose={() => setShowPhonePrompt(false)}
+        initialPhone={profile?.phone || ""}
+        onSaved={(phone) => {
+          setShowPhonePrompt(false);
+          setProfile((current) => ({ ...(current || {}), phone }));
+          void handlePayForResults(phone);
+        }}
+      />
+      </>
     );
   }
 
