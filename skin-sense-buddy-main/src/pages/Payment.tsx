@@ -18,9 +18,11 @@ interface PendingPayment {
   planId?: string;
   scanId?: string;
   description?: string;
+  serviceIds?: string[];
   serviceNames?: string[];
   appointmentDate?: string;
   timeSlot?: string;
+  notes?: string;
   clinicianName?: string;
 }
 
@@ -130,7 +132,16 @@ export default function Payment() {
                     paymentType={pendingPayment.paymentType}
                     planId={pendingPayment.planId}
                     scanId={pendingPayment.scanId}
-                    metadata={{ source: isSalonBooking ? "salon_booking_flow" : isTelehealth ? "telehealth_flow" : "scan_flow", scanId: pendingPayment.scanId, paymentOption: pendingPayment.paymentType }}
+                    metadata={{
+                      source: isSalonBooking ? "salon_booking_flow" : isTelehealth ? "telehealth_flow" : "scan_flow",
+                      scanId: pendingPayment.scanId,
+                      paymentOption: pendingPayment.paymentType,
+                      ...(isSalonBooking ? {
+                        serviceIds: pendingPayment.serviceIds,
+                        appointmentDate: pendingPayment.appointmentDate,
+                        timeSlot: pendingPayment.timeSlot,
+                      } : {}),
+                    }}
                     redirectPath="/payment-callback"
                     onPaymentSuccess={handlePaymentSuccess}
                     onDismiss={() => navigate(isSalonBooking ? "/salon-booking" : isTelehealth ? "/consultation" : "/scan")}

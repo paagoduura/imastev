@@ -3173,6 +3173,8 @@ type LocalSalonBooking = {
   notes: string | null;
   is_registered_user: boolean;
   status: string;
+  payment_status: string;
+  payment_ref: string | null;
   created_at: string;
 };
 
@@ -3848,24 +3850,40 @@ app.post('/api/community/reactions', authenticateToken, async (req: any, res) =>
 // Create salon booking
 app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
   try {
-    const { 
-      customerName, 
-      customerEmail, 
-      customerPhone, 
-      serviceId, 
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      serviceId,
       serviceIds,
-      appointmentDate, 
-      timeSlot, 
-      notes 
-    } = req.body;
+      appointmentDate,
+      timeSlot,
+      notes,
+      transactionRef,
+    } = req.body || {};
+
+    const normalizedCustomerName = typeof customerName === 'string' ? customerName.trim() : '';
+    const normalizedCustomerEmail = typeof customerEmail === 'string' && customerEmail.trim()
+      ? customerEmail.trim().toLowerCase()
+      : null;
+    const normalizedCustomerPhone = normalizePhoneNumber(customerPhone);
+    const normalizedTransactionRef = typeof transactionRef === 'string' ? transactionRef.trim() : '';
+    const normalizedAppointmentDate = typeof appointmentDate === 'string' ? appointmentDate.trim() : '';
+    const normalizedTimeSlot = typeof timeSlot === 'string' ? timeSlot.trim() : '';
 
     const normalizedServiceIds = Array.from(new Set(Array.isArray(serviceIds)
-      ? serviceIds.filter((id: unknown): id is string => typeof id === 'string' && id.trim().length > 0)
-      : (typeof serviceId === 'string' && serviceId.trim() ? [serviceId] : [])));
+      ? serviceIds
+        .filter((id: unknown): id is string => typeof id === 'string' && id.trim().length > 0)
+        .map((id: string) => id.trim())
+      : (typeof serviceId === 'string' && serviceId.trim() ? [serviceId.trim()] : [])));
 
-    // Validate required fields
-    if (!customerName || !customerPhone || !normalizedServiceIds.length || !appointmentDate || !timeSlot) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Salon appointments are created only after the gateway has verified the deposit.
+    if (!normalizedTransactionRef) {
+      return res.status(400).json({ error: 'A verified payment reference is required to confirm this appointment.' });
+    }
+
+    if (!normalizedCustomerName || !normalizedCustomerPhone || !normalizedServiceIds.length || !normalizedAppointmentDate || !normalizedTimeSlot) {
+      return res.status(400).json({ error: 'Missing required booking fields' });
     }
 
     const selectedServices = normalizedServiceIds
@@ -3878,14 +3896,60 @@ app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
 
     const totalDuration = selectedServices.reduce((sum, service) => sum + Number(service.duration || 0), 0);
     const totalPrice = selectedServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
+    const depositAmount = Math.ceil(totalPrice / 2);
     const serviceName = selectedServices.map((service) => service.name).join(', ');
     const serviceType = Array.from(new Set(selectedServices.map((service) => service.category))).join(', ');
-    const daySlots = getSalonSlotsForDate(appointmentDate);
+    const daySlots = getSalonSlotsForDate(normalizedAppointmentDate);
+
+    if (!Number.isFinite(totalPrice) || totalPrice <= 0 || depositAmount <= 0) {
+      return res.status(400).json({ error: 'Selected services require a valid deposit.' });
+    }
+
+    const verifiedPayment = databaseConfig.connectionString
+      ? (await pool.query(
+        `SELECT transaction_ref, payment_type, status, amount, customer_phone, user_id
+         FROM payment_transactions
+         WHERE transaction_ref = $1
+         LIMIT 1`,
+        [normalizedTransactionRef]
+      )).rows[0]
+      : localPaymentTransactions.find((payment) => payment.transaction_ref === normalizedTransactionRef);
+
+    if (!verifiedPayment) {
+      return res.status(400).json({ error: 'Payment reference not found. Please restart checkout.' });
+    }
+
+    if (verifiedPayment.payment_type !== 'salon_booking' || verifiedPayment.status !== 'successful') {
+      return res.status(402).json({ error: 'The salon deposit has not been verified.' });
+    }
+
+    if (Number(verifiedPayment.amount) !== depositAmount) {
+      return res.status(400).json({ error: 'The verified deposit does not match this booking.' });
+    }
+
+    if (req.user?.id && verifiedPayment.user_id && String(verifiedPayment.user_id) !== String(req.user.id)) {
+      return res.status(403).json({ error: 'This payment cannot be used for this account.' });
+    }
+
+    if (normalizePhoneNumber(verifiedPayment.customer_phone) !== normalizedCustomerPhone) {
+      return res.status(400).json({ error: 'Booking contact details do not match the payment.' });
+    }
+
+    const existingBooking = databaseConfig.connectionString
+      ? (await pool.query(
+        'SELECT * FROM salon_appointments WHERE payment_ref = $1 LIMIT 1',
+        [normalizedTransactionRef]
+      )).rows[0]
+      : localSalonBookings.find((booking) => booking.payment_ref === normalizedTransactionRef);
+
+    if (existingBooking) {
+      return res.json({ success: true, booking: existingBooking, message: 'Appointment already confirmed.' });
+    }
 
     // Reject past dates
     const today = new Date();
     const todayStr = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getUTCDate()).padStart(2, '0')}`;
-    if (appointmentDate < todayStr) {
+    if (normalizedAppointmentDate < todayStr) {
       return res.status(400).json({ error: 'Cannot book an appointment in the past.' });
     }
 
@@ -3893,7 +3957,7 @@ app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
       return res.status(400).json({ error: 'Salon appointments are not available on Mondays.' });
     }
 
-    if (!daySlots.includes(timeSlot)) {
+    if (!daySlots.includes(normalizedTimeSlot)) {
       return res.status(400).json({ error: 'Selected time slot is outside salon opening hours.' });
     }
 
@@ -3903,9 +3967,9 @@ app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
         `SELECT id FROM salon_appointments
          WHERE appointment_date = $1 AND time_slot = $2
          AND status NOT IN ('cancelled', 'no-show')`,
-        [appointmentDate, timeSlot]
+        [normalizedAppointmentDate, normalizedTimeSlot]
       )).rows.length
-      : localSalonBookings.filter((booking) => booking.appointment_date === appointmentDate && booking.time_slot === timeSlot && !['cancelled', 'no-show'].includes(booking.status)).length;
+      : localSalonBookings.filter((booking) => booking.appointment_date === normalizedAppointmentDate && booking.time_slot === normalizedTimeSlot && !['cancelled', 'no-show'].includes(booking.status)).length;
 
     if (existingBookingCount > 0) {
       return res.status(409).json({ error: 'This time slot is no longer available' });
@@ -3916,19 +3980,21 @@ app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
     if (!databaseConfig.connectionString) {
       const booking: LocalSalonBooking = {
         id: uuidv4(),
-        customer_name: customerName,
-        customer_email: customerEmail || null,
-        customer_phone: customerPhone,
-        user_id: req.user?.id || null,
+        customer_name: normalizedCustomerName,
+        customer_email: normalizedCustomerEmail,
+        customer_phone: normalizedCustomerPhone,
+        user_id: req.user?.id || verifiedPayment.user_id || null,
         service_type: serviceType,
         service_name: serviceName,
-        appointment_date: appointmentDate,
-        time_slot: timeSlot,
+        appointment_date: normalizedAppointmentDate,
+        time_slot: normalizedTimeSlot,
         duration_minutes: totalDuration,
         price_ngn: totalPrice,
-        notes: notes || null,
+        notes: typeof notes === 'string' && notes.trim() ? notes.trim() : null,
         is_registered_user: isRegisteredUser,
         status: 'confirmed',
+        payment_status: 'paid',
+        payment_ref: normalizedTransactionRef,
         created_at: new Date().toISOString(),
       };
       localSalonBookings.push(booking);
@@ -3938,14 +4004,16 @@ app.post('/api/salon/book', optionalAuth, async (req: any, res) => {
     const result = await pool.query(
       `INSERT INTO salon_appointments
        (customer_name, customer_email, customer_phone, user_id, service_type, service_name,
-        appointment_date, time_slot, duration_minutes, price_ngn, notes, is_registered_user, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        appointment_date, time_slot, duration_minutes, price_ngn, notes, is_registered_user, status,
+        payment_status, payment_ref)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
        RETURNING *`,
       [
-        customerName, customerEmail || null, customerPhone,
-        req.user?.id || null, serviceType, serviceName,
-        appointmentDate, timeSlot, totalDuration, totalPrice,
-        notes || null, isRegisteredUser, 'confirmed'
+        normalizedCustomerName, normalizedCustomerEmail, normalizedCustomerPhone,
+        req.user?.id || verifiedPayment.user_id || null, serviceType, serviceName,
+        normalizedAppointmentDate, normalizedTimeSlot, totalDuration, totalPrice,
+        typeof notes === 'string' && notes.trim() ? notes.trim() : null, isRegisteredUser, 'confirmed',
+        'paid', normalizedTransactionRef
       ]
     );
 

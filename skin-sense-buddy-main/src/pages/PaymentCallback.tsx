@@ -147,10 +147,8 @@ export default function PaymentCallback() {
     if (pendingType === 'salon_booking') {
       const pendingBooking = sessionStorage.getItem('pendingSalonBooking');
       const token = await getApiToken();
-      if (!pendingBooking || !token) {
-        setPostPaymentMessage("Payment verified. Please complete your booking in the salon page.");
-        sessionStorage.removeItem('pendingPaymentType');
-        sessionStorage.removeItem('pendingSalonBooking');
+      if (!pendingBooking) {
+        setPostPaymentMessage("Payment verified. Please return to the salon page to complete your booking.");
         return;
       }
       try {
@@ -159,22 +157,23 @@ export default function PaymentCallback() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
             ...bookingData.formData,
             transactionRef: verifiedTransactionRef,
           }),
         });
-        if (!response.ok) {
-          throw new Error(`Unable to confirm booking (${response.status})`);
+        const responseData = await response.json().catch(() => ({}));
+        if (!response.ok || !responseData?.success) {
+          throw new Error(responseData?.error || `Unable to confirm booking (${response.status})`);
         }
         sessionStorage.removeItem('pendingPaymentType');
         sessionStorage.removeItem('pendingSalonBooking');
         setPostPaymentMessage("Payment verified and your salon booking is confirmed.");
       } catch (error) {
         console.error("Failed to finalize salon booking:", error);
-        setPostPaymentMessage("Payment verified, but we couldn't finalize your booking. Please contact support.");
+        setPostPaymentMessage("Payment verified, but we couldn't finalize your booking. Your payment reference is preserved; please contact support if the booking does not appear.");
       }
       return;
     }

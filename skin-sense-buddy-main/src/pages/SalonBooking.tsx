@@ -264,7 +264,16 @@ export default function SalonBooking() {
   };
 
   const handleBooking = () => {
-    if (!formData.customerName || !formData.customerPhone) {
+    const customerName = formData.customerName.trim();
+    const rawPhone = formData.customerPhone.trim();
+    const phoneDigits = rawPhone.replace(/\D/g, '');
+    const formattedPhone = phoneDigits.startsWith('234')
+      ? `0${phoneDigits.slice(3)}`
+      : phoneDigits;
+    const appointmentDate = formData.appointmentDate.trim();
+    const timeSlot = formData.timeSlot.trim();
+
+    if (!customerName || !formattedPhone) {
       toast({
         title: "Missing Information",
         description: "Please fill in your name and phone number.",
@@ -273,7 +282,16 @@ export default function SalonBooking() {
       return;
     }
 
-    if (!selectedServices.length) {
+    if (formattedPhone.length < 10 || formattedPhone.length > 15) {
+      toast({
+        title: "Check your phone number",
+        description: "Enter a valid phone number before continuing to payment.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!selectedServices.length || !formData.serviceIds.length) {
       toast({
         title: "Missing Services",
         description: "Please select at least one service.",
@@ -282,35 +300,67 @@ export default function SalonBooking() {
       return;
     }
 
-    // Format phone number: convert 234 to 0 if needed
-    let formattedPhone = formData.customerPhone;
-    if (formattedPhone.startsWith('234')) {
-      formattedPhone = '0' + formattedPhone.slice(3);
+    if (!selectedDate || !appointmentDate || !timeSlot || !selectedSlot || selectedSlot !== timeSlot) {
+      toast({
+        title: "Choose a date and time",
+        description: "Select an available appointment date and time before continuing.",
+        variant: "destructive"
+      });
+      setStep(2);
+      resetSalonScroll();
+      return;
     }
 
-    const customerEmail = formData.customerEmail || `${formData.customerPhone.replace(/\D/g, '')}@guest.imstevnaturals.com`;
-    
-    // Calculate 50% of the selected services total as deposit
-    const depositAmount = Math.ceil(totalPrice / 2);
+    if (!availableSlots.includes(timeSlot) || bookedSlots.includes(timeSlot)) {
+      toast({
+        title: "Time no longer available",
+        description: "Please choose another available salon time.",
+        variant: "destructive"
+      });
+      setSelectedSlot("");
+      setFormData((prev) => ({ ...prev, timeSlot: "" }));
+      setStep(2);
+      resetSalonScroll();
+      return;
+    }
 
-    // Store booking data for use after payment
-    sessionStorage.setItem('pendingPaymentType', 'salon_booking');
-    sessionStorage.setItem('pendingSalonBooking', JSON.stringify({
+    const depositAmount = Math.ceil(totalPrice / 2);
+    if (!Number.isFinite(totalPrice) || totalPrice <= 0 || !Number.isFinite(depositAmount) || depositAmount <= 0) {
+      toast({
+        title: "Choose a paid service",
+        description: "A salon deposit is required to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const customerEmail = formData.customerEmail.trim().toLowerCase()
+      || `${phoneDigits}@guest.imstevnaturals.com`;
+    const bookingDraft = {
       formData: {
         ...formData,
+        customerName,
+        customerEmail,
+        customerPhone: formattedPhone,
         serviceIds: selectedServices.map((service) => service.id),
+        appointmentDate,
+        timeSlot,
       },
-    }));
+    };
 
+    sessionStorage.setItem('pendingPaymentType', 'salon_booking');
+    sessionStorage.setItem('pendingSalonBooking', JSON.stringify(bookingDraft));
     sessionStorage.setItem('pendingPaymentPage', JSON.stringify({
       amount: depositAmount,
       customerEmail,
-      customerName: formData.customerName,
+      customerName,
       customerPhone: formattedPhone,
       paymentType: 'salon_booking',
+      serviceIds: bookingDraft.formData.serviceIds,
       serviceNames: selectedServices.map((service) => service.name),
-      appointmentDate: formData.appointmentDate,
-      timeSlot: formData.timeSlot,
+      appointmentDate,
+      timeSlot,
+      notes: formData.notes.trim(),
     }));
 
     navigate('/payment');
