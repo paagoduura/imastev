@@ -2330,6 +2330,81 @@ app.delete('/api/cart/:id', authenticateToken, async (req: any, res) => {
 
 // ==================== SCAN ROUTES ====================
 
+const EXPRESS_SUCCESSFUL_PAYMENT_STATUSES = ['paid', 'successful', 'completed'];
+
+function redactExpressDiagnosis(diagnosis: any) {
+  const firstCondition = Array.isArray(diagnosis?.conditions) ? diagnosis.conditions[0] : null;
+  return {
+    id: diagnosis?.id || null,
+    scan_id: diagnosis?.scan_id || null,
+    analysis_type: diagnosis?.analysis_type || null,
+    primary_condition: diagnosis?.primary_condition || 'A care focus was identified.',
+    confidence_score: null,
+    severity: diagnosis?.severity || null,
+    triage_level: diagnosis?.triage_level || null,
+    conditions: firstCondition
+      ? [{
+          condition: firstCondition.condition || 'A care focus was identified.',
+          confidence: null,
+          severity: firstCondition.severity || null,
+          explanation: null,
+        }]
+      : [],
+  };
+}
+
+function redactExpressTreatmentPlan(treatmentPlan: any) {
+  if (!treatmentPlan) return null;
+  const recommendations = typeof treatmentPlan.recommendations === 'string'
+    ? treatmentPlan.recommendations.trim()
+    : 'Your care notes are ready to explore.';
+  return {
+    id: treatmentPlan.id || null,
+    recommendations: recommendations.length > 180 ? `${recommendations.slice(0, 177).trimEnd()}…` : recommendations,
+    follow_up_days: treatmentPlan.follow_up_days ?? null,
+  };
+}
+
+async function getExpressScanAccess(userId: string, scanId: string) {
+  const paymentResult = await pool.query(
+    `SELECT payment_type, transaction_ref, status
+     FROM payment_transactions
+     WHERE user_id = $1
+       AND payment_type IN ('analysis', 'subscription')
+       AND LOWER(status) IN ('paid', 'successful', 'completed')
+       AND (metadata->>'scanId' = $2 OR metadata->>'scan_id' = $2)
+     ORDER BY created_at DESC
+     LIMIT 1`,
+    [userId, scanId]
+  );
+  const directPayment = paymentResult.rows[0] || null;
+
+  const subscriptionResult = await pool.query(
+    `SELECT sp.tier, s.current_period_end
+     FROM subscriptions s
+     JOIN subscription_plans sp ON s.plan_id = sp.id
+     WHERE s.user_id = $1
+       AND s.status = 'active'
+       AND sp.is_active = true
+     ORDER BY s.created_at DESC`,
+    [userId]
+  );
+  const now = Date.now();
+  const paidSubscription = subscriptionResult.rows.some((subscription: any) => {
+    const tier = String(subscription.tier || 'free').toLowerCase();
+    if (tier === 'free') return false;
+    if (!subscription.current_period_end) return true;
+    const periodEnd = new Date(subscription.current_period_end).getTime();
+    return Number.isFinite(periodEnd) && periodEnd > now;
+  });
+
+  return {
+    hasFullAccess: Boolean(directPayment || paidSubscription),
+    paymentType: directPayment?.payment_type || (paidSubscription ? 'subscription' : null),
+    transactionRef: directPayment?.transaction_ref || null,
+  };
+}
+
 // Get subscription status for scan limits
 app.get('/api/scan-quota', authenticateToken, async (req: any, res) => {
   try {
@@ -2344,14 +2419,14 @@ app.get('/api/scan-quota', authenticateToken, async (req: any, res) => {
     );
     
     if (subResult.rows.length === 0) {
-      // No active subscription - default to starter limits (3 scans)
+      // No active subscription - starter includes one scan preview.
       return res.json({
         hasSubscription: false,
         planName: 'Starter',
         tier: 'free',
         scansUsed: 0,
-        maxScans: 3,
-        scansRemaining: 3,
+        maxScans: 1,
+        scansRemaining: 1,
         isUnlimited: false
       });
     }
@@ -2388,6 +2463,14 @@ app.post('/api/scans', authenticateToken, parseScanUpload, async (req: any, res)
           : null;
 
     if (!databaseConfig.connectionString) {
+      if (localScans.some((scan) => scan.user_id === req.user.id)) {
+        return res.status(403).json({
+          error: 'Scan limit reached',
+          message: 'Your one-time scan has already been used. Unlock a complete analysis or choose a monthly plan for more scans.',
+          scansUsed: 1,
+          maxScans: 1,
+        });
+      }
       const localScan: LocalScan = {
         id: uuidv4(),
         user_id: req.user.id,
@@ -2405,7 +2488,7 @@ app.post('/api/scans', authenticateToken, parseScanUpload, async (req: any, res)
 
     // Check subscription quota before creating scan
     const subResult = await pool.query(
-      `SELECT s.*, sp.max_scans_per_month
+      `SELECT s.*, sp.max_scans_per_month, sp.tier
        FROM subscriptions s
        JOIN subscription_plans sp ON s.plan_id = sp.id
        WHERE s.user_id = $1 AND s.status = 'active' AND sp.is_active = true
@@ -2413,13 +2496,15 @@ app.post('/api/scans', authenticateToken, parseScanUpload, async (req: any, res)
       [req.user.id]
     );
     
-    let maxScans = 3; // Default to starter limit
+    let maxScans: number | null = 1; // Starter grants one scan preview.
     let scansUsed = 0;
     let subscriptionId = null;
+    let tier = 'free';
     
     if (subResult.rows.length > 0) {
       const sub = subResult.rows[0];
-      maxScans = sub.max_scans_per_month; // null means unlimited
+      tier = String(sub.tier || 'free').toLowerCase();
+      maxScans = tier === 'free' ? 1 : sub.max_scans_per_month; // null means unlimited
       scansUsed = sub.scans_used_this_period || 0;
       subscriptionId = sub.id;
     }
@@ -2428,9 +2513,12 @@ app.post('/api/scans', authenticateToken, parseScanUpload, async (req: any, res)
     if (maxScans !== null && scansUsed >= maxScans) {
       return res.status(403).json({ 
         error: 'Scan limit reached',
-        message: 'You have used all your scans for this period. Upgrade your plan for unlimited scans.',
+        message: tier === 'free'
+          ? 'Your one-time scan has already been used. Unlock a complete analysis or choose a monthly plan for more scans.'
+          : 'You have used all your scans for this period. Upgrade your plan for unlimited scans.',
         scansUsed,
-        maxScans
+        maxScans,
+        tier
       });
     }
     
@@ -2460,7 +2548,9 @@ app.post('/api/scans', authenticateToken, parseScanUpload, async (req: any, res)
 app.get('/api/scans', authenticateToken, async (req: any, res) => {
   try {
     if (!databaseConfig.connectionString) {
-      return res.json(localScans.filter((scan) => scan.user_id === req.user.id));
+      return res.json(localScans
+        .filter((scan) => scan.user_id === req.user.id)
+        .map((scan) => ({ ...scan, accessLevel: 'preview', paymentType: null, diagnoses: [], treatmentPlan: null })));
     }
 
     const result = await pool.query(
@@ -2473,7 +2563,18 @@ app.get('/api/scans', authenticateToken, async (req: any, res) => {
        ORDER BY s.created_at DESC`,
       [req.user.id]
     );
-    res.json(result.rows);
+    const scans = await Promise.all(result.rows.map(async (scan: any) => {
+      const access = await getExpressScanAccess(req.user.id, scan.id);
+      const diagnoses = Array.isArray(scan.diagnoses) ? scan.diagnoses : [];
+      return {
+        ...scan,
+        accessLevel: access.hasFullAccess ? 'full' : 'preview',
+        paymentType: access.paymentType,
+        diagnoses: access.hasFullAccess ? diagnoses : diagnoses.slice(0, 1).map(redactExpressDiagnosis),
+        treatmentPlan: null,
+      };
+    }));
+    res.json(scans);
   } catch (error: any) {
     res.status(500).json({ error: productionErrorMessage(error) });
   }
@@ -2483,7 +2584,9 @@ app.get('/api/scans/:id', authenticateToken, async (req: any, res) => {
   try {
     if (!databaseConfig.connectionString) {
       const localScan = localScans.find((scan) => scan.id === req.params.id && scan.user_id === req.user.id);
-      return res.json(localScan || null);
+      return res.json(localScan
+        ? { ...localScan, accessLevel: 'preview', paymentType: null, diagnoses: [], treatmentPlan: null }
+        : null);
     }
 
     const result = await pool.query(
@@ -2495,7 +2598,27 @@ app.get('/api/scans/:id', authenticateToken, async (req: any, res) => {
        GROUP BY s.id`,
       [req.params.id, req.user.id]
     );
-    res.json(result.rows[0] || null);
+    const scan = result.rows[0];
+    if (!scan) return res.json(null);
+
+    const access = await getExpressScanAccess(req.user.id, req.params.id);
+    const diagnoses = Array.isArray(scan.diagnoses) ? scan.diagnoses : [];
+    const diagnosisId = diagnoses[0]?.id || null;
+    const treatmentResult = diagnosisId
+      ? await pool.query(
+        'SELECT * FROM treatment_plans WHERE diagnosis_id = $1 ORDER BY created_at DESC LIMIT 1',
+        [diagnosisId]
+      )
+      : { rows: [] };
+    const treatmentPlan = treatmentResult.rows[0] || null;
+
+    res.json({
+      ...scan,
+      accessLevel: access.hasFullAccess ? 'full' : 'preview',
+      paymentType: access.paymentType,
+      diagnoses: access.hasFullAccess ? diagnoses : diagnoses.slice(0, 1).map(redactExpressDiagnosis),
+      treatmentPlan: access.hasFullAccess ? treatmentPlan : redactExpressTreatmentPlan(treatmentPlan),
+    });
   } catch (error: any) {
     res.status(500).json({ error: productionErrorMessage(error) });
   }
@@ -4231,7 +4354,7 @@ app.get('/api/analysis/payment-status', optionalAuth, async (req: any, res) => {
       ['analysis', 'subscription'].includes(item.payment_type)
       && (item.metadata.scanId === scanId || item.metadata.scan_id === scanId)
     );
-    const paid = payment?.status === 'successful';
+    const paid = Boolean(payment && EXPRESS_SUCCESSFUL_PAYMENT_STATUSES.includes(String(payment.status).toLowerCase()));
     return res.json({
       paid,
       status: payment?.status || 'unpaid',
@@ -4256,7 +4379,7 @@ app.get('/api/analysis/payment-status', optionalAuth, async (req: any, res) => {
       [scanId]
     );
     const payment = result.rows[0];
-    const paid = Boolean(payment && ['paid', 'successful', 'completed'].includes(String(payment.status).toLowerCase()));
+    const paid = Boolean(payment && EXPRESS_SUCCESSFUL_PAYMENT_STATUSES.includes(String(payment.status).toLowerCase()));
     return res.json({
       paid,
       status: payment?.status || 'unpaid',

@@ -227,6 +227,105 @@ function ensureArray<T>(value: T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [];
 }
 
+const successfulPaymentStatuses = new Set(["successful", "paid", "completed"]);
+
+function isSuccessfulPayment(status: unknown) {
+  return successfulPaymentStatuses.has(String(status || "").toLowerCase());
+}
+
+function previewDiagnosis(diagnosis: Record<string, unknown> | null) {
+  if (!diagnosis) return null;
+  const conditions = Array.isArray(diagnosis.conditions) ? diagnosis.conditions : [];
+  return {
+    id: diagnosis.id,
+    analysis_type: diagnosis.analysis_type,
+    primary_condition: diagnosis.primary_condition,
+    confidence_score: diagnosis.confidence_score,
+    severity: diagnosis.severity,
+    triage_level: diagnosis.triage_level,
+    conditions: conditions.slice(0, 1).map((condition) => {
+      if (!condition || typeof condition !== "object") return condition;
+      const item = condition as Record<string, unknown>;
+      return {
+        condition: item.condition || item.name,
+        name: item.name || item.condition,
+        severity: item.severity,
+        confidence: item.confidence,
+      };
+    }),
+    hair_profile: diagnosis.hair_profile && typeof diagnosis.hair_profile === "object"
+      ? { hair_texture: (diagnosis.hair_profile as Record<string, unknown>).hair_texture }
+      : null,
+    skin_profile: diagnosis.skin_profile && typeof diagnosis.skin_profile === "object"
+      ? diagnosis.skin_profile
+      : null,
+  };
+}
+
+function previewTreatmentPlan(treatmentPlan: Record<string, unknown> | null) {
+  if (!treatmentPlan) return null;
+  const recommendations = typeof treatmentPlan.recommendations === "string"
+    ? treatmentPlan.recommendations.trim()
+    : "Your care notes are ready to explore.";
+  return {
+    id: treatmentPlan.id,
+    recommendations: recommendations.length > 180 ? `${recommendations.slice(0, 177).trimEnd()}…` : recommendations,
+    follow_up_days: treatmentPlan.follow_up_days,
+  };
+}
+
+async function getScanAccess(service: SupabaseClient, userId: string, scanId: string) {
+  const [analysisPayments, subscriptionPayments, subscriptions] = await Promise.all([
+    service
+      .from("payment_transactions")
+      .select("status, payment_type, transaction_ref")
+      .eq("user_id", userId)
+      .eq("payment_type", "analysis")
+      .contains("metadata", { scanId })
+      .order("created_at", { ascending: false })
+      .limit(1),
+    service
+      .from("payment_transactions")
+      .select("status, payment_type, transaction_ref")
+      .eq("user_id", userId)
+      .eq("payment_type", "subscription")
+      .contains("metadata", { scanId })
+      .order("created_at", { ascending: false })
+      .limit(1),
+    service
+      .from("subscriptions")
+      .select("id, plan_id, status, current_period_end")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  const directPayment = [
+    ...ensureArray(analysisPayments.data),
+    ...ensureArray(subscriptionPayments.data),
+  ].find((payment) => isSuccessfulPayment(payment.status));
+
+  let paidSubscription = false;
+  if (subscriptions.data?.length) {
+    const now = Date.now();
+    const validSubscriptions = ensureArray(subscriptions.data).filter((subscription) => {
+      if (!subscription.current_period_end) return true;
+      const periodEnd = new Date(subscription.current_period_end).getTime();
+      return Number.isFinite(periodEnd) && periodEnd > now;
+    });
+    const planIds = validSubscriptions.map((subscription) => subscription.plan_id).filter(Boolean);
+    const { data: plans } = await service.from("subscription_plans").select("id, tier").in("id", planIds.length ? planIds : ["00000000-0000-0000-0000-000000000000"]);
+    paidSubscription = ensureArray(plans).some((plan) => String(plan.tier || "free").toLowerCase() !== "free");
+  }
+
+  return {
+    hasFullAccess: Boolean(directPayment || paidSubscription),
+    paymentType: directPayment?.payment_type || (paidSubscription ? "subscription" : null),
+    transactionRef: directPayment?.transaction_ref || null,
+  };
+}
+
 function decodeBase64Payload(input: string) {
   const normalized = input.includes(",") ? input.split(",").pop() || "" : input;
   const binary = atob(normalized);
@@ -1609,19 +1708,20 @@ serve(async (req) => {
           planName: "Starter",
           tier: "free",
           scansUsed: 0,
-          maxScans: 3,
-          scansRemaining: 3,
+          maxScans: 1,
+          scansRemaining: 1,
           isUnlimited: false,
         });
       }
       const { data: plan } = await service.from("subscription_plans").select("*").eq("id", subscription.plan_id).maybeSingle();
-      const maxScans = plan?.max_scans_per_month ?? 3;
+      const tier = String(plan?.tier || "free").toLowerCase();
+      const maxScans = tier === "free" ? 1 : (plan?.max_scans_per_month ?? 3);
       const scansUsed = Number(subscription.scans_used_this_period || 0);
       const isUnlimited = maxScans === null;
       return json({
         hasSubscription: true,
         planName: plan?.name || "Plan",
-        tier: String(plan?.tier || plan?.name || "").toLowerCase(),
+        tier,
         scansUsed,
         maxScans,
         scansRemaining: isUnlimited ? null : Math.max(0, maxScans - scansUsed),
@@ -1639,18 +1739,23 @@ serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(1);
       const subscription = ensureArray(subscriptions)[0];
-      let maxScans: number | null = 3;
+      let maxScans: number | null = 1;
+      let tier = "free";
       if (subscription?.plan_id) {
-        const { data: plan } = await service.from("subscription_plans").select("max_scans_per_month").eq("id", subscription.plan_id).maybeSingle();
-        maxScans = plan?.max_scans_per_month ?? 3;
+        const { data: plan } = await service.from("subscription_plans").select("max_scans_per_month, tier").eq("id", subscription.plan_id).maybeSingle();
+        tier = String(plan?.tier || "free").toLowerCase();
+        maxScans = tier === "free" ? 1 : (plan?.max_scans_per_month ?? 3);
       }
       const scansUsed = Number(subscription?.scans_used_this_period || 0);
       if (maxScans !== null && scansUsed >= maxScans) {
         return json({
           error: "Scan limit reached",
-          message: "You have used all your scans for this period. Upgrade your plan for more scans.",
+          message: tier === "free"
+            ? "Your one-time scan has already been used. Unlock a complete analysis or choose a monthly plan for more scans."
+            : "You have used all your scans for this period. Upgrade your plan for more scans.",
           scansUsed,
           maxScans,
+          tier,
         }, 403);
       }
 
@@ -1677,12 +1782,21 @@ serve(async (req) => {
       const user = await requireUser(req, service);
       const { data: scans, error } = await service.from("scans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       if (error) return json({ error: error.message }, 500);
-      const scanIds = ensureArray(scans).map((scan) => scan.id);
-      const { data: diagnoses } = await service.from("diagnoses").select("*").in("scan_id", scanIds.length ? scanIds : ["00000000-0000-0000-0000-000000000000"]);
-      return json(ensureArray(scans).map((scan) => ({
-        ...scan,
-        diagnoses: ensureArray(diagnoses).filter((diagnosis) => diagnosis.scan_id === scan.id),
-      })));
+      const scanRows = ensureArray(scans);
+      const scanIds = scanRows.map((scan) => scan.id);
+      const { data: diagnoses } = await service.from("diagnoses").select("*").in("scan_id", scanIds.length ? scanIds : ["00000000-00000000-0000-000000000000"]);
+      const diagnosisRows = ensureArray(diagnoses);
+      const results = await Promise.all(scanRows.map(async (scan) => {
+        const access = await getScanAccess(service, user.id, scan.id);
+        const diagnosis = diagnosisRows.find((item) => item.scan_id === scan.id) || null;
+        return {
+          ...scan,
+          accessLevel: access.hasFullAccess ? "full" : "preview",
+          paymentType: access.paymentType,
+          diagnoses: diagnosis ? [access.hasFullAccess ? diagnosis : previewDiagnosis(diagnosis)] : [],
+        };
+      }));
+      return json(results);
     }
 
     if (route.startsWith("/scans/") && req.method === "GET") {
@@ -1691,8 +1805,25 @@ serve(async (req) => {
       const { data: scan, error } = await service.from("scans").select("*").eq("id", scanId).eq("user_id", user.id).maybeSingle();
       if (error) return json({ error: error.message }, 500);
       if (!scan) return json(null);
-      const { data: diagnoses } = await service.from("diagnoses").select("*").eq("scan_id", scanId);
-      return json({ ...scan, diagnoses: diagnoses || [] });
+
+      const [{ data: diagnoses }, access] = await Promise.all([
+        service.from("diagnoses").select("*").eq("scan_id", scanId).order("created_at", { ascending: false }),
+        getScanAccess(service, user.id, scanId),
+      ]);
+      const diagnosisRows = ensureArray(diagnoses);
+      const diagnosis = diagnosisRows[0] || null;
+      const { data: treatmentPlans } = diagnosis?.id
+        ? await service.from("treatment_plans").select("*").eq("diagnosis_id", diagnosis.id).order("created_at", { ascending: false }).limit(1)
+        : { data: [] };
+      const treatmentPlan = ensureArray(treatmentPlans)[0] || null;
+
+      return json({
+        ...scan,
+        accessLevel: access.hasFullAccess ? "full" : "preview",
+        paymentType: access.paymentType,
+        diagnoses: diagnosis ? [access.hasFullAccess ? diagnosis : previewDiagnosis(diagnosis)] : [],
+        treatmentPlan: access.hasFullAccess ? treatmentPlan : previewTreatmentPlan(treatmentPlan),
+      });
     }
 
     if (route.startsWith("/analyze/") && req.method === "POST") {
@@ -2620,15 +2751,15 @@ serve(async (req) => {
       if (!scanId) return json({ error: "scanId is required" }, 400);
       const { data, error } = await service
         .from("payment_transactions")
-        .select("status, amount, transaction_ref, created_at")
-        .eq("payment_type", "analysis")
+        .select("status, payment_type, amount, transaction_ref, created_at")
+        .in("payment_type", ["analysis", "subscription"])
         .eq("user_id", user.id)
         .contains("metadata", { scanId })
         .order("created_at", { ascending: false })
         .limit(1);
       if (error) return json({ error: error.message }, 500);
       const transaction = Array.isArray(data) && data.length ? data[0] : null;
-      const paid = Boolean(transaction && ["successful", "paid"].includes(String(transaction.status || "").toLowerCase()));
+      const paid = Boolean(transaction && isSuccessfulPayment(transaction.status));
       return json({
         paid,
         status: transaction?.status || "unpaid",

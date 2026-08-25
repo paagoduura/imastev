@@ -16,7 +16,7 @@ import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
 import { PorosityTest } from "@/components/scan/PorosityTest";
 import { PaymentOptionsModal } from "@/components/checkout/PaymentOptionsModal";
 import { PhoneNumberPrompt } from "@/components/checkout/PhoneNumberPrompt";
-import { buildApiUrl } from "@/lib/config";
+import { buildApiUrl, buildFunctionUrl, FUNCTIONS_BASE } from "@/lib/config";
 import { MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN, ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
 
 type CaptureQuality = {
@@ -45,8 +45,10 @@ type ScanRecord = {
 
 type SubscriptionRecord = {
   status?: string;
+  tier?: string;
   scans_used_this_period?: number | null;
   subscription_plans?: {
+    tier?: string;
     max_scans_per_month?: number | null;
   } | null;
 };
@@ -475,13 +477,24 @@ const Scan = () => {
 
     const analysisType = scan.scan_type === 'hair' ? 'hair' : 'skin';
 
-    const response = await fetch(buildApiUrl(`/analyze/${analysisType}`), {
+    const useDedicatedFunction = Boolean(import.meta.env.PROD && FUNCTIONS_BASE);
+    const analysisEndpoint = useDedicatedFunction
+      ? buildFunctionUrl(`analyze-${analysisType}`)
+      : buildApiUrl(`/analyze/${analysisType}`);
+    const response = await fetch(analysisEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ scanId: scan.id }),
+      body: JSON.stringify({
+        scanId: scan.id,
+        ...(useDedicatedFunction ? {
+          imageUrl: scan.image_url,
+          multiAngleUrls: scan.multi_angle_urls || {},
+          calibration: scan.capture_info || undefined,
+        } : {}),
+      }),
     });
 
     if (!response.ok) {
@@ -559,6 +572,41 @@ const Scan = () => {
     return { scan: scanPayload as ScanRecord, uploadedImages };
   };
 
+  const handleOneTimePreview = async () => {
+    if (paymentLoading) return;
+
+    try {
+      setPaymentLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to use your one-time scan.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+
+      const { scan } = await prepareScan(user);
+      await runAnalysis(scan);
+      toast({
+        title: "Your scan preview is ready",
+        description: "Review the first care notes, then unlock the complete guidance when you are ready.",
+      });
+      navigate(`/results/${scan.id}`);
+    } catch (error) {
+      console.error('One-time scan error:', error);
+      toast({
+        title: "Scan preview unavailable",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   const handlePayAndAnalyze = async () => {
     if (paymentLoading) return;
 
@@ -595,6 +643,7 @@ const Scan = () => {
       const scansUsed = Number(activeSubscription?.scans_used_this_period ?? 0);
       const hasRemainingSubscriptionScans =
         !!activeSubscription &&
+        String(activeSubscription.tier || activeSubscription.subscription_plans?.tier || '').toLowerCase() !== 'free' &&
         (maxScans === null || (maxScans > 0 && scansUsed < maxScans));
 
       if (hasRemainingSubscriptionScans) {
@@ -962,24 +1011,36 @@ const Scan = () => {
           <ArrowLeft className="mr-2 h-5 w-5" />
           Back
         </Button>
-        <Button
-          size="lg"
-          onClick={handlePayAndAnalyze}
-          disabled={paymentLoading}
-          className="flex-1 bg-gradient-to-r from-primary to-primary/80"
-        >
-          {paymentLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Starting payment...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="mr-2 h-5 w-5" />
-              Continue to Payment
-            </>
-          )}
-        </Button>
+        <div className="flex flex-1 flex-col gap-3">
+          <Button
+            size="lg"
+            onClick={handleOneTimePreview}
+            disabled={paymentLoading}
+            className="w-full"
+          >
+            {paymentLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Preparing your preview...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 h-5 w-5" />
+                View my one-time preview
+              </>
+            )}
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={handlePayAndAnalyze}
+            disabled={paymentLoading}
+            className="w-full"
+          >
+            Unlock the complete analysis
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

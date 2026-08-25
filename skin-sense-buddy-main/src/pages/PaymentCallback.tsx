@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CheckCircle2, XCircle, Loader2, Clock } from "lucide-react";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, buildFunctionUrl, FUNCTIONS_BASE } from "@/lib/config";
 import { supabase } from "@/integrations/supabase/client";
 import { MONTHLY_SCAN_SUBSCRIPTION_LIMIT } from "@/lib/scanPayments";
 
@@ -75,14 +75,36 @@ export default function PaymentCallback() {
 
     const analysisType = scanData.scan_type === 'hair' ? 'hair' : 'skin';
 
-    // Call the local analysis endpoint
-    const analysisResponse = await fetch(`${API_BASE}/analyze/${analysisType}`, {
+    // A preview already contains the stored analysis. After verified payment,
+    // the results endpoint will return the full record, so avoid re-running it.
+    if (Array.isArray(scanData.diagnoses) && scanData.diagnoses.length > 0) {
+      setPostPaymentMessage(
+        paymentOption === 'subscription'
+          ? `Payment verified, your monthly scan plan is active, and your complete care notes are ready.`
+          : "Payment verified. Your complete analysis and care notes are ready."
+      );
+      setAnalysisDone(true);
+      return;
+    }
+
+    const useDedicatedFunction = Boolean(import.meta.env.PROD && FUNCTIONS_BASE);
+    const analysisEndpoint = useDedicatedFunction
+      ? buildFunctionUrl(`analyze-${analysisType}`)
+      : `${API_BASE}/analyze/${analysisType}`;
+    const analysisResponse = await fetch(analysisEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ scanId: storedScanId }),
+      body: JSON.stringify({
+        scanId: storedScanId,
+        ...(useDedicatedFunction ? {
+          imageUrl: scanData.image_url,
+          multiAngleUrls: scanData.multi_angle_urls || {},
+          calibration: scanData.capture_info || undefined,
+        } : {}),
+      }),
     });
 
     if (!analysisResponse.ok) {

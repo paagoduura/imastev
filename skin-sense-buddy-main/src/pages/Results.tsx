@@ -30,6 +30,7 @@ type SkinProfile = {
 type DiagnosisRecord = {
   id: string;
   analysis_type?: string;
+  primary_condition?: string;
   confidence_score?: number;
   triage_level?: string;
   analysis_data?: Record<string, unknown>;
@@ -50,6 +51,10 @@ type ScanRecord = {
   id: string;
   scan_type?: string;
   image_url?: string;
+  accessLevel?: 'preview' | 'full';
+  paymentType?: string | null;
+  diagnoses?: DiagnosisRecord[];
+  treatmentPlan?: TreatmentPlanRecord | null;
 };
 
 type ProductRecommendation = {
@@ -281,31 +286,13 @@ www.imstevnaturals.com
         setProfile(profileData || null);
       }
 
-      // Fetch diagnosis
-      const { data: diagnosisData } = await supabase
-        .from('diagnoses')
-        .select('*')
-        .eq('scan_id', scanId)
-        .maybeSingle();
-
-      setDiagnosis(diagnosisData || null);
-
-      // Treatment plans exist only after analysis has completed.
-      if (diagnosisData?.id) {
-        const { data: treatmentData } = await supabase
-          .from('treatment_plans')
-          .select('*')
-          .eq('diagnosis_id', diagnosisData.id)
-          .maybeSingle();
-
-        setTreatmentPlan(treatmentData || null);
-
-        if (treatmentData?.product_recommendations) {
-          const recommendations = treatmentData.product_recommendations;
-          if (Array.isArray(recommendations)) {
-            setProducts(recommendations);
-          }
-        }
+      // The backend controls whether this response contains preview or full care data.
+      const diagnosisData = scanData.diagnoses?.[0] || null;
+      const treatmentData = scanData.treatmentPlan || null;
+      setDiagnosis(diagnosisData);
+      setTreatmentPlan(treatmentData);
+      if (treatmentData?.product_recommendations && Array.isArray(treatmentData.product_recommendations)) {
+        setProducts(treatmentData.product_recommendations);
       }
 
       // Fetch IMSTEV products for hair analysis
@@ -324,8 +311,14 @@ www.imstevnaturals.com
         }
       }
 
-      if (diagnosisData) {
+      if (scanData.accessLevel === 'full') {
         setPaymentStatus('paid');
+      } else if (scanData.accessLevel === 'preview') {
+        setPaymentStatus('unpaid');
+      } else if (diagnosisData && scanId) {
+        // Backward compatibility for a previously deployed API that does not
+        // yet return accessLevel on the scan detail response.
+        await checkPaymentStatus(scanId);
       } else if (scanId) {
         await checkPaymentStatus(scanId);
       }
@@ -525,49 +518,155 @@ www.imstevnaturals.com
     );
   }
 
+  if (paymentStatus === 'unpaid' && diagnosis) {
+    const previewIsHair = scan?.scan_type === 'hair' || diagnosis.analysis_type === 'hair';
+    const previewTriage = getTriageMessage(diagnosis.triage_level || 'self_care', previewIsHair);
+    const previewCondition = diagnosis.primary_condition || diagnosis.conditions?.[0]?.condition || diagnosis.conditions?.[0]?.name || 'Your care focus';
+    const previewRecommendation = treatmentPlan?.recommendations || 'Your first care note is ready. Unlock the complete routine for the full guidance.';
+
+    return (
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background p-4">
+          <div className="container mx-auto max-w-4xl py-8 space-y-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} aria-label="Back to dashboard">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Your first care notes</p>
+                <h1 className="text-3xl font-bold text-foreground sm:text-4xl">A clearer starting point</h1>
+                <p className="mt-1 text-muted-foreground">Your {previewIsHair ? 'hair' : 'skin'} scan has a useful first read ready for you.</p>
+              </div>
+            </div>
+
+            {scan?.image_url && (
+              <Card>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="mx-auto max-w-sm overflow-hidden rounded-2xl">
+                    <img src={scan.image_url} alt={previewIsHair ? 'Hair scan preview' : 'Skin scan preview'} className="h-auto w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="grid gap-6 md:grid-cols-[1.05fr_0.95fr]">
+              <Card className="border-primary/30 bg-primary-light/15">
+                <CardHeader>
+                  <CardTitle>What stands out</CardTitle>
+                  <CardDescription>A concise preview from your scan</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current focus</p>
+                    <p className="mt-2 text-2xl font-semibold text-foreground">{previewCondition}</p>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-xl bg-background/70 p-4">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <div>
+                      <h3 className="font-semibold">{previewTriage.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{previewTriage.description}</p>
+                    </div>
+                  </div>
+                  {typeof diagnosis.confidence_score === 'number' && (
+                    <div>
+                      <div className="mb-2 flex justify-between text-xs text-muted-foreground">
+                        <span>Scan confidence</span>
+                        <span>{diagnosis.confidence_score}%</span>
+                      </div>
+                      <Progress value={diagnosis.confidence_score} className="h-2" />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your first recommendation</CardTitle>
+                  <CardDescription>A small part of the care direction</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <p className="text-sm leading-7 text-muted-foreground">{previewRecommendation}</p>
+                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4">
+                    <p className="text-sm font-semibold text-foreground">There is more in your care plan.</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">Unlock the full notes, routine, ingredients, lifestyle guidance, and personalised product recommendations.</p>
+                  </div>
+                  <Button onClick={() => { void handlePayForResults(); }} className="w-full" disabled={paymentLoading}>
+                    {paymentLoading ? 'Starting payment...' : `See more · ${formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}`}
+                  </Button>
+                  <Button variant="outline" onClick={() => scanId && checkPaymentStatus(scanId)} className="w-full">
+                    I’ve already paid
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">Secure payment. Full access begins after verification.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="border-muted bg-muted/40">
+              <CardContent className="p-5 text-center sm:p-6">
+                <Lock className="mx-auto mb-3 h-5 w-5 text-muted-foreground" />
+                <p className="text-sm font-semibold">Your complete analysis is ready to unlock.</p>
+                <p className="mx-auto mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">The full care notes remain private until your one-time analysis payment is verified.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        <PhoneNumberPrompt
+          isOpen={showPhonePrompt}
+          onClose={() => setShowPhonePrompt(false)}
+          initialPhone={profile?.phone || ""}
+          onSaved={(phone) => {
+            setShowPhonePrompt(false);
+            setProfile((current) => ({ ...(current || {}), phone }));
+            void handlePayForResults(phone);
+          }}
+        />
+      </>
+    );
+  }
+
   if (paymentStatus === 'unpaid') {
     return (
       <>
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
-        <Card className="max-w-lg w-full">
-          <CardContent className="pt-6 text-center space-y-4">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Lock className="w-8 h-8 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold mb-2">Unlock Your Results</h3>
-              <p className="text-muted-foreground">
-                Complete a one-time payment to view your {scan?.scan_type === 'hair' ? 'hair' : 'skin'} analysis.
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
+          <Card className="max-w-lg w-full">
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Lock className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-2">Unlock Your Results</h3>
+                <p className="text-muted-foreground">
+                  Complete a one-time payment to view your {scan?.scan_type === 'hair' ? 'hair' : 'skin'} analysis.
+                </p>
+              </div>
+              <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+                <p className="text-sm text-muted-foreground">Analysis fee</p>
+                <p className="text-3xl font-bold text-primary">{formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}</p>
+              </div>
+              <div className="space-y-2">
+                <Button onClick={() => { void handlePayForResults(); }} className="w-full" disabled={paymentLoading}>
+                  {paymentLoading ? 'Starting payment...' : `Pay ${formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}`}
+                </Button>
+                <Button variant="outline" onClick={() => scanId && checkPaymentStatus(scanId)} className="w-full">
+                  I've already paid
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Payments are processed securely. Your results unlock immediately after verification.
               </p>
-            </div>
-            <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
-              <p className="text-sm text-muted-foreground">Analysis fee</p>
-              <p className="text-3xl font-bold text-primary">{formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}</p>
-            </div>
-            <div className="space-y-2">
-              <Button onClick={() => { void handlePayForResults(); }} className="w-full" disabled={paymentLoading}>
-                {paymentLoading ? 'Starting payment...' : `Pay ${formatCurrency(ONE_TIME_ANALYSIS_FEE_NGN)}`}
-              </Button>
-              <Button variant="outline" onClick={() => scanId && checkPaymentStatus(scanId)} className="w-full">
-                I've already paid
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Payments are processed securely. Your results unlock immediately after verification.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <PhoneNumberPrompt
-        isOpen={showPhonePrompt}
-        onClose={() => setShowPhonePrompt(false)}
-        initialPhone={profile?.phone || ""}
-        onSaved={(phone) => {
-          setShowPhonePrompt(false);
-          setProfile((current) => ({ ...(current || {}), phone }));
-          void handlePayForResults(phone);
-        }}
-      />
+            </CardContent>
+          </Card>
+        </div>
+        <PhoneNumberPrompt
+          isOpen={showPhonePrompt}
+          onClose={() => setShowPhonePrompt(false)}
+          initialPhone={profile?.phone || ""}
+          onSaved={(phone) => {
+            setShowPhonePrompt(false);
+            setProfile((current) => ({ ...(current || {}), phone }));
+            void handlePayForResults(phone);
+          }}
+        />
       </>
     );
   }
