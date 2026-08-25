@@ -1051,3 +1051,12 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   .signature-carousel__card { width: min(19rem, 88vw); }
   .signature-carousel__primary--scan { min-height: 2.9rem; padding: .78rem 1rem; font-size: .7rem; letter-spacing: .055em; }
 }
+
+/* Keep the hero videos unchanged; swap proportions for image cards only. */
+.signature-carousel__card--image { width: clamp(12rem, 20vw, 18rem); height: auto; aspect-ratio: 9 / 16; }
+@media (max-width: 900px) {
+  .signature-carousel__card--image { width: min(17rem, 68vw); }
+}
+@media (max-width: 640px) {
+  .signature-carousel__card--image { width: min(12rem, 52vw); }
+}

@@ -190,7 +190,7 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
                 <button
                   key={slide.id}
                   type="button"
-                  className={`signature-carousel__card ${positionClass}`}
+                  className={`signature-carousel__card ${slide.video ? "signature-carousel__card--video" : "signature-carousel__card--image"} ${positionClass}`}
                   style={{ "--slide-accent": slide.accent } as CSSProperties}
                   onClick={() => setActiveIndex(index)}
                   aria-label={`Show ${slide.eyebrow}`}
