@@ -560,8 +560,8 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
 .signature-carousel--compact .signature-carousel__cards { height: 210px; }
 .signature-carousel__card { position: absolute; top: 50%; left: 50%; width: min(17rem, 48%); height: 25rem; overflow: hidden; padding: 0; border: 1px solid rgba(255,255,255,.2); border-radius: 1.35rem; background: #3a2518; box-shadow: 0 24px 52px rgba(0,0,0,.35); cursor: pointer; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.23,1,.32,1), opacity .8s ease, filter .8s ease; }
 .signature-carousel--compact .signature-carousel__card { width: min(8.3rem, 33%); height: 13rem; border-radius: .9rem; }
-.signature-carousel__card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); transition: transform 1.2s cubic-bezier(.23,1,.32,1); }
-.signature-carousel__card.is-active img { transform: scale(1.1); }
+.signature-carousel__card img, .signature-carousel__card video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); transition: transform 1.2s cubic-bezier(.23,1,.32,1); }
+.signature-carousel__card.is-active img, .signature-carousel__card.is-active video { transform: scale(1.1); }
 .signature-carousel__card-wash { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18,10,6,.02) 22%, rgba(18,10,6,.78) 100%); }
 .signature-carousel__scanline { position: absolute; left: 0; right: 0; top: 32%; height: 1px; background: linear-gradient(90deg, transparent, var(--slide-accent), transparent); opacity: 0; box-shadow: 0 0 16px var(--slide-accent); }
 .signature-carousel__card.is-active .signature-carousel__scanline { opacity: .9; animation: carousel-scan 3.8s ease-in-out infinite; }
@@ -655,7 +655,7 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
 .signature-carousel__content { min-height: clamp(470px, 39vw, 560px); }
 .signature-carousel__cards { height: clamp(330px, 29vw, 420px); }
 .signature-carousel__card { width: clamp(14rem, 23vw, 17rem); height: clamp(20rem, 27vw, 25rem); backface-visibility: hidden; }
-.signature-carousel__card img { z-index: 2; backface-visibility: hidden; }
+.signature-carousel__card img, .signature-carousel__card video { z-index: 2; backface-visibility: hidden; }
 .signature-carousel__card-wash { z-index: 1; opacity: .16; }
 .signature-carousel__scanline { z-index: 3; }
 .signature-carousel__card-meta, .signature-carousel__card-mark { z-index: 4; }

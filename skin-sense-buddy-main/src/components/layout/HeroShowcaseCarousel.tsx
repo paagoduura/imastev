@@ -9,6 +9,7 @@ interface StorySlide {
   title: string;
   description: string;
   image: string;
+  video?: string;
   objectPosition?: string;
   accent: string;
   metric: string;
@@ -34,8 +35,38 @@ const STORY_SLIDES: StorySlide[] = [
     icon: ScanLine,
   },
   {
+    id: "hair-scan-video",
+    eyebrow: "02 · See your hair clearly",
+    title: "A clearer beginning for your hair.",
+    description: "Start with a guided scan that notices texture, scalp context, and the details your routine is asking for.",
+    image: "/imstev-client-texture.jpeg",
+    video: "/imstev-hair-scan.mp4",
+    objectPosition: "center 40%",
+    accent: "#c7894b",
+    metric: "01",
+    metricLabel: "guided scan",
+    action: "Begin your hair scan",
+    href: "/scan",
+    icon: ScanLine,
+  },
+  {
+    id: "scan-journey-video",
+    eyebrow: "03 · Understand hair + skin",
+    title: "Your next ritual begins with understanding.",
+    description: "A calm first look at hair, scalp, and skin—so your next step feels more considered and less generic.",
+    image: "/imstev-client-profile.jpeg",
+    video: "/imstev-scan-journey.mp4",
+    objectPosition: "center 34%",
+    accent: "#9d7657",
+    metric: "1:1",
+    metricLabel: "care perspective",
+    action: "Explore your scan",
+    href: "/scan",
+    icon: Droplets,
+  },
+  {
     id: "salon",
-    eyebrow: "02 · Be held by expertise",
+    eyebrow: "04 · Be held by expertise",
     title: "A salon ritual rooted in African beauty knowledge.",
     description: "From wash day to protective styling, meet specialists who understand the patience, pride, and precision your hair deserves.",
     image: "/imstev-client-profile.jpeg",
@@ -49,7 +80,7 @@ const STORY_SLIDES: StorySlide[] = [
   },
   {
     id: "skin",
-    eyebrow: "03 · Nurture your glow",
+    eyebrow: "05 · Nurture your glow",
     title: "Thoughtful skin care, made personal.",
     description: "Turn observations into a gentle routine, then choose products and guidance that make sense for your skin and your climate.",
     image: "/imstev-skin.jpg",
@@ -62,7 +93,7 @@ const STORY_SLIDES: StorySlide[] = [
   },
   {
     id: "community",
-    eyebrow: "04 · Grow together",
+    eyebrow: "06 · Grow together",
     title: "A softer kind of beauty community.",
     description: "Ask better questions, learn from lived experience, and find specialists who celebrate the full range of African beauty.",
     image: "/imstev-community-braids.jpeg",
@@ -164,7 +195,23 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
                   aria-label={`Show ${slide.eyebrow}`}
                   aria-current={isActive ? "true" : undefined}
                 >
-                  <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
+                  {slide.video && isActive ? (
+                    <video
+                      key={slide.video}
+                      src={slide.video}
+                      poster={slide.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      aria-hidden="true"
+                      className="h-full w-full object-cover"
+                      style={{ objectPosition: slide.objectPosition ?? "center" }}
+                    />
+                  ) : (
+                    <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
+                  )}
                   <span className="signature-carousel__card-wash" />
                   <span className="signature-carousel__scanline" />
                   <span className="signature-carousel__card-meta">
