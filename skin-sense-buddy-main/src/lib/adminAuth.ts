@@ -18,12 +18,40 @@ export async function adminFetch(path: string, options: RequestInit = {}) {
   if (!isFormData && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(buildApiUrl(path), { ...options, headers });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(error.error || "Request failed");
+  let response: Response;
+  try {
+    response = await fetch(buildApiUrl(path), { ...options, headers });
+  } catch {
+    throw new Error("The admin service is unavailable. Please try again in a moment.");
   }
-  return response.json();
+
+  const contentType = response.headers.get("content-type") || "";
+  const responseText = await response.text();
+  let payload: Record<string, unknown> = {};
+  if (responseText && contentType.includes("application/json")) {
+    try {
+      const parsed = JSON.parse(responseText);
+      if (parsed && typeof parsed === "object") payload = parsed as Record<string, unknown>;
+    } catch {
+      // Keep the deployment error below rather than exposing parser details.
+    }
+  }
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) setAdminToken(null);
+    const errorMessage = typeof payload.error === "string" ? payload.error : "Request failed";
+    throw new Error(errorMessage);
+  }
+
+  if (!contentType.includes("application/json")) {
+    throw new Error("The admin service returned an invalid response. Please contact the site administrator.");
+  }
+
+  try {
+    return responseText ? JSON.parse(responseText) : null;
+  } catch {
+    throw new Error("The admin service returned an invalid response. Please try again.");
+  }
 }
 
 export async function adminLogin(email: string, password: string) {
