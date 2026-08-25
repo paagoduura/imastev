@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, Download, TrendingUp, Calendar, ArrowLeft, Scan, ShoppingBag, ThumbsUp, UserCheck, Lock } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, TrendingUp, Calendar, ArrowLeft, Scan, ShoppingBag, ThumbsUp, UserCheck, Lock, MessageCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -598,48 +598,43 @@ www.imstevnaturals.com
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background p-4">
       <div className="container mx-auto max-w-5xl py-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-bold text-foreground">
-                {isHairAnalysis ? 'Hair' : 'Skin'} Analysis Results
-              </h1>
-              <Badge 
-                variant="secondary" 
-                className={isHairAnalysis 
-                  ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-700" 
-                  : "bg-gradient-to-r from-rose-500/20 to-orange-500/20 text-rose-700"
-                }
-              >
-                {isHairAnalysis ? (
-                  <><Scan className="w-3 h-3 mr-1" /> Hair</>
-                ) : (
-                  <><Scan className="w-3 h-3 mr-1" /> Skin</>
-                )}
-              </Badge>
+        <section className="scan-results-hero">
+          <div className="scan-results-hero-copy">
+            <button type="button" className="scan-results-back" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="h-4 w-4" /> Back to your care space
+            </button>
+            <span className="scan-results-kicker"><CheckCircle2 className="h-4 w-4" /> Your care notes are ready</span>
+            <h1>See your {isHairAnalysis ? 'hair' : 'skin'} <em>more clearly.</em></h1>
+            <p>One thoughtful look at where you are now, followed by practical guidance for what to do next.</p>
+            <div className="scan-results-actions">
+              <Button type="button" onClick={() => navigate('/timeline')}><TrendingUp className="mr-2 h-4 w-4" /> Track my progress</Button>
+              <Button type="button" variant="outline" onClick={downloadReport}><Download className="mr-2 h-4 w-4" /> Save care notes</Button>
             </div>
-            <p className="text-muted-foreground">Assessment completed</p>
           </div>
-        </div>
+          <div className="scan-results-hero-image">
+            {scan?.image_url ? <img src={scan.image_url} alt={isHairAnalysis ? "Hair scan" : "Skin scan"} /> : <div className="scan-results-image-empty"><Scan className="h-8 w-8" /></div>}
+            <div className="scan-results-image-label"><span>{isHairAnalysis ? 'Hair + scalp' : 'Skin'}</span><strong>Assessment complete</strong></div>
+            <div className="scan-results-confidence"><span>Scan confidence</span><strong>{diagnosis.confidence_score || 0}%</strong></div>
+          </div>
+        </section>
 
-        {/* Original Image */}
-        {scan?.image_url && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="max-w-md mx-auto rounded-lg overflow-hidden">
-                <img
-                  src={scan.image_url}
-                  alt={isHairAnalysis ? "Hair scan" : "Skin scan"}
-                  className="w-full h-auto"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <section className="scan-results-next-grid" aria-label="Continue your care">
+          <button type="button" className="scan-results-next-card scan-results-next-ritual" onClick={() => navigate('/shop')}>
+            <ShoppingBag className="h-5 w-5" />
+            <span><small>Build my ritual</small><strong>Shop the considered edit</strong><em>Choose products that make sense for your current focus.</em></span>
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </button>
+          <button type="button" className="scan-results-next-card scan-results-next-specialist" onClick={() => navigate(isHairAnalysis ? '/salon-booking' : '/telehealth')}>
+            <UserCheck className="h-5 w-5" />
+            <span><small>Be cared for</small><strong>Speak to a specialist</strong><em>Bring your scan into a more personal conversation.</em></span>
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </button>
+          <button type="button" className="scan-results-next-card scan-results-next-community" onClick={() => navigate('/community')}>
+            <MessageCircle className="h-5 w-5" />
+            <span><small>Keep learning</small><strong>Join the care circle</strong><em>Find thoughtful routines and real questions from the community.</em></span>
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </button>
+        </section>
 
         {/* Heatmap Visualization (for skin) */}
         {!isHairAnalysis && diagnosis?.heatmap_regions && diagnosis.heatmap_regions.length > 0 && (

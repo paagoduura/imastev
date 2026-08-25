@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft, Video } from "lucide-react";
+import { Camera, Upload, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft, Video, ShieldCheck } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { preprocessImage } from "@/lib/imagePreprocessing";
 import { ImageQualityIndicator } from "@/components/scan/ImageQualityIndicator";
@@ -91,6 +91,15 @@ const Scan = () => {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedAnalysisType = searchParams.get('type');
+
+  useEffect(() => {
+    if (requestedAnalysisType !== 'hair' && requestedAnalysisType !== 'skin') return;
+    setAnalysisType(requestedAnalysisType);
+    setCurrentAngle(requestedAnalysisType === 'hair' ? 'crown' : 'front');
+    setCaptures([]);
+  }, [requestedAnalysisType]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -1009,13 +1018,13 @@ const Scan = () => {
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Plain-language care notes
+                  <ShieldCheck className="h-3.5 w-3.5" /> Private care scan
                 </span>
                 <h1 className="text-3xl font-display font-bold text-slate-900 sm:text-4xl lg:text-5xl">
-                  {analysisType === 'hair' ? 'Hair' : 'Skin'} <span className="text-gradient-premium">Analysis</span>
+                  Understand your <span className="text-gradient-premium">{analysisType === 'hair' ? 'hair' : 'skin'}.</span>
                 </h1>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-                  {stepLabels[step]} Your images stay part of your private care record, ready for a clearer conversation with an IMSTEV specialist.
+                  {stepLabels[step]} Take your time. Your images stay part of your private care record and lead to a clearer next step with IMSTEV.
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center sm:gap-3">
