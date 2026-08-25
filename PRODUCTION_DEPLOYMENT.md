@@ -18,6 +18,7 @@ Copy `.env.example` to the deployment secret store and set every required produc
 | Telehealth | `DAILY_API_KEY` |
 | Scan analysis | `OPENAI_API_KEY` or `AI_INTEGRATIONS_OPENAI_API_KEY` |
 | Storage | `UPLOADS_DIR` pointing to durable storage with restricted filesystem permissions |
+| Admin access | An active `admin_credentials` row provisioned through the deployment secret manager or approved database administration process |
 
 ## Build and release
 
@@ -34,6 +35,10 @@ cd skin-sense-buddy-main && npm audit --omit=dev --audit-level=high && cd ..
 ```
 
 The build produces the browser assets in `skin-sense-buddy-main/dist`, the compiled backend at `dist-server/index.js`, and copies `server/db/schema.sql` and `server/db/seed.sql` into `dist-server/db` for startup initialization. Production startup skips sample seed data unless `RUN_DATABASE_SEED=true` is deliberately set for an approved initial load.
+
+## Admin access provisioning
+
+The admin portal uses a separate credential path from customer authentication. Do not commit an administrator password, seed a default credential, or rely on the development-only environment fallback in production. Provision the requested administrator through the deployment secret manager where the Express runtime is permitted to use `ADMIN_EMAIL` and `ADMIN_PASSWORD`, or create an active `admin_credentials` row through an approved database administration process using a modern password hash. Verify `/api/admin/login`, `/api/admin/me`, and one protected admin endpoint after provisioning, then rotate the credential through the secret manager according to the organization’s access policy.
 
 ## Database and startup
 

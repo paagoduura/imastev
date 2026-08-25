@@ -238,11 +238,11 @@ function decodeBase64Payload(input: string) {
 }
 
 function adminEmail() {
-  return getEnv("ADMIN_EMAIL", "imastev@admin.com").toLowerCase();
+  return getEnv("ADMIN_EMAIL").trim().toLowerCase();
 }
 
 function adminPassword() {
-  return getEnv("ADMIN_PASSWORD", "admin@123");
+  return getEnv("ADMIN_PASSWORD");
 }
 
 function adminSecret() {
