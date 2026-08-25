@@ -1,16 +1,287 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Search, Package, Scissors, Scan, Heart, ShieldCheck, Leaf } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ArrowRight,
+  Check,
+  Heart,
+  Leaf,
+  Package,
+  Scan,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  ShoppingCart,
+  Loader2,
+  X,
+} from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import { API_BASE } from "@/lib/config";
-import { fallbackCatalog, type CatalogProduct } from "@/lib/fallbackCatalog"; type Product = CatalogProduct; const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong"); const Shop = () => { const [products, setProducts] = useState<Product[]>([]); const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); const [loading, setLoading] = useState(true); const [productTypeFilter, setProductTypeFilter] = useState<string>("all"); const [selectedCategory, setSelectedCategory] = useState<string>("all"); const [searchQuery, setSearchQuery] = useState(""); const [cartCount, setCartCount] = useState(0); const [usingFallbackCatalog, setUsingFallbackCatalog] = useState(false); const { toast } = useToast(); const navigate = useNavigate(); const fetchProducts = useCallback(async () => { try { const response = await fetch(`${API_BASE}/products`); if (!response.ok) throw new Error("Failed to load products"); const data = await response.json(); const normalizedProducts = Array.isArray(data) && data.length > 0 ? data : fallbackCatalog; setProducts(normalizedProducts); setUsingFallbackCatalog(normalizedProducts === fallbackCatalog); } catch { setProducts(fallbackCatalog); setUsingFallbackCatalog(true); toast({ title: "Showing curated catalog", description: "Live product sync is temporarily unavailable, so the shop is using the full in-app catalog.", }); } finally { setLoading(false); } }, [toast]); const fetchCartCount = useCallback(async () => { try { const token = localStorage.getItem("glowsense_token"); if (!token) return; const response = await fetch(`${API_BASE}/cart`, { headers: { Authorization: `Bearer ${token}` }, }); if (response.status === 401 || response.status === 403) { localStorage.removeItem("glowsense_token"); return; } if (!response.ok) return; const data = await response.json(); setCartCount(Array.isArray(data) ? data.length : 0); } catch (error) { console.error("Error fetching cart count:", error); } }, []); const filterProducts = useCallback(() => { let filtered = products; if (productTypeFilter !== "all") { filtered = filtered.filter( (p) => p.product_type === productTypeFilter || (productTypeFilter === "skin" && !p.product_type) || p.product_type === "both", ); } if (selectedCategory !== "all") { filtered = filtered.filter((p) => p.category === selectedCategory); } if (searchQuery) { filtered = filtered.filter( (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description?.toLowerCase().includes(searchQuery.toLowerCase()), ); } setFilteredProducts(filtered); }, [productTypeFilter, products, searchQuery, selectedCategory]); useEffect(() => { fetchProducts(); fetchCartCount(); }, [fetchCartCount, fetchProducts]); useEffect(() => { filterProducts(); }, [filterProducts]); const addToCart = async (productId: string) => { try { const token = localStorage.getItem("glowsense_token"); if (!token) { toast({ title: "Please sign in", description: "You need to be signed in to add items to cart", variant: "destructive", }); navigate("/auth"); return; } const response = await fetch(`${API_BASE}/cart`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, }, body: JSON.stringify({ product_id: productId, quantity: 1 }), }); if (response.status === 401 || response.status === 403) { localStorage.removeItem("glowsense_token"); toast({ title: "Session expired", description: "Please sign in again", variant: "destructive", }); navigate("/auth"); return; } if (!response.ok) { const error = await response.json(); throw new Error(error.error || "Failed to add to cart"); } toast({ title: "Added to cart", description: "Product added to your cart successfully", }); fetchCartCount(); } catch (error) { toast({ title: "Error", description: getErrorMessage(error), variant: "destructive", }); } }; const getCategories = () => { let relevantProducts = products; if (productTypeFilter !== "all") { relevantProducts = products.filter( (p) => p.product_type === productTypeFilter || (productTypeFilter === "skin" && !p.product_type) || p.product_type === "both", ); } return ["all", ...Array.from(new Set(relevantProducts.map((p) => p.category)))]; }; const getProductTypeBadge = (type: string | null) => { if (type === "hair") { return <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">Hair</Badge>; } if (type === "both") { return <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">Hair & Skin</Badge>; } return <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">Skin</Badge>; }; const formatProductImage = (imageUrl: string | null) => { if (!imageUrl) return null; if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) return imageUrl; return imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`; }; return ( <div className="min-h-screen bg-background page-reveal"> <Navbar /> <section className="relative overflow-hidden border-b border-primary/10 bg-[radial-gradient(circle_at_top_right,rgba(124,58,237,0.12),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] section-reveal"> <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8"> <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start"> <div className="rounded-[28px] border border-primary/10 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:p-8"> <div className="mb-6 flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center"> <div className="max-w-2xl"> <Badge className="mb-4 bg-primary/10 text-primary ">Curated Storefront</Badge> <h1 className="mb-3 text-3xl font-display font-bold text-slate-900 sm:text-4xl"> IMSTEV NATURALS Shop </h1> <p className="text-sm leading-6 text-slate-600 sm:text-base"> Premium hair and skin essentials, professionally arranged for faster discovery, clearer filtering, and a smoother shopping experience. </p> </div> <Button onClick={() => navigate("/cart")} className="relative w-full rounded-xl bg-primary text-white sm:w-auto" > <ShoppingCart className="mr-2 h-5 w-5" /> Cart {cartCount > 0 && ( <Badge className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center bg-white p-0 text-primary shadow-lg"> {cartCount} </Badge> )} </Button> </div> <div className="grid gap-3 sm:grid-cols-3"> <div className="rounded-2xl border border-primary/10 bg-slate-50 p-4"> <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary"> <Leaf className="h-5 w-5" /> </div> <p className="text-sm font-semibold text-slate-900">Hair and skin range</p> <p className="mt-1 text-xs leading-5 text-slate-500">One storefront for cleansers, treatments, oils, and targeted care.</p> </div> <div className="rounded-2xl border border-primary/10 bg-slate-50 p-4"> <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700"> <ShieldCheck className="h-5 w-5" /> </div> <p className="text-sm font-semibold text-slate-900">Catalog protected</p> <p className="mt-1 text-xs leading-5 text-slate-500">Products remain visible even if live sync is briefly unavailable.</p> </div> <div className="rounded-2xl border border-primary/10 bg-slate-50 p-4"> <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-700"> <Heart className="h-5 w-5" /> </div> <p className="text-sm font-semibold text-slate-900">Cleaner browsing</p> <p className="mt-1 text-xs leading-5 text-slate-500">Tighter filters, balanced cards, and faster scan-to-shop navigation.</p> </div> </div> </div> <div className="rounded-[28px] border border-primary/10 bg-white/90 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur"> <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary/70">Catalog Status</p> <p className="mt-2 text-2xl font-display font-bold text-slate-900">{filteredProducts.length}</p> <p className="text-sm text-slate-500">products visible with current filters</p> {usingFallbackCatalog && ( <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"> Live sync is temporarily unavailable. The shop is showing the full curated catalog so nothing disappears. </div> )} </div> </div> <div className="mt-6 rounded-[24px] border border-primary/10 bg-white/80 p-4 shadow-sm backdrop-blur sm:p-5"> <Tabs value={productTypeFilter} onValueChange={(value) => { setProductTypeFilter(value); setSelectedCategory("all"); }} className="mb-4" > <TabsList className="grid w-full max-w-md grid-cols-3 rounded-xl border border-primary/10 bg-white/70 p-1.5 shadow-sm"> <TabsTrigger value="all" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"> <Package className="h-4 w-4" /> <span className="hidden sm:inline">All</span> </TabsTrigger> <TabsTrigger value="skin" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"> <Scan className="h-4 w-4" /> <span className="hidden sm:inline">Skin Care</span> </TabsTrigger> <TabsTrigger value="hair" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"> <Scissors className="h-4 w-4" /> <span className="hidden sm:inline">Hair Care</span> </TabsTrigger> </TabsList> </Tabs> <div className="flex flex-col gap-3 sm:flex-row sm:gap-4"> <div className="relative flex-1"> <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /> <Input placeholder="Search products..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-12 rounded-xl border-slate-200 pl-11 dark:border-slate-700" /> </div> <Select value={selectedCategory} onValueChange={setSelectedCategory}> <SelectTrigger className="h-12 w-full rounded-xl border-slate-200 sm:w-56 dark:border-slate-700"> <SelectValue placeholder="Category" /> </SelectTrigger> <SelectContent> {getCategories().map((cat) => ( <SelectItem key={cat} value={cat}> {cat === "all" ? "All Categories" : cat} </SelectItem> ))} </SelectContent> </Select> </div> </div> </div> </section> <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 section-reveal"> {loading ? ( <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"> {[...Array(8)].map((_, i) => ( <Card key={i}> <Skeleton className="h-48 w-full" /> <CardHeader> <Skeleton className="h-6 w-3/4" /> <Skeleton className="h-4 w-1/2" /> </CardHeader> <CardContent> <Skeleton className="h-20 w-full" /> </CardContent> <CardFooter> <Skeleton className="h-10 w-full" /> </CardFooter> </Card> ))} </div> ) : filteredProducts.length === 0 ? ( <div className="py-16 text-center"> <Package className="mx-auto mb-4 h-16 w-16 text-muted-foreground" /> <h3 className="mb-2 text-2xl font-semibold">No products found</h3> <p className="text-muted-foreground">Try adjusting your search or filters</p> </div> ) : ( <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"> {filteredProducts.map((product) => ( <Card key={product.id} className="group flex h-full min-h-[28rem] flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 dark: sm:min-h-[32rem]" > <div className="relative h-1/2 min-h-[14rem] overflow-hidden bg-muted sm:min-h-[16rem]"> {formatProductImage(product.image_url) ? ( <img src={formatProductImage(product.image_url) || undefined} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> ) : ( <div className="flex h-full w-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.12),transparent_40%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]"> <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary"> <Package className="h-8 w-8" /> </div> <p className="mt-3 text-sm font-medium text-slate-600">IMSTEV NATURALS</p> </div> )} {product.stock_quantity <= 0 && ( <Badge className="absolute right-2 top-2" variant="destructive"> Out of Stock </Badge> )} <div className="absolute left-2 top-2"> {getProductTypeBadge(product.product_type)} </div> </div> <div className="flex h-1/2 flex-col"> <CardHeader className="pb-4"> <CardTitle className="line-clamp-1">{product.name}</CardTitle> <CardDescription className="line-clamp-2"> {product.description || "No description available"} </CardDescription> </CardHeader> <CardContent className="flex-1"> <div className="space-y-2"> <div className="flex items-center justify-between gap-2"> <span className="text-2xl font-bold">N{product.price_ngn?.toLocaleString()}</span> <Badge variant="outline" className="shrink-0"> {product.category} </Badge> </div> {product.stock_quantity > 0 && product.stock_quantity <= 10 && ( <p className="text-sm text-orange-500"> Only {product.stock_quantity} left in stock </p> )} {product.product_type === "hair" && product.suitable_hair_types && product.suitable_hair_types.length > 0 && ( <div className="mt-2 flex flex-wrap gap-1"> {product.suitable_hair_types.slice(0, 3).map((type, i) => ( <Badge key={i} variant="secondary" className="bg-primary/10 text-xs text-primary"> {type} </Badge> ))} {product.suitable_hair_types.length > 3 && ( <Badge variant="secondary" className="text-xs"> +{product.suitable_hair_types.length - 3} </Badge> )} </div> )} </div> </CardContent> <CardFooter className="pt-0"> <Button className="w-full bg-primary text-white shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]" onClick={() => addToCart(product.id)} disabled={product.stock_quantity <= 0} > <ShoppingCart className="mr-2 h-4 w-4" /> {product.stock_quantity <= 0 ? "Out of Stock" : "Add to Cart"} </Button> </CardFooter> </div> </Card> ))} </div> )} </div> <Footer /> </div> );
-}; export default Shop;
+import { BRAND_IMAGES } from "@/lib/brandImages";
+import { fallbackCatalog, type CatalogProduct } from "@/lib/fallbackCatalog";
+
+type Product = CatalogProduct;
+type ProductTypeFilter = "all" | "skin" | "hair";
+
+const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : "Something went wrong";
+
+const formatCurrency = (amount: number) => `₦${amount.toLocaleString("en-NG")}`;
+
+const formatProductImage = (imageUrl: string | null) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) return imageUrl;
+  return imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+};
+
+const productTypeLabel = (type: string | null) => {
+  if (type === "hair") return "Hair ritual";
+  if (type === "both") return "Hair + skin";
+  return "Skin ritual";
+};
+
+const Shop = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [productTypeFilter, setProductTypeFilter] = useState<ProductTypeFilter>("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cartCount, setCartCount] = useState(0);
+  const [usingFallbackCatalog, setUsingFallbackCatalog] = useState(false);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/products`);
+      if (!response.ok) throw new Error("Failed to load products");
+      const data = await response.json();
+      const nextProducts = Array.isArray(data) && data.length > 0 ? data : fallbackCatalog;
+      setProducts(nextProducts);
+      setUsingFallbackCatalog(nextProducts === fallbackCatalog);
+    } catch (error) {
+      console.error("Product catalog error:", error);
+      setProducts(fallbackCatalog);
+      setUsingFallbackCatalog(true);
+      toast({
+        title: "Showing the curated edit",
+        description: "Live catalog sync is temporarily unavailable, so the in-app collection is still available.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const fetchCartCount = useCallback(async () => {
+    const token = localStorage.getItem("glowsense_token");
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE}/cart`, { headers: { Authorization: `Bearer ${token}` } });
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem("glowsense_token");
+        return;
+      }
+      if (!response.ok) return;
+      const data = await response.json();
+      setCartCount(Array.isArray(data) ? data.length : Array.isArray(data?.items) ? data.items.length : 0);
+    } catch (error) {
+      console.error("Cart count error:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchProducts();
+    void fetchCartCount();
+  }, [fetchCartCount, fetchProducts]);
+
+  const categories = useMemo(() => {
+    const relevantProducts = productTypeFilter === "all"
+      ? products
+      : products.filter((product) => product.product_type === productTypeFilter || product.product_type === "both" || (productTypeFilter === "skin" && !product.product_type));
+    return ["all", ...Array.from(new Set(relevantProducts.map((product) => product.category).filter(Boolean)))];
+  }, [productTypeFilter, products]);
+
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return products.filter((product) => {
+      const matchesType = productTypeFilter === "all"
+        || product.product_type === productTypeFilter
+        || product.product_type === "both"
+        || (productTypeFilter === "skin" && !product.product_type);
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      const matchesQuery = !query
+        || product.name.toLowerCase().includes(query)
+        || product.description?.toLowerCase().includes(query)
+        || product.ingredients?.some((ingredient) => ingredient.toLowerCase().includes(query));
+      return matchesType && matchesCategory && matchesQuery;
+    });
+  }, [productTypeFilter, products, searchQuery, selectedCategory]);
+
+  const setRitualFilter = (type: ProductTypeFilter) => {
+    setProductTypeFilter(type);
+    setSelectedCategory("all");
+  };
+
+  const addToCart = async (productId: string) => {
+    const token = localStorage.getItem("glowsense_token");
+    if (!token) {
+      toast({ title: "Sign in to build your edit", description: "Your cart is saved to your IMSTEV account." });
+      navigate("/auth");
+      return;
+    }
+
+    setAddingProductId(productId);
+    try {
+      const response = await fetch(`${API_BASE}/cart`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem("glowsense_token");
+        toast({ title: "Session expired", description: "Please sign in again to add products." });
+        navigate("/auth");
+        return;
+      }
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || "Unable to add this product to your cart");
+      }
+      toast({ title: "Added to your edit", description: "The product is waiting in your cart." });
+      await fetchCartCount();
+    } catch (error) {
+      toast({ title: "Could not add product", description: getErrorMessage(error), variant: "destructive" });
+    } finally {
+      setAddingProductId(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f8f3ec] text-[#3b271b]">
+      <Navbar />
+
+      <main>
+        <section className="relative overflow-hidden border-b border-[#3b271b]/10 bg-[#f8f3ec]">
+          <div className="absolute -right-28 -top-28 h-80 w-80 rounded-full bg-[#d8c4ed]/50 blur-3xl" />
+          <div className="absolute -bottom-36 left-1/3 h-80 w-80 rounded-full bg-[#efcf9f]/40 blur-3xl" />
+          <div className="relative mx-auto grid max-w-7xl gap-8 px-4 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:px-8 lg:pb-20 lg:pt-16">
+            <div className="max-w-2xl">
+              <Badge className="mb-5 rounded-full bg-[#3b271b] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f8f3ec] hover:bg-[#3b271b]">
+                The IMSTEV edit
+              </Badge>
+              <h1 className="max-w-xl font-display text-5xl font-semibold leading-[0.93] tracking-[-0.04em] text-[#3b271b] sm:text-6xl lg:text-7xl">
+                Good care begins with what you choose.
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-[#3b271b]/65 sm:text-lg">
+                A considered collection of Nigerian-rooted hair and skin essentials, selected to make your next ritual feel simpler, richer, and more like you.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button onClick={() => document.getElementById("shop-collection")?.scrollIntoView({ behavior: "smooth" })} className="h-12 rounded-full bg-[#3b271b] px-6 text-[#f8f3ec] hover:bg-[#513622]">
+                  Explore the collection <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/scan")} className="h-12 rounded-full border-[#3b271b]/20 bg-transparent px-6 text-[#3b271b] hover:bg-white/60">
+                  Shop from a scan <Scan className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+              <div className="mt-10 grid max-w-lg grid-cols-3 gap-3 border-t border-[#3b271b]/15 pt-5">
+                <div><p className="font-display text-2xl">4A–4C</p><p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#3b271b]/50">Texture fluent</p></div>
+                <div><p className="font-display text-2xl">01</p><p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#3b271b]/50">Care-first edit</p></div>
+                <div><p className="font-display text-2xl">NG</p><p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#3b271b]/50">Made for home</p></div>
+              </div>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-[420px]">
+              <div className="relative aspect-[0.86] overflow-hidden rounded-[34px] bg-[#6d4a34] shadow-[0_30px_80px_rgba(59,39,27,0.2)]">
+                <img src={BRAND_IMAGES.productCollection} alt="IMSTEV NATURALS product collection" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#24160d]/70 via-transparent to-transparent" />
+                <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-white/25 bg-[#24160d]/30 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
+                  <Leaf className="h-3.5 w-3.5" /> Made for the ritual
+                </div>
+                <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4 text-white">
+                  <div><p className="font-display text-3xl leading-none">The ritual shelf</p><p className="mt-2 text-xs text-white/70">Small-batch feeling. Everyday ease.</p></div>
+                  <div className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-white/10 backdrop-blur"><Leaf className="h-5 w-5" /></div>
+                </div>
+              </div>
+              <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-[#3b271b]/10 bg-white/90 p-4 shadow-xl backdrop-blur sm:block">
+                <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-700" /><span className="text-xs font-semibold">Thoughtful, not overwhelming</span></div>
+                <p className="mt-1 pl-6 text-[11px] text-[#3b271b]/55">Build a routine you can keep.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="shop-collection" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8b5e3c]">Shop by ritual</p>
+              <h2 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-none tracking-[-0.03em] text-[#3b271b] sm:text-5xl">Find the edit your hair or skin has been asking for.</h2>
+            </div>
+            <p className="text-sm leading-6 text-[#3b271b]/60 lg:text-right">Start broad, then narrow by texture, concern, or ingredient. Every product is presented with enough context to choose with confidence.</p>
+          </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            {[
+              { type: "all" as const, title: "The full edit", copy: "Hair, skin, and in-between days.", icon: Package, tone: "bg-white" },
+              { type: "hair" as const, title: "Hair rituals", copy: "Moisture, scalp, growth, and style.", icon: Heart, tone: "bg-[#efe4f4]" },
+              { type: "skin" as const, title: "Skin rituals", copy: "Cleanse, calm, brighten, protect.", icon: Leaf, tone: "bg-[#f3e4d0]" },
+            ].map(({ type, title, copy, icon: Icon, tone }) => (
+              <button key={type} type="button" onClick={() => setRitualFilter(type)} className={`group rounded-[24px] border p-5 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-lg ${tone} ${productTypeFilter === type ? "border-[#3b271b]/40 shadow-md" : "border-[#3b271b]/10"}`}>
+                <div className="flex items-start justify-between gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#3b271b] text-[#f8f3ec]"><Icon className="h-5 w-5" /></span>{productTypeFilter === type && <span className="grid h-7 w-7 place-items-center rounded-full bg-[#3b271b] text-[#f8f3ec]"><Check className="h-4 w-4" /></span>}</div>
+                <p className="mt-6 font-display text-2xl text-[#3b271b]">{title}</p><p className="mt-1 text-sm leading-6 text-[#3b271b]/60">{copy}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-[26px] border border-[#3b271b]/10 bg-white/70 p-4 shadow-sm backdrop-blur sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full lg:max-w-xl"><Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#3b271b]/45" /><Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search by product, ingredient, or concern" className="h-12 rounded-full border-[#3b271b]/15 bg-[#f8f3ec] pl-11 text-[#3b271b] placeholder:text-[#3b271b]/40" />{searchQuery && <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3b271b]/45 hover:text-[#3b271b]"><X className="h-4 w-4" /></button>}</div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center"><div className="flex rounded-full bg-[#f8f3ec] p-1">{(["all", "skin", "hair"] as ProductTypeFilter[]).map((type) => <button key={type} type="button" onClick={() => setRitualFilter(type)} className={`rounded-full px-4 py-2 text-xs font-semibold transition ${productTypeFilter === type ? "bg-[#3b271b] text-[#f8f3ec]" : "text-[#3b271b]/60 hover:text-[#3b271b]"}`}>{type === "all" ? "All" : type === "skin" ? "Skin" : "Hair"}</button>)}</div><label className="sr-only" htmlFor="shop-category">Filter by category</label><select id="shop-category" value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="h-11 w-full rounded-full border border-[#3b271b]/15 bg-[#f8f3ec] px-4 text-sm text-[#3b271b] outline-none transition focus:border-[#8b5e3c] sm:w-48">{categories.map((category) => <option key={category} value={category}>{category === "all" ? "All categories" : category}</option>)}</select></div>
+            </div>
+            <div className="mt-4 flex flex-col gap-2 border-t border-[#3b271b]/10 pt-4 text-xs text-[#3b271b]/55 sm:flex-row sm:items-center sm:justify-between"><span>{filteredProducts.length} pieces in the current edit</span>{usingFallbackCatalog && <span className="inline-flex items-center gap-2 text-amber-800"><ShieldCheck className="h-3.5 w-3.5" /> Curated catalog mode</span>}{(searchQuery || selectedCategory !== "all") && <button type="button" onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }} className="font-semibold text-[#8b5e3c] hover:text-[#3b271b]">Reset filters</button>}</div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+          {loading ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }).map((_, index) => <Card key={index} className="overflow-hidden rounded-[26px] border-[#3b271b]/10 bg-white"><Skeleton className="aspect-[0.92] w-full" /><CardContent className="space-y-3 p-5"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-10 w-full" /></CardContent></Card>)}</div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="rounded-[28px] border border-dashed border-[#3b271b]/20 bg-white/70 px-6 py-20 text-center"><ShoppingBag className="mx-auto h-12 w-12 text-[#8b5e3c]/50" /><h3 className="mt-5 font-display text-3xl">Nothing in this edit yet.</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#3b271b]/60">Try another category or search term. Your next ritual may be one adjustment away.</p><Button variant="outline" onClick={() => { setProductTypeFilter("all"); setSelectedCategory("all"); setSearchQuery(""); }} className="mt-6 rounded-full border-[#3b271b]/20">Show the full edit</Button></div>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredProducts.map((product, index) => {
+                const imageUrl = formatProductImage(product.image_url);
+                const isAdding = addingProductId === product.id;
+                return (
+                  <Card key={product.id} className="group flex h-full flex-col overflow-hidden rounded-[26px] border-[#3b271b]/10 bg-white shadow-[0_12px_40px_rgba(59,39,27,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_55px_rgba(59,39,27,0.14)]">
+                    <div className="relative aspect-[0.92] overflow-hidden bg-[#eee5dc]">
+                      {imageUrl ? <img src={imageUrl} alt={product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading={index > 3 ? "lazy" : "eager"} /> : <div className="flex h-full flex-col items-center justify-center text-[#8b5e3c]"><Package className="h-10 w-10" /><span className="mt-3 text-xs font-semibold uppercase tracking-[0.16em]">IMSTEV NATURALS</span></div>}
+                      <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3"><Badge className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3b271b] hover:bg-white">{productTypeLabel(product.product_type)}</Badge>{product.stock_quantity <= 0 ? <Badge variant="destructive" className="rounded-full">Out of stock</Badge> : product.stock_quantity <= 10 ? <Badge className="rounded-full bg-[#3b271b]/85 text-[#f8f3ec] hover:bg-[#3b271b]">Few left</Badge> : null}</div>
+                    </div>
+                    <CardContent className="flex flex-1 flex-col p-5"><div className="flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8b5e3c]">{product.category}</p><h3 className="mt-2 line-clamp-2 font-display text-2xl leading-tight text-[#3b271b]">{product.name}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-[#3b271b]/60">{product.description || "A considered addition to your care ritual."}</p>{product.product_type === "hair" && product.suitable_hair_types?.length ? <div className="mt-4 flex flex-wrap gap-1.5">{product.suitable_hair_types.slice(0, 4).map((type) => <span key={type} className="rounded-full bg-[#efe4f4] px-2.5 py-1 text-[10px] font-semibold text-[#6b467a]">{type}</span>)}</div> : product.suitable_for_conditions?.length ? <div className="mt-4 flex flex-wrap gap-1.5">{product.suitable_for_conditions.slice(0, 2).map((condition) => <span key={condition} className="rounded-full bg-[#f3e4d0] px-2.5 py-1 text-[10px] font-semibold capitalize text-[#80582d]">{condition}</span>)}</div> : null}</div><div className="mt-6 flex items-end justify-between gap-3"><div><p className="text-[10px] uppercase tracking-[0.16em] text-[#3b271b]/45">Your investment</p><p className="mt-1 font-display text-2xl text-[#3b271b]">{formatCurrency(product.price_ngn)}</p></div><div className="flex items-center gap-1 text-[11px] text-[#3b271b]/50"><Leaf className="h-3.5 w-3.5 text-[#71856b]" /> In the edit</div></div></CardContent>
+                    <CardFooter className="p-5 pt-0"><Button onClick={() => addToCart(product.id)} disabled={product.stock_quantity <= 0 || isAdding} className="h-11 w-full rounded-full bg-[#3b271b] text-[#f8f3ec] hover:bg-[#513622]">{isAdding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-2 h-4 w-4" />}{isAdding ? "Adding..." : product.stock_quantity <= 0 ? "Out of stock" : "Add to cart"}</Button></CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <section className="border-t border-[#3b271b]/10 bg-[#efe4f4]/50">
+          <div className="mx-auto grid max-w-7xl gap-5 px-4 py-12 sm:grid-cols-3 sm:px-6 lg:px-8">
+            {[{ icon: ShieldCheck, title: "Choose with confidence", copy: "See ingredients, texture fit, and care concerns before you add." }, { icon: Scan, title: "Make it personal", copy: "Start a scan to turn your next product search into a guided edit." }, { icon: ShoppingCart, title: "Build your shelf", copy: "Save a considered collection for your next wash day or reset." }].map(({ icon: Icon, title, copy }) => <div key={title} className="rounded-[22px] border border-[#3b271b]/10 bg-white/75 p-5"><Icon className="h-5 w-5 text-[#8b5e3c]" /><h3 className="mt-4 font-display text-2xl text-[#3b271b]">{title}</h3><p className="mt-2 text-sm leading-6 text-[#3b271b]/60">{copy}</p></div>)}
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Shop;

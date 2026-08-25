@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useCallback, useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { QuicktellerCheckout } from "@/components/checkout/QuicktellerCheckout";
 import { 
   Scissors, Clock, Calendar as CalendarIcon, Check, 
   ChevronRight, User, Phone, Mail, Crown, Heart, 
@@ -41,6 +40,36 @@ interface BookingData {
 
 const isSalonClosedDay = (date: Date) => date.getDay() === 1;
 
+interface UserProfile {
+  id?: string;
+  email?: string;
+  full_name?: string;
+  phone?: string;
+}
+
+interface BookingDetails {
+  service_name: string;
+  appointment_date: string;
+  time_slot: string;
+  price_ngn: number;
+}
+
+const getLocalAvailableSlots = (date: Date) => {
+  if (isSalonClosedDay(date)) return [];
+  const weekdaySlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'];
+  return date.getDay() === 0 ? weekdaySlots.slice(12) : weekdaySlots;
+};
+
+const formatTime12Hour = (slot: string) => {
+  const [hoursText, minutesText] = slot.split(':');
+  const hours = Number(hoursText);
+  const minutes = Number(minutesText);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return slot;
+  const meridiem = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${String(minutes).padStart(2, '0')} ${meridiem}`;
+};
+
 export default function SalonBooking() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -57,17 +86,9 @@ export default function SalonBooking() {
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<any>(null);
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentData, setPaymentData] = useState<{
-    amount: number;
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-  } | null>(null);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [formData, setFormData] = useState<BookingData>({
     customerName: "",
     customerEmail: "",
@@ -107,12 +128,6 @@ export default function SalonBooking() {
   useEffect(() => {
     resetSalonScroll();
   }, [step]);
-
-  useEffect(() => {
-    if (selectedDate) {
-      loadAvailableSlots(selectedDate);
-    }
-  }, [selectedDate]);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('glowsense_token');
@@ -166,22 +181,35 @@ export default function SalonBooking() {
     }
   };
 
-  const loadAvailableSlots = async (date: Date) => {
+  const loadAvailableSlots = useCallback(async (date: Date) => {
     setSlotsLoading(true);
+    setAvailableSlots([]);
+    setBookedSlots([]);
+    const dateStr = format(date, 'yyyy-MM-dd');
+
     try {
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const response = await fetch(`${API_BASE}/salon/available-slots?date=${dateStr}`);
-      if (response.ok) {
-        const data = await response.json();
+      const response = await fetch(`${API_BASE}/salon/available-slots?date=${encodeURIComponent(dateStr)}`);
+      const data = await response.json().catch(() => null);
+      if (response.ok && Array.isArray(data?.availableSlots)) {
         setAvailableSlots(data.availableSlots);
-        setBookedSlots(data.bookedSlots);
+        setBookedSlots(Array.isArray(data.bookedSlots) ? data.bookedSlots : []);
+      } else {
+        // Keep the date/time journey usable in preview or when the API is temporarily unavailable.
+        setAvailableSlots(getLocalAvailableSlots(date));
       }
     } catch (error) {
       console.error('Failed to load slots:', error);
+      setAvailableSlots(getLocalAvailableSlots(date));
     } finally {
       setSlotsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      loadAvailableSlots(selectedDate);
+    }
+  }, [selectedDate, loadAvailableSlots]);
 
   const handleServiceToggle = (service: Service) => {
     setSelectedServices((prev) => {
@@ -223,11 +251,11 @@ export default function SalonBooking() {
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date);
-      setFormData(prev => ({ ...prev, appointmentDate: format(date, 'yyyy-MM-dd') }));
-      setSelectedSlot("");
-    }
+    if (!date) return;
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    setSelectedDate(normalizedDate);
+    setSelectedSlot("");
+    setFormData(prev => ({ ...prev, appointmentDate: format(normalizedDate, 'yyyy-MM-dd'), timeSlot: "" }));
   };
 
   const handleSlotSelect = (slot: string) => {
@@ -274,19 +302,18 @@ export default function SalonBooking() {
       },
     }));
 
-    // Show payment modal
-    setPaymentData({
+    sessionStorage.setItem('pendingPaymentPage', JSON.stringify({
       amount: depositAmount,
       customerEmail,
       customerName: formData.customerName,
       customerPhone: formattedPhone,
-    });
-    setShowPaymentModal(true);
-  };
+      paymentType: 'salon_booking',
+      serviceNames: selectedServices.map((service) => service.name),
+      appointmentDate: formData.appointmentDate,
+      timeSlot: formData.timeSlot,
+    }));
 
-  const handlePaymentSuccess = (transactionRef: string) => {
-    setShowPaymentModal(false);
-    navigate(`/payment-callback?txnref=${encodeURIComponent(transactionRef)}`);
+    navigate('/payment');
   };
 
   const formatPrice = (price: number, priceMax?: number) => {
@@ -384,7 +411,7 @@ export default function SalonBooking() {
                         <Clock className="w-4 h-4" />
                         <span className="text-sm">Time</span>
                       </div>
-                      <p className="font-semibold">{bookingDetails.time_slot}</p>
+                      <p className="font-semibold">{formatTime12Hour(bookingDetails.time_slot)}</p>
                     </div>
                   </div>
 
@@ -452,7 +479,7 @@ export default function SalonBooking() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-amber-50/20">
       <Navbar />
       
-      <div ref={pageTopRef} className={`pt-24 pb-16 transition-all ${showPaymentModal ? 'pointer-events-none opacity-50' : ''}`}>
+      <div ref={pageTopRef} className="pt-24 pb-16 transition-all">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div ref={bookingTopRef} tabIndex={-1} aria-hidden="true" className="h-0 outline-none" />
@@ -466,6 +493,9 @@ export default function SalonBooking() {
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Experience world-class hair care at IMSTEV NATURALS Hair Specialist Salon
+              </p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-purple-700/70">
+                Tue–Sat · 8:00 AM–6:00 PM &nbsp;·&nbsp; Sun · 2:00 PM–6:00 PM &nbsp;·&nbsp; Monday closed
               </p>
             </div>
 
@@ -698,7 +728,7 @@ export default function SalonBooking() {
                             disabled={(date) =>
                               isBefore(date, startOfToday()) ||
                               isSalonClosedDay(date) ||
-                              isBefore(addDays(new Date(), 60), date)
+                              isBefore(addDays(startOfToday(), 60), date)
                             }
                             className="rounded-xl border shadow-sm"
                           />
@@ -713,7 +743,7 @@ export default function SalonBooking() {
                             </div>
                           </div>
                           <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-muted-foreground">
-                            Monday is closed. Tuesday to Saturday and Sunday appointments start from 2:00 PM.
+                            Monday is closed. Tuesday to Saturday appointments start at 8:00 AM; Sunday appointments start at 2:00 PM.
                           </div>
                         </CardContent>
                       </Card>
@@ -774,7 +804,7 @@ export default function SalonBooking() {
                                       }`}
                                       onClick={() => handleSlotSelect(slot)}
                                     >
-                                      {slot}
+                                      {formatTime12Hour(slot)}
                                       {isPriority && selectedSlot !== slot && (
                                         <Crown className="w-3 h-3 absolute -top-1 -right-1 text-amber-500" />
                                       )}
@@ -795,7 +825,7 @@ export default function SalonBooking() {
                         <p className="text-sm font-medium text-muted-foreground">Continue when ready</p>
                         <p className="text-lg font-semibold text-foreground">
                           {selectedDate && selectedSlot
-                            ? `Booked for ${format(selectedDate, 'MMM d')} at ${selectedSlot}`
+                            ? `Booked for ${format(selectedDate, 'MMM d')} at ${formatTime12Hour(selectedSlot)}`
                             : 'Pick a date and time to continue'}
                         </p>
                         <p className="text-sm text-muted-foreground">
@@ -940,7 +970,7 @@ export default function SalonBooking() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Time</span>
-                            <span className="font-medium">{selectedSlot}</span>
+                            <span className="font-medium">{formatTime12Hour(selectedSlot)}</span>
                           </div>
                         </div>
 
@@ -988,34 +1018,6 @@ export default function SalonBooking() {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      {showPaymentModal && paymentData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 flex justify-between items-center">
-              <h2 className="text-lg font-bold">Complete Payment</h2>
-              <button 
-                onClick={() => setShowPaymentModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <QuicktellerCheckout
-                amount={paymentData.amount}
-                customerName={paymentData.customerName}
-                customerEmail={paymentData.customerEmail}
-                customerPhone={paymentData.customerPhone}
-                description={`Salon Booking - ${selectedServices.map((service) => service.name).join(", ")}`}
-                onPaymentSuccess={handlePaymentSuccess}
-                onDismiss={() => setShowPaymentModal(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      
       <Footer />
     </div>
   );

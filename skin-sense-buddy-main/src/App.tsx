@@ -1,34 +1,35 @@
-import { useEffect, useLayoutEffect } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { lazy, Suspense, useEffect, useLayoutEffect } from "react";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalBackButton } from "./components/layout/GlobalBackButton";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Scan from "./pages/Scan";
-import Results from "./pages/Results";
-import Timeline from "./pages/Timeline";
-import Dashboard from "./pages/Dashboard";
-import Onboarding from "./pages/Onboarding";
-import Profile from "./pages/Profile";
-import Telehealth from "./pages/Telehealth";
-import Consultation from "./pages/Consultation";
-import FamilyAccounts from "./pages/FamilyAccounts";
-import CustomFormulation from "./pages/CustomFormulation";
-import ClinicianDashboard from "./pages/ClinicianDashboard";
-import Shop from "./pages/Shop";
-import Cart from "./pages/Cart";
-import Orders from "./pages/Orders";
-import Inventory from "./pages/Inventory";
-import SalonBooking from "./pages/SalonBooking";
-import Subscription from "./pages/Subscription";
-import PaymentCallback from "./pages/PaymentCallback";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import Community from "./pages/Community";
-import NotFound from "./pages/NotFound";
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Scan = lazy(() => import("./pages/Scan"));
+const Results = lazy(() => import("./pages/Results"));
+const Timeline = lazy(() => import("./pages/Timeline"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Telehealth = lazy(() => import("./pages/Telehealth"));
+const Consultation = lazy(() => import("./pages/Consultation"));
+const FamilyAccounts = lazy(() => import("./pages/FamilyAccounts"));
+const CustomFormulation = lazy(() => import("./pages/CustomFormulation"));
+const ClinicianDashboard = lazy(() => import("./pages/ClinicianDashboard"));
+const Shop = lazy(() => import("./pages/Shop"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const SalonBooking = lazy(() => import("./pages/SalonBooking"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
+const Payment = lazy(() => import("./pages/Payment"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Community = lazy(() => import("./pages/Community"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,10 @@ function ScrollToTop() {
   return null;
 }
 
+function RouteFallback() {
+  return <div className="grid min-h-screen place-items-center bg-[#f5f0e7] px-6 text-center text-sm text-[#756253]">Loading your care space…</div>;
+}
+
 function AppRoutes() {
   const location = useLocation();
 
@@ -82,12 +87,15 @@ function AppRoutes() {
     <>
       <ScrollToTop />
       <GlobalBackButton />
+      <Suspense fallback={<RouteFallback />}>
       <Routes location={location} key={`${location.pathname}${location.search}${location.hash}`}>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/onboarding" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/profile" element={<Navigate to="/dashboard" replace />} />
         <Route path="/telehealth" element={<Telehealth />} />
         <Route path="/consultation" element={<Consultation />} />
         <Route path="/family" element={<FamilyAccounts />} />
@@ -103,11 +111,13 @@ function AppRoutes() {
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/salon-booking" element={<SalonBooking />} />
         <Route path="/subscription" element={<Subscription />} />
+        <Route path="/payment" element={<Payment />} />
         <Route path="/payment-callback" element={<PaymentCallback />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
     </>
   );
 }

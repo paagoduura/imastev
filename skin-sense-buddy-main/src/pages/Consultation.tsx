@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Calendar as CalendarIcon, Clock, ThumbsUp, Video, Loader2, ChevronRight, CreditCard } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, Clock, ThumbsUp, Video, Loader2, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { VideoCall } from "@/components/telehealth/VideoCall";
-import { QuicktellerCheckout } from "@/components/checkout/QuicktellerCheckout";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { API_BASE } from "@/lib/config";
@@ -28,8 +27,8 @@ interface Clinician {
   rating: number;
   total_consultations: number;
   years_experience: number;
-  availability: any;
-  profiles: any;
+  availability: unknown;
+  profiles?: { full_name?: string } | null;
   full_name?: string;
 }
 
@@ -40,8 +39,10 @@ interface Appointment {
   duration_minutes: number;
   meeting_url: string | null;
   notes: string | null;
-  clinicians: any;
+  clinicians?: { profiles?: { full_name?: string } | null; specialty?: string } | null;
 }
+
+const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : "Something went wrong";
 
 export default function Consultation() {
   const navigate = useNavigate();
@@ -63,21 +64,8 @@ export default function Consultation() {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentData, setPaymentData] = useState<{
-    amount: number;
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    description: string;
-  } | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -136,16 +124,20 @@ export default function Consultation() {
 
       if (appointmentsError) throw appointmentsError;
       setAppointments(appointmentsData || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error loading data",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [consultationType, navigate, toast]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const validateCheckoutInfo = () => {
     if (!customerName.trim()) {
@@ -179,34 +171,36 @@ export default function Consultation() {
         formattedPhone = '0' + formattedPhone.slice(3);
       }
       
-      // Set payment data and show modal instead of making the payment call
-      setPaymentData({
+      const scheduledAt = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      scheduledAt.setHours(hours, minutes, 0, 0);
+      const clinicianName = selectedClinician.profiles?.full_name || selectedClinician.full_name || 'IMSTEV specialist';
+      const description = `Consultation with ${clinicianName}`;
+
+      sessionStorage.setItem('pendingAppointment', JSON.stringify({
+        clinician_id: selectedClinician.id,
+        scheduled_at: scheduledAt.toISOString(),
+        duration_minutes: 30,
+        notes: `Name: ${customerName}, Email: ${customerEmail}, Phone: ${formattedPhone}`
+      }));
+      sessionStorage.setItem('pendingPaymentType', 'telehealth');
+      sessionStorage.setItem('pendingPaymentPage', JSON.stringify({
         amount: selectedClinician.consultation_fee_ngn,
         customerName,
         customerEmail,
         customerPhone: formattedPhone,
-        description: `Consultation: ${selectedClinician.profiles?.full_name || selectedClinician.full_name}`,
-      });
-      // Store appointment data for later processing
-      sessionStorage.setItem('pendingAppointment', JSON.stringify({
-        clinician_id: selectedClinician.id,
-        scheduled_at: new Date(selectedDate).toISOString(),
-        duration_minutes: 30,
-        notes: `Name: ${customerName}, Email: ${customerEmail}, Phone: ${customerPhone}`
+        paymentType: 'telehealth',
+        clinicianName,
+        appointmentDate: format(selectedDate, 'PPP'),
+        timeSlot: selectedTime,
+        description,
       }));
-      sessionStorage.setItem('pendingPaymentType', 'telehealth');
-      setShowPaymentModal(true);
-      
-      // Close the booking dialog by resetting UI states
+
+      navigate('/payment');
       setSelectedClinician(null);
       setBookingStep(1);
       return;
     }
-  };
-
-  const handlePaymentSuccess = (transactionRef: string) => {
-    setShowPaymentModal(false);
-    navigate(`/payment-callback?txnref=${encodeURIComponent(transactionRef)}`);
   };
 
   const joinAppointmentCall = async (appointmentId: string) => {
@@ -220,8 +214,8 @@ export default function Consultation() {
       if (!response.ok) throw new Error('Failed to join appointment');
       const data = await response.json();
       setActiveCall({ meetingUrl: data.meeting_url, token: data.token });
-    } catch (error: any) {
-      toast({ title: "Failed to join call", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      toast({ title: "Failed to join call", description: getErrorMessage(error), variant: "destructive" });
     } finally {
       setJoiningCall(null);
     }
@@ -249,7 +243,7 @@ export default function Consultation() {
       <Navbar />
 
       <div className="gradient-mesh">
-        <div className={`container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl transition-all ${showPaymentModal ? 'pointer-events-none opacity-50' : ''}`}>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
           <div className="mb-6 sm:mb-8">
             <Button
               variant="ghost"
@@ -275,6 +269,22 @@ export default function Consultation() {
               }
             </p>
           </div>
+
+          <section className="mb-6 grid gap-4 rounded-[28px] border border-primary/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:grid-cols-[minmax(0,1fr)_260px] sm:p-7">
+            <div>
+              <Badge className="mb-3 bg-primary/10 text-primary hover:bg-primary/10">Specialist care, made human</Badge>
+              <h2 className="max-w-xl text-2xl font-display font-bold text-slate-900 sm:text-3xl">Bring the question. Leave with a ritual.</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Choose a specialist, find a time that works, and get considered guidance for your hair, scalp, or skin journey.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 self-end text-center sm:gap-3">
+              {[['01', 'Choose'], ['02', 'Talk'], ['03', 'Grow']].map(([number, label]) => (
+                <div key={number} className="rounded-2xl border border-primary/10 bg-white px-2 py-3">
+                  <p className="text-lg font-display font-bold text-primary">{number}</p>
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <Tabs defaultValue="clinicians" className="space-y-6">
             <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
@@ -382,7 +392,7 @@ export default function Consultation() {
                                 </Button>
                               </div>
                             </div>
-                          ) : bookingStep === 2 && !showPaymentModal ? (
+                          ) : bookingStep === 2 ? (
                             <div className="space-y-5">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -531,23 +541,6 @@ export default function Consultation() {
         />
       )}
 
-      {/* Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="max-w-md p-0 border-0">
-          <DialogHeader className="hidden" />
-          {paymentData && (
-            <QuicktellerCheckout
-              amount={paymentData.amount}
-              customerName={paymentData.customerName}
-              customerEmail={paymentData.customerEmail}
-              customerPhone={paymentData.customerPhone}
-              description={paymentData.description}
-              onPaymentSuccess={handlePaymentSuccess}
-              onDismiss={() => setShowPaymentModal(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       <Footer />
     </div>

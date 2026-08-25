@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { Heart, ImagePlus, MessageCircle, Send, Sparkles, ThumbsUp, Users, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Heart, ImagePlus, MessageCircle, Scissors, Send, ThumbsUp, Users, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,16 +46,7 @@ type Post = {
   comments: Comment[];
 };
 
-const EMOJI_OPTIONS = [
-  "\uD83D\uDE00",
-  "\uD83D\uDE0D",
-  "\uD83D\uDD25",
-  "\uD83D\uDCA7",
-  "\u2728",
-  "\uD83D\uDC4F",
-  "\uD83D\uDCAA",
-  "\uD83D\uDC9A",
-];
+const QUICK_PHRASES = ["Wash day win", "Routine question", "Protective style", "Texture note"];
 
 const normalizeReply = (value: unknown): Reply | null => {
   if (!value || typeof value !== "object") return null;
@@ -150,6 +142,8 @@ const COMMUNITY_COPY: Record<
 };
 
 const Community = () => {
+  const navigate = useNavigate();
+  const isSignedIn = Boolean(localStorage.getItem("glowsense_token"));
   const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>("hair");
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
@@ -429,30 +423,33 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background page-reveal">
+    <div className="min-h-screen bg-[#f8f3ec] page-reveal">
       <Navbar />
       <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <section className="relative overflow-hidden rounded-[28px] border border-primary/10 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.06)] section-reveal">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(124,58,237,0.12),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.08),transparent_28%)]" />
-          <div className="relative grid gap-6 p-5 sm:p-8 lg:p-10">
-            <div>
-              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">Community Hub</Badge>
-              <h1 className="max-w-3xl text-3xl font-display font-bold text-slate-900 sm:text-4xl">
-                A calmer, smarter space for hair and skin conversations
+        <section className="relative overflow-hidden rounded-[32px] border border-[#3b271b]/10 bg-[#24160d] text-[#f8f3ec] shadow-[0_24px_80px_rgba(59,39,27,0.16)] section-reveal">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(242,210,166,0.2),transparent_28%),radial-gradient(circle_at_90%_80%,rgba(179,138,204,0.26),transparent_34%)]" />
+          <div className="relative grid gap-8 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center lg:p-12">
+            <div className="max-w-2xl">
+              <Badge className="mb-5 rounded-full border border-[#f2d2a6]/30 bg-[#f2d2a6]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f2d2a6] hover:bg-[#f2d2a6]/10">The care circle</Badge>
+              <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[0.95] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+                Wisdom feels better when it is shared with care.
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                Share polished progress updates, ask focused questions, and learn from routines that are actually
-                working for people like you.
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-white/70 sm:text-base">
+                A thoughtful exchange for African hair and skin journeys. Ask honest questions, share what is working, and find encouragement without the noise.
               </p>
+              <div className="mt-8 flex flex-wrap gap-3 text-xs font-semibold text-white/75"><span className="rounded-full border border-white/15 bg-white/10 px-3 py-2">Texture fluent</span><span className="rounded-full border border-white/15 bg-white/10 px-3 py-2">No judgement</span><span className="rounded-full border border-white/15 bg-white/10 px-3 py-2">Specialist-minded</span></div>
+            </div>
+            <div className="relative mx-auto w-full max-w-[300px]">
+              <div className="aspect-[0.82] overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-2 shadow-2xl"><img src="/imstev-community-braids.jpeg" alt="Natural hair community styling at IMSTEV NATURALS" className="h-full w-full rounded-[22px] object-cover" /><div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/20 bg-[#24160d]/65 p-4 backdrop-blur"><p className="text-[10px] uppercase tracking-[0.18em] text-[#f2d2a6]">Community note</p><p className="mt-2 font-display text-2xl leading-none">Your story can help someone else begin.</p></div></div>
             </div>
           </div>
         </section>
 
-        <section className="mt-6 grid gap-3 sm:grid-cols-2 section-reveal">
+        <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:gap-4 section-reveal">
           {(["hair", "skin"] as CommunityType[]).map((community) => {
             const isActive = selectedCommunity === community;
             const copy = COMMUNITY_COPY[community];
-            const Icon = community === "hair" ? Sparkles : Users;
+            const Icon = community === "hair" ? Scissors : Users;
 
             return (
               <button
@@ -461,8 +458,8 @@ const Community = () => {
                 onClick={() => setSelectedCommunity(community)}
                 className={`rounded-2xl border p-4 text-left transition-all sm:p-5 ${
                   isActive
-                    ? "border-primary/35 bg-white shadow-[0_14px_40px_rgba(124,58,237,0.12)]"
-                    : "border-primary/10 bg-white hover:border-primary/20 hover:bg-primary/5"
+                    ? "border-[#3b271b]/30 bg-white shadow-[0_16px_45px_rgba(59,39,27,0.12)]"
+                    : "border-[#3b271b]/10 bg-white/80 hover:border-[#3b271b]/20 hover:bg-white"
                 }`}
               >
                 <div className={`rounded-xl bg-gradient-to-br ${copy.accent} p-4`}>
@@ -481,6 +478,13 @@ const Community = () => {
             );
           })}
         </section>
+
+        {!isSignedIn && (
+          <section className="mt-6 rounded-[22px] border border-[#3b271b]/10 bg-white/75 p-4 shadow-sm sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-5">
+            <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#efe4f4] text-[#6b467a]"><Users className="h-5 w-5" /></span><div><p className="text-sm font-semibold text-[#3b271b]">Join the conversation</p><p className="mt-1 text-xs leading-5 text-[#3b271b]/60">Browse the care circle freely. Sign in when you are ready to post, comment, or react.</p></div></div>
+            <Button type="button" onClick={() => navigate("/auth")} className="mt-4 h-10 w-full rounded-full bg-[#3b271b] text-[#f8f3ec] hover:bg-[#513622] sm:mt-0 sm:w-auto">Sign in to participate <ArrowRight className="ml-2 h-4 w-4" /></Button>
+          </section>
+        )}
 
         {error && (
           <section className="mt-6">
@@ -516,7 +520,7 @@ const Community = () => {
                   className="min-h-[140px] rounded-2xl border-primary/15 bg-slate-50/70 px-4 py-3 text-sm leading-6"
                 />
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                  {EMOJI_OPTIONS.map((emoji) => (
+                  {QUICK_PHRASES.map((emoji) => (
                     <Button
                       key={emoji}
                       type="button"
@@ -598,9 +602,9 @@ const Community = () => {
 
                 <div className="flex items-center justify-between gap-3 border-t border-primary/10 pt-2">
                   <p className="text-xs leading-5 text-slate-500">Clear, close-up images get better community feedback.</p>
-                  <Button onClick={createPost} className="h-11 rounded-xl px-5" disabled={submitting}>
+                  <Button onClick={() => { if (!isSignedIn) { navigate("/auth"); return; } void createPost(); }} className="h-11 rounded-full px-5" disabled={submitting}>
                     <Send className="h-4 w-4" />
-                    {submitting ? "Publishing..." : "Publish"}
+                    {submitting ? "Publishing..." : isSignedIn ? "Publish" : "Sign in to post"}
                   </Button>
                 </div>
               </CardContent>
@@ -762,7 +766,7 @@ const Community = () => {
                                 />
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                   <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                                    {EMOJI_OPTIONS.slice(0, 4).map((emoji) => (
+                                    {QUICK_PHRASES.slice(0, 4).map((emoji) => (
                                       <Button
                                         key={`${comment.id}-${emoji}`}
                                         type="button"
@@ -799,7 +803,7 @@ const Community = () => {
                           />
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                                {EMOJI_OPTIONS.slice(0, 4).map((emoji) => (
+                                {QUICK_PHRASES.slice(0, 4).map((emoji) => (
                                   <Button
                                     key={`${post.id}-${emoji}`}
                                     type="button"

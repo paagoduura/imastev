@@ -34,10 +34,8 @@ Thumbs.db
 *.pid
 .server-pid
 
-# Root-level screenshots and temp images
-*.png
-*.jpg
-*.jpeg
+# Root-level screenshots and archives
+/screenshots/
 *.zip
 
 # Replit runtime
@@ -46,3 +44,6 @@ replit.md
 
 # Test output
 test_out.txt
+
+# Runtime uploads
+/uploads/

@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Loader2, Download } from "lucide-react";
+import { ArrowLeft, FlaskConical, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Formulation {
   id: string;
   formulation_name: string;
-  ingredients: any;
+  ingredients: Record<string, unknown>;
   instructions: string;
-  expected_benefits: any;
+  expected_benefits: unknown[];
   contraindications: string;
   estimated_cost_ngn: number;
   created_at: string;
@@ -22,7 +22,7 @@ interface Formulation {
 interface Diagnosis {
   id: string;
   primary_condition: string;
-  conditions: any;
+  conditions: unknown;
   created_at: string;
   scans: {
     image_url: string;
@@ -72,10 +72,10 @@ export default function CustomFormulation() {
 
       if (diagnosesError) throw diagnosesError;
       setRecentDiagnoses(diagnosesData || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error loading data",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unable to load your formulation notes.",
         variant: "destructive",
       });
     } finally {
@@ -101,10 +101,10 @@ export default function CustomFormulation() {
       });
 
       loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Generation failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unable to prepare this formulation.",
         variant: "destructive",
       });
     } finally {
@@ -131,7 +131,7 @@ export default function CustomFormulation() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Custom Formulations</h1>
           <p className="text-muted-foreground">
-            AI-powered personalized skincare formulations tailored to your skin condition
+            Specialist-guided skincare formulations shaped around your skin notes
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export default function CustomFormulation() {
               <CardHeader>
                 <CardTitle>Generate from Recent Scans</CardTitle>
                 <CardDescription>
-                  Select a diagnosis to create a personalized formulation
+                  Select a diagnosis to prepare a considered formulation
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -182,8 +182,8 @@ export default function CustomFormulation() {
                               </>
                             ) : (
                               <>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Generate Formulation
+                                <FlaskConical className="mr-2 h-4 w-4" />
+                                Prepare Formulation
                               </>
                             )}
                           </Button>
@@ -199,7 +199,7 @@ export default function CustomFormulation() {
           <TabsContent value="history" className="space-y-4">
             {formulations.length === 0 ? (
               <Card className="text-center p-12">
-                <Sparkles className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <FlaskConical className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">No formulations yet</h3>
                 <p className="text-muted-foreground">
                   Generate your first custom formulation to get started
@@ -242,7 +242,7 @@ export default function CustomFormulation() {
                       <div>
                         <h4 className="font-semibold mb-2">Expected Benefits</h4>
                         <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                          {formulation.expected_benefits.map((benefit: any, index: number) => (
+                          {formulation.expected_benefits.map((benefit: unknown, index: number) => (
                             <li key={index}>{String(benefit)}</li>
                           ))}
                         </ul>

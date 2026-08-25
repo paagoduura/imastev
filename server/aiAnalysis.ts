@@ -4,6 +4,7 @@ import * as path from 'path';
 
 let openaiClient: OpenAI | null = null;
 let hasWarnedAboutMissingApiKey = false;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 function getOpenAIClient(): OpenAI | null {
   const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
@@ -59,6 +60,9 @@ export async function analyzeWithAI(
   const openai = getOpenAIClient();
 
   if (!openai) {
+    if (IS_PRODUCTION) {
+      throw new Error('AI analysis is not configured. Set OPENAI_API_KEY or AI_INTEGRATIONS_OPENAI_API_KEY.');
+    }
     return getFallbackAnalysis(type, profile, startTime);
   }
 

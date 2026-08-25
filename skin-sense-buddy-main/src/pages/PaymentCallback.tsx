@@ -13,7 +13,11 @@ export default function PaymentCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'successful' | 'pending' | 'failed'>('loading');
-  const [transactionDetails, setTransactionDetails] = useState<any>(null);
+  const [transactionDetails, setTransactionDetails] = useState<{
+    transactionRef?: string;
+    amount?: number;
+    paymentRef?: string;
+  } | null>(null);
   const [paymentType, setPaymentType] = useState<string | null>(null);
   const [postPaymentMessage, setPostPaymentMessage] = useState<string>("");
   const [analysisScanId, setAnalysisScanId] = useState<string | null>(null);

@@ -16,10 +16,11 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // Refresh every 5 minutes of activity
 const toApiRoute = (table: string) => table.replace(/_/g, '-');
 
-type StoredUser = {
+export type StoredUser = {
   id: string;
   email: string;
   created_at?: string | null;
+  user_metadata?: Record<string, unknown>;
 };
 
 const USER_STORAGE_KEY = 'glowsense_user';
@@ -654,6 +655,40 @@ export const supabase = {
           return { data: null, error: { message: data.error || data.message || 'Unable to resend verification email' } };
         }
 
+        return { data, error: null };
+      } catch (error: any) {
+        return { data: null, error: { message: error.message } };
+      }
+    },
+
+    requestPasswordReset: async ({ email }: { email: string }) => {
+      try {
+        const response = await fetch(buildApiUrl('/auth/forgot-password'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          return { data: null, error: { message: data.error || data.message || 'Unable to start password reset' } };
+        }
+        return { data, error: null };
+      } catch (error: any) {
+        return { data: null, error: { message: error.message } };
+      }
+    },
+
+    resetPassword: async ({ token, password }: { token: string; password: string }) => {
+      try {
+        const response = await fetch(buildApiUrl('/auth/reset-password'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, password }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          return { data: null, error: { message: data.error || data.message || 'Unable to reset password' } };
+        }
         return { data, error: null };
       } catch (error: any) {
         return { data: null, error: { message: error.message } };

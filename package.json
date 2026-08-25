@@ -1,15 +1,20 @@
 {
   "name": "glowsense-ai",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "server": "npx tsx server/index.ts",
     "dev": "npm run server",
     "build:frontend": "cd skin-sense-buddy-main && npm run build",
-    "build": "npm run build:frontend",
-    "start": "NODE_ENV=production npx tsx server/index.ts",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --target=node20 --format=esm --packages=external --outdir=dist-server && rm -rf dist-server/db && cp -R server/db dist-server/db",
+    "build": "npm run build:frontend && npm run build:server",
+    "start": "NODE_ENV=production node dist-server/index.js",
     "start:pm2": "pm2 start pm2.ecosystem.config.cjs --env production",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check:server": "skin-sense-buddy-main/node_modules/.bin/tsc -p server/tsconfig.json --noEmit",
+    "check:frontend": "cd skin-sense-buddy-main && npm run lint && npx tsc -p tsconfig.app.json --noEmit",
+    "test:auth": "node auth-api-smoke.mjs",
+    "test": "npm run check:server && npm run check:frontend"
   },
   "keywords": [],
   "author": "",
@@ -36,12 +41,13 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.11",
+    "nodemailer": "^9.0.5",
     "openai": "^6.10.0",
     "pg": "^8.16.3",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "esbuild": "^0.25.12",
     "supabase": "^2.89.1",
     "tsx": "^4.21.0"
   }

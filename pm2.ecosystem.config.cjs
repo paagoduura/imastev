@@ -3,10 +3,10 @@ module.exports = {
   apps: [
     {
       name: 'imstev-api',
-      script: 'npx',
-      args: 'tsx server/index.ts',
-      instances: 'max',          // use all CPU cores
-      exec_mode: 'cluster',
+      cwd: __dirname,
+      script: 'dist-server/index.js',
+      instances: 1,
+      exec_mode: 'fork',
       watch: false,
       env_production: {
         NODE_ENV: 'production',

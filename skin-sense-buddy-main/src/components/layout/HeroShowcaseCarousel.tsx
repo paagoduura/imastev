@@ -1,8 +1,195 @@
-import { useEffect, useState } from "react";
-import { Heart } from "lucide-react"; import { BRAND_IMAGES } from "@/lib/brandImages";
-import { cn } from "@/lib/utils"; type ShowcaseSlide = { image: string; title: string; description: string; badge: string; stat: string; statLabel: string; accent: string; imagePosition?: string; imageClassName?: string;
-}; const HERO_SHOWCASE_SLIDES: ShowcaseSlide[] = [ { image: BRAND_IMAGES.skinPortrait, title: "Editorial skin beauty, framed like a luxury carousel moment", description: "A soft-focus portrait with a premium light treatment that keeps the skin story calm, elevated, and centered in the composition.", badge: "Skin focus", stat: "98%", statLabel: "match quality", accent: "from-amber-950/92 via-amber-800/82 to-slate-900/95", imagePosition: "center 26%", }, { image: "/gallery-4.jpg", title: "Polished twist styling with crisp parting and a cleaner salon finish", description: "A refined hair frame that gives texture, definition, and scalp detail more space while keeping the carousel premium and editorial.", badge: "Twist styling", stat: "04", statLabel: "style depth", accent: "from-amber-900/88 via-amber-700/74 to-slate-950/95", imagePosition: "center 34%", }, { image: "/4c_twist_updo_hairstyle.png", title: "A sculpted protective look that feels structured and modern", description: "This card leans into architectural braiding, healthy texture, and a bolder silhouette for a stronger hero-carousel presence.", badge: "4C updo", stat: "A+", statLabel: "shape balance", accent: "from-stone-900/88 via-amber-900/70 to-slate-950/95", imagePosition: "center 32%", }, { image: "/rope-twists-replacement.jpg", title: "Side-swept rope twists with movement, shine, and clarity", description: "A softly dramatic card that adds motion and contrast while still reading as clean, premium, and beauty-led.", badge: "Rope twists", stat: "24k", statLabel: "texture polish", accent: "from-stone-950/90 via-stone-800/76 to-slate-950/95", imagePosition: "center 30%", imageClassName: "scale-[0.86]", }, { image: "/professional_loc_maintenance.png", title: "Professional loc care with a more elevated and luxurious presentation", description: "The final frame keeps the carousel grounded in salon care, with cleaner visibility and a stronger premium finish.", badge: "Loc care", stat: "5.0", statLabel: "care score", accent: "from-amber-900/88 via-stone-800/76 to-slate-950/95", imagePosition: "center 42%", },
-]; export function HeroShowcaseCarousel() { return <HeroCarouselStage compact={false} />;
-} export function CompactHeroShowcaseCarousel() { return <HeroCarouselStage compact={true} />;
-} function HeroCarouselStage({ compact }: { compact: boolean }) { const slides = HERO_SHOWCASE_SLIDES; const [selectedIndex, setSelectedIndex] = useState(0); useEffect(() => { const intervalId = window.setInterval(() => { if (document.hidden) return; setSelectedIndex((current) => (current + 1) % slides.length); }, 5200); return () => window.clearInterval(intervalId); }, [slides.length]); const goToSlide = (index: number) => { setSelectedIndex(index); }; return ( <div className={cn( "relative mx-auto w-full", compact ? "max-w-[980px]" : "max-w-[1120px]", )} > <div className="absolute left-1/2 top-1/2 h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-900/10 blur-3xl" /> <div className="absolute left-[18%] top-[18%] h-28 w-28 rounded-full bg-stone-400/10 blur-2xl" /> <div className="absolute right-[14%] bottom-[22%] h-36 w-36 rounded-full bg-amber-400/10 blur-3xl" /> <div className={cn( "relative overflow-hidden bg-[linear-gradient(135deg,#8b6a4f_0%,#6f4d37_38%,#3f2619_100%)] shadow-[0_40px_90px_rgba(60,36,23,0.35)]", compact ? "rounded-[1.75rem] px-3 py-3 sm:px-4 sm:py-4" : "rounded-[2.25rem] px-4 py-5 sm:px-5 sm:py-6", )}> <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,248,240,0.12),transparent_30%),radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.08),transparent_26%),radial-gradient(circle_at_0%_50%,rgba(255,217,180,0.08),transparent_24%),radial-gradient(circle_at_100%_50%,rgba(255,235,220,0.07),transparent_24%)]" /> <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.01)_18%,rgba(0,0,0,0.12)_100%)]" /> <div className={cn("relative grid", compact ? "gap-3" : "gap-4")}> <div className={cn( "relative mx-auto w-full overflow-visible", compact ? "h-[24rem] max-w-[980px] sm:h-[28rem]" : "h-[38rem] max-w-[980px] sm:h-[42rem]", )} > <div className={cn("pointer-events-none absolute bg-[#4e2f21]/88 shadow-[0_0_0_1px_rgba(255,244,233,0.08)]", compact ? "inset-x-[6%] top-8 h-[18rem] rounded-[2rem]" : "inset-x-[8%] top-14 h-[30rem] rounded-[2.5rem]")} /> <div className={cn( "absolute overflow-visible", compact ? "inset-x-[4%] top-6 h-[20rem] rounded-[2rem]" : "inset-x-[7%] top-10 h-[32rem] rounded-[2.5rem]", )} style={{ perspective: compact ? "1800px" : "2200px" }} > <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}> {slides.map((slide, index) => { const total = slides.length; const rawOffset = index - selectedIndex; const offset = rawOffset > total / 2 ? rawOffset - total : rawOffset < -total / 2 ? rawOffset + total : rawOffset; const abs = Math.abs(offset); const direction = offset < 0 ? -1 : 1; const depth = Math.max(0, 2 - abs); const isCenter = offset === 0; const isVisible = abs <= 3; const translateX = isCenter ? 0 : direction * (compact ? 160 + (abs - 1) * 80 : 220 + (abs - 1) * 120); const translateZ = isCenter ? (compact ? 120 : 180) : depth * (compact ? 34 : 54) - abs * (compact ? 12 : 18); const rotateY = isCenter ? 0 : direction * (compact ? 36 + abs * 8 : 48 + abs * 10); const rotateZ = isCenter ? 0 : direction * (abs === 1 ? 4 : 2); const scale = isCenter ? 1 : Math.max(compact ? 0.78 : 0.72, (compact ? 0.88 : 0.92) - abs * 0.08); const opacity = isCenter ? 1 : Math.max(0, 0.95 - abs * 0.2); const zIndex = isCenter ? 50 : 40 - abs * 5; return ( <button key={slide.title} type="button" onClick={() => goToSlide(index)} aria-label={slide.title} aria-pressed={isCenter} className={cn( "absolute left-1/2 top-1/2 overflow-hidden border border-white/20 bg-[#2b1a12] text-left shadow-[0_18px_45px_rgba(41,23,14,0.5)] transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]", compact ? "w-[11rem] rounded-[0.95rem] sm:w-[13rem] md:w-[14rem] lg:w-[15rem]" : "w-[15rem] rounded-[1.15rem] sm:w-[17.5rem] md:w-[19rem] lg:w-[20rem]", !isVisible && "pointer-events-none", isCenter ? (compact ? "h-[20rem] sm:h-[23rem]" : "h-[30rem] sm:h-[33rem]") : (compact ? "h-[16rem] sm:h-[18rem]" : "h-[24rem] sm:h-[26rem]"), )} style={{ transform: `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`, opacity, zIndex, }} > <img src={slide.image} alt={slide.title} className={cn("absolute inset-0 h-full w-full object-cover transition-transform duration-700", slide.imageClassName)} style={{ objectPosition: slide.imagePosition ?? "center" }} /> <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(35,22,14,0.06)_0%,rgba(35,22,14,0.03)_45%,rgba(15,8,5,0.66)_100%)]" /> <div className="absolute inset-0 rounded-[1.15rem] ring-1 ring-white/10" /> <div className={cn("absolute inset-x-0 bottom-0", compact ? "p-2" : "p-3")}> <div className={cn("rounded-[0.9rem] bg-[#2c1c13]/76 backdrop-blur-md", compact ? "px-2.5 py-2" : "px-3 py-2")}> <p className={cn("font-semibold uppercase tracking-[0.2em] text-white/65", compact ? "text-[0.62rem]" : "text-[0.72rem]")}>{slide.badge}</p> <p className={cn("mt-1 font-semibold leading-tight text-white", compact ? "text-[0.78rem]" : "text-sm")}>{slide.title}</p> </div> </div> <div className={cn("absolute rounded-full border border-white/15 bg-white/10 font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-md", compact ? "left-2 top-2 px-2 py-0.5 text-[8px]" : "left-3 top-3 px-2.5 py-1 text-[10px]")}> {slide.stat} </div> </button> ); })} </div> </div> </div> </div> </div> </div> );
+import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
+import { ArrowRight, Droplets, Leaf, MoveUpRight, ScanLine, Scissors, ShoppingBag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+interface StorySlide {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  image: string;
+  objectPosition?: string;
+  accent: string;
+  metric: string;
+  metricLabel: string;
+  action: string;
+  href: string;
+  icon: typeof Leaf;
+}
+
+const STORY_SLIDES: StorySlide[] = [
+  {
+    id: "scan",
+    eyebrow: "01 · Understand your texture",
+    title: "Your care story starts with seeing yourself clearly.",
+    description: "A guided hair and skin scan designed for deeper tones, textured hair, and real routines—not generic beauty advice.",
+    image: "/imstev-client-texture.jpeg",
+    objectPosition: "center 40%",
+    accent: "#d99745",
+    metric: "4A–4C",
+    metricLabel: "texture-aware",
+    action: "Begin your scan",
+    href: "/scan",
+    icon: ScanLine,
+  },
+  {
+    id: "salon",
+    eyebrow: "02 · Be held by expertise",
+    title: "A salon ritual rooted in African beauty knowledge.",
+    description: "From wash day to protective styling, meet specialists who understand the patience, pride, and precision your hair deserves.",
+    image: "/imstev-client-profile.jpeg",
+    objectPosition: "center 34%",
+    accent: "#b9784a",
+    metric: "1:1",
+    metricLabel: "specialist care",
+    action: "Book the studio",
+    href: "/salon-booking",
+    icon: Scissors,
+  },
+  {
+    id: "skin",
+    eyebrow: "03 · Nurture your glow",
+    title: "Thoughtful skin care, made personal.",
+    description: "Turn observations into a gentle routine, then choose products and guidance that make sense for your skin and your climate.",
+    image: "/imstev-skin.jpg",
+    accent: "#c28b63",
+    metric: "360°",
+    metricLabel: "care perspective",
+    action: "Explore skin care",
+    href: "/shop",
+    icon: Droplets,
+  },
+  {
+    id: "community",
+    eyebrow: "04 · Grow together",
+    title: "A softer kind of beauty community.",
+    description: "Ask better questions, learn from lived experience, and find specialists who celebrate the full range of African beauty.",
+    image: "/imstev-community-braids.jpeg",
+    objectPosition: "center 46%",
+    accent: "#879b78",
+    metric: "24/7",
+    metricLabel: "shared wisdom",
+    action: "Enter the community",
+    href: "/community",
+    icon: Leaf,
+  },
+];
+
+export function HeroShowcaseCarousel() {
+  return <HeroCarouselStage compact={false} />;
+}
+
+export function CompactHeroShowcaseCarousel() {
+  return <HeroCarouselStage compact />;
+}
+
+function HeroCarouselStage({ compact }: { compact: boolean }) {
+  const navigate = useNavigate();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const activeSlide = STORY_SLIDES[activeIndex];
+  const ActiveIcon = activeSlide.icon;
+  const activeKey = useMemo(() => activeSlide.id, [activeSlide.id]);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % STORY_SLIDES.length);
+    }, 6200);
+    return () => window.clearInterval(interval);
+  }, [isPaused]);
+
+  const move = (direction: number) => {
+    setActiveIndex((current) => (current + direction + STORY_SLIDES.length) % STORY_SLIDES.length);
+  };
+
+  return (
+    <section
+      className={`signature-carousel ${compact ? "signature-carousel--compact" : ""}`}
+      aria-roledescription="carousel"
+      aria-label="The IMSTEV NATURALS care journey"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+    >
+      <div className="signature-carousel__grain" />
+      <div className="signature-carousel__halo signature-carousel__halo--one" />
+      <div className="signature-carousel__halo signature-carousel__halo--two" />
+      <div className="signature-carousel__orbit signature-carousel__orbit--outer" />
+      <div className="signature-carousel__orbit signature-carousel__orbit--inner" />
+
+      <div className="signature-carousel__content">
+        <div className="signature-carousel__copy" key={activeKey}>
+          <div className="signature-carousel__eyebrow">
+            <span className="signature-carousel__eyebrow-dot" style={{ backgroundColor: activeSlide.accent }} />
+            {activeSlide.eyebrow}
+          </div>
+          <h2>{activeSlide.title}</h2>
+          {!compact && <p>{activeSlide.description}</p>}
+          <div className="signature-carousel__actions">
+            <button type="button" className="signature-carousel__primary" onClick={() => navigate(activeSlide.href)}>
+              <ActiveIcon size={17} strokeWidth={1.8} />
+              {activeSlide.action}
+              <ArrowRight size={16} />
+            </button>
+            {!compact && (
+              <button type="button" className="signature-carousel__secondary" onClick={() => navigate("/dashboard")}>
+                View my care <MoveUpRight size={15} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="signature-carousel__stage" aria-live="polite">
+          <div className="signature-carousel__stage-label">
+            <span>IMSTEV / care index</span>
+            <span>{String(activeIndex + 1).padStart(2, "0")} / {String(STORY_SLIDES.length).padStart(2, "0")}</span>
+          </div>
+          <div className="signature-carousel__cards">
+            {STORY_SLIDES.map((slide, index) => {
+              const offset = (index - activeIndex + STORY_SLIDES.length) % STORY_SLIDES.length;
+              const isActive = offset === 0;
+              const isNext = offset === 1;
+              const isPrevious = offset === STORY_SLIDES.length - 1;
+              const positionClass = isActive ? "is-active" : isNext ? "is-next" : isPrevious ? "is-previous" : "is-hidden";
+              return (
+                <button
+                  key={slide.id}
+                  type="button"
+                  className={`signature-carousel__card ${positionClass}`}
+                  style={{ "--slide-accent": slide.accent } as CSSProperties}
+                  onClick={() => setActiveIndex(index)}
+                  aria-label={`Show ${slide.eyebrow}`}
+                  aria-current={isActive ? "true" : undefined}
+                >
+                  <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
+                  <span className="signature-carousel__card-wash" />
+                  <span className="signature-carousel__scanline" />
+                  <span className="signature-carousel__card-meta">
+                    <span className="signature-carousel__metric">{slide.metric}</span>
+                    <span>{slide.metricLabel}</span>
+                  </span>
+                  {isActive && <span className="signature-carousel__card-mark"><ActiveIcon size={15} /></span>}
+                </button>
+              );
+            })}
+          </div>
+          {!compact && (
+            <div className="signature-carousel__stage-footer">
+              <div className="signature-carousel__stage-note"><ShoppingBag size={14} /> Care, not clutter.</div>
+              <div className="signature-carousel__controls">
+                <button type="button" onClick={() => move(-1)} aria-label="Previous story">←</button>
+                <div className="signature-carousel__progress" aria-hidden="true">
+                  {STORY_SLIDES.map((slide, index) => <span key={slide.id} className={index === activeIndex ? "is-current" : ""} />)}
+                </div>
+                <button type="button" onClick={() => move(1)} aria-label="Next story">→</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }

@@ -1,5 +1,3 @@
-const DEFAULT_SUPABASE_URL = "https://lmhlxixwmtsojmvyglfb.supabase.co";
-
 const rawApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
 const rawFunctionsBase =
   import.meta.env.VITE_FUNCTIONS_BASE_URL?.trim() ||
@@ -18,7 +16,7 @@ export const APP_URL = (
 const rawSupabaseUrl =
   import.meta.env.VITE_SUPABASE_URL?.trim() ||
   import.meta.env.SUPABASE_URL?.trim() ||
-  DEFAULT_SUPABASE_URL;
+  "";
 
 export const FUNCTIONS_BASE = rawFunctionsBase
   ? rawFunctionsBase.replace(/\/+$/, "")

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, TrendingUp, TrendingDown, Calendar, Activity, AlertCircle, Loader2, Sparkles, Droplets, Leaf } from "lucide-react";
+import { Camera, TrendingUp, TrendingDown, Calendar, Activity, AlertCircle, Loader2, Droplets, Leaf } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -241,9 +241,8 @@ export default function Timeline() {
         <Navbar />
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
           <div className="text-center space-y-4 animate-in fade-in duration-500">
-            <div className="relative">
+              <div className="relative">
               <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto" />
-              <div className="absolute inset-0 blur-xl bg-purple-500/20 animate-pulse" />
             </div>
             <p className="text-muted-foreground font-medium">Analyzing your journey...</p>
           </div>
@@ -264,7 +263,7 @@ export default function Timeline() {
                 <h1 className="text-3xl sm:text-4xl font-display font-bold text-gradient-premium">
                   Your Journey
                 </h1>
-                <Sparkles className="w-5 h-5 text-purple-500 animate-pulse" />
+                <Activity className="w-5 h-5 text-purple-500" />
               </div>
               <p className="text-muted-foreground mt-1">Track your hair & skin health over time</p>
             </div>

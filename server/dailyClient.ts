@@ -1,5 +1,12 @@
-const DAILY_API_KEY = process.env.DAILY_API_KEY || '';
+const DAILY_API_KEY = process.env.DAILY_API_KEY?.trim() || '';
 const DAILY_API_BASE = 'https://api.daily.co/v1';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+function requireDailyKey() {
+  if (!DAILY_API_KEY && IS_PRODUCTION) {
+    throw new Error('Telehealth is not configured. DAILY_API_KEY is required in production.');
+  }
+}
 
 interface DailyRoomOptions {
   name?: string;
@@ -32,7 +39,8 @@ interface DailyMeetingToken {
 
 export async function createDailyRoom(options: DailyRoomOptions = {}): Promise<DailyRoom> {
   if (!DAILY_API_KEY) {
-    console.log('DAILY_API_KEY not set - returning mock room for development');
+    requireDailyKey();
+    console.warn('DAILY_API_KEY not set - returning a development-only mock room');
     const mockRoomName = `glowsense-${Date.now()}`;
     return {
       id: mockRoomName,
@@ -72,12 +80,13 @@ export async function createDailyRoom(options: DailyRoomOptions = {}): Promise<D
     throw new Error(`Failed to create Daily room: ${error}`);
   }
 
-  return response.json();
+  return (await response.json()) as DailyRoom;
 }
 
 export async function createMeetingToken(roomName: string, userName: string, isOwner: boolean = false): Promise<string> {
   if (!DAILY_API_KEY) {
-    console.log('DAILY_API_KEY not set - returning mock token for development');
+    requireDailyKey();
+    console.warn('DAILY_API_KEY not set - returning a development-only mock token');
     return `mock-token-${Date.now()}`;
   }
 
@@ -102,13 +111,14 @@ export async function createMeetingToken(roomName: string, userName: string, isO
     throw new Error(`Failed to create meeting token: ${error}`);
   }
 
-  const data: DailyMeetingToken = await response.json();
+  const data = (await response.json()) as DailyMeetingToken;
   return data.token;
 }
 
 export async function deleteRoom(roomName: string): Promise<void> {
   if (!DAILY_API_KEY) {
-    console.log('DAILY_API_KEY not set - skipping room deletion');
+    requireDailyKey();
+    console.warn('DAILY_API_KEY not set - skipping room deletion');
     return;
   }
 
@@ -141,5 +151,5 @@ export async function getRoomDetails(roomName: string): Promise<DailyRoom | null
     throw new Error(`Failed to get room: ${await response.text()}`);
   }
 
-  return response.json();
+  return (await response.json()) as DailyRoom;
 }

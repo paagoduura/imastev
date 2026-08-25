@@ -1,1 +1,215 @@
-import { useEffect, useState } from "react"; import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; import { Button } from "@/components/ui/button"; import { Badge } from "@/components/ui/badge"; import { Camera, History, User, LogOut, Crown, Video, Users, Stethoscope, ShoppingBag, Package, Scan, ChevronRight, Calendar, ArrowUpRight, Loader2, Scissors, FlaskConical } from "lucide-react"; import { useNavigate } from "react-router-dom"; import { supabase } from "@/integrations/supabase/client"; import { useToast } from "@/hooks/use-toast"; import { Navbar } from "@/components/layout/Navbar"; import { Footer } from "@/components/layout/Footer"; const Dashboard = () => { const navigate = useNavigate(); const { toast } = useToast(); const [user, setUser] = useState<any>(null); const [profile, setProfile] = useState<any>(null); const [scans, setScans] = useState<any[]>([]); const [loading, setLoading] = useState(true); const [subscription, setSubscription] = useState<any>(null); const [isClinician, setIsClinician] = useState(false); useEffect(() => { checkUser(); }, []); useEffect(() => { if (profile && (!profile.full_name || !profile.age || !profile.skin_type || !profile.fitzpatrick_scale)) { navigate("/onboarding"); } }, [profile, navigate]); const checkUser = async () => { const { data: { user } } = await supabase.auth.getUser(); if (!user) { navigate('/auth'); return; } setUser(user); const { data: profileData } = await supabase .from('profiles') .select('*') .eq('user_id', user.id) .single(); setProfile(profileData); const { data: roleData } = await supabase .from('user_roles') .select('*') .eq('user_id', user.id) .eq('role', 'clinician') .maybeSingle(); setIsClinician(!!roleData); const { data: subData } = await supabase .from('subscriptions') .select(` *, subscription_plans (*) `) .eq('user_id', user.id) .eq('status', 'active') .maybeSingle(); setSubscription(subData); const { data: scansData } = await supabase .from('scans') .select(` *, diagnoses ( primary_condition, confidence_score, triage_level, analysis_type ) `) .eq('user_id', user.id) .order('created_at', { ascending: false }) .limit(5); setScans(scansData || []); setLoading(false); }; const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); }; if (loading) { return ( <div className="min-h-screen gradient-hero flex items-center justify-center"> <div className="text-center"> <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" /> <p className="text-muted-foreground font-medium">Loading your dashboard...</p> </div> </div> ); } return ( <div className="min-h-screen bg-background"> <Navbar /> <div className="gradient-mesh min-h-screen"> <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl"> <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"> <div className="flex items-center gap-4"> <div className="relative"> <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-amber-500 rounded-2xl blur-lg opacity-40" /> <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center shadow-lg shadow-purple-500/30"> <span className="text-white text-xl sm:text-2xl font-bold"> {profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'} </span> </div> </div> <div> <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground"> Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''} </h1> <p className="text-muted-foreground text-sm sm:text-base"> Ready to continue your natural beauty journey? </p> </div> </div> <Button variant="outline" onClick={handleLogout} className="hidden sm:flex rounded-xl border-slate-200 dark:border-slate-700"> <LogOut className="mr-2 h-4 w-4" /> Sign Out </Button> </div> <div className="mb-8"> <div className="flex items-center justify-between mb-4"> <h2 className="text-lg sm:text-xl font-display font-semibold">Start New Analysis</h2> </div> <div className="grid sm:grid-cols-2 gap-4 sm:gap-6"> <div className="group card-interactive p-5 sm:p-6 cursor-pointer" onClick={() => navigate('/scan')} > <div className="flex items-start gap-4"> <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/25 group-hover:scale-110 transition-transform duration-300 flex-shrink-0"> <Scan className="h-7 w-7 sm:h-8 sm:w-8 text-white" /> </div> <div className="flex-1 min-w-0"> <div className="flex items-center gap-2 mb-1"> <h3 className="font-display font-semibold text-lg">Skin Analysis</h3> <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs">Popular</Badge> </div> <p className="text-sm text-muted-foreground">Analyze skin conditions, acne, pigmentation & aging signs</p> </div> <ChevronRight className="w-5 h-5 text-slate-400 group- group-hover:translate-x-1 transition-all flex-shrink-0" /> </div> </div> <div className="group card-interactive p-5 sm:p-6 cursor-pointer" onClick={() => navigate('/scan')} > <div className="flex items-start gap-4"> <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300 flex-shrink-0"> <Scissors className="h-7 w-7 sm:h-8 sm:w-8 text-white" /> </div> <div className="flex-1 min-w-0"> <div className="flex items-center gap-2 mb-1"> <h3 className="font-display font-semibold text-lg">Hair Analysis</h3> <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">4A-4C</Badge> </div> <p className="text-sm text-muted-foreground">Texture, porosity & scalp health for Nigerian hair</p> </div> <ChevronRight className="w-5 h-5 text-slate-400 group- group-hover:translate-x-1 transition-all flex-shrink-0" /> </div> </div> </div> </div> <div className="mb-8"> <h2 className="text-lg sm:text-xl font-display font-semibold mb-4">Quick Actions</h2> <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"> <QuickActionCard icon={<History className="h-5 w-5" />} title="Timeline" subtitle="View progress" gradient="from-purple-500 to-violet-500" onClick={() => navigate('/timeline')} /> <QuickActionCard icon={<Video className="h-5 w-5" />} title="Salon" subtitle="Book visit" gradient="from-amber-500 to-orange-500" onClick={() => navigate('/telehealth')} /> <QuickActionCard icon={<ShoppingBag className="h-5 w-5" />} title="Shop" subtitle="Products" gradient="from-pink-500 to-rose-500" onClick={() => navigate('/shop')} /> <QuickActionCard icon={<User className="h-5 w-5" />} title="Profile" subtitle="Settings" gradient="from-violet-500 to-purple-500" onClick={() => navigate('/profile')} /> </div> </div> <div className="mb-8"> <h2 className="text-lg sm:text-xl font-display font-semibold mb-4">Premium Features</h2> <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4"> <PremiumCard icon={<Crown className="h-5 w-5" />} title="Subscription" value={subscription?.subscription_plans?.name || 'Free'} gradient="from-amber-400 to-orange-500" onClick={() => navigate('/subscription')} /> <PremiumCard icon={<Users className="h-5 w-5" />} title="Family" value="Manage" gradient="from-green-400 to-emerald-500" onClick={() => navigate('/family')} /> <PremiumCard icon={<FlaskConical className="h-5 w-5" />} title="Custom Formula" value="AI-made" gradient="from-purple-400 to-violet-500" onClick={() => navigate('/formulation')} /> <PremiumCard icon={<Package className="h-5 w-5" />} title="Orders" value="History" gradient="from-pink-400 to-rose-500" onClick={() => navigate('/orders')} /> <PremiumCard icon={<Calendar className="h-5 w-5" />} title="Appointments" value="Schedule" gradient="from-sky-400 to-blue-500" onClick={() => navigate('/telehealth')} /> </div> </div> {isClinician && ( <div className="mb-8 card-premium p-5 sm:p-6 cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/5 to-amber-500/5" onClick={() => navigate('/clinician')} > <div className="flex items-center justify-between"> <div className="flex items-center gap-4"> <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-amber-500 flex items-center justify-center shadow-lg"> <Stethoscope className="h-6 w-6 text-white" /> </div> <div> <h3 className="font-display font-semibold text-lg">Clinician Dashboard</h3> <p className="text-sm text-muted-foreground">Manage your appointments and patients</p> </div> </div> <Button className="bg-gradient-to-r from-purple-600 to-amber-500 text-white shadow-lg hidden sm:flex"> Access Dashboard <ArrowUpRight className="ml-2 h-4 w-4" /> </Button> </div> </div> )} {(!profile?.age || !profile?.skin_type) && ( <div className="mb-8 card-premium p-5 sm:p-6 border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-orange-500/5"> <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div> <h3 className="font-display font-semibold text-lg mb-1">Complete Your Profile</h3> <p className="text-sm text-muted-foreground">Add more details to get personalized recommendations</p> </div> <Button onClick={() => navigate('/onboarding')} className="btn-premium"> Complete Profile </Button> </div> </div> )} <div className="card-premium overflow-hidden"> <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-700"> <div className="flex items-center justify-between"> <div> <h2 className="font-display font-semibold text-lg">Recent Analyses</h2> <p className="text-sm text-muted-foreground">Your latest skin and hair assessments</p> </div> {scans.length > 0 && ( <Button variant="ghost" onClick={() => navigate('/timeline')} className="text-purple-600 "> View All <ChevronRight className="ml-1 h-4 w-4" /> </Button> )} </div> </div> <div className="p-5 sm:p-6"> {scans.length === 0 ? ( <div className="text-center py-12"> <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4"> <Camera className="w-10 h-10 text-slate-400" /> </div> <h3 className="text-lg font-display font-semibold mb-2">No scans yet</h3> <p className="text-muted-foreground mb-6 max-w-sm mx-auto"> Start your health journey with your first AI-powered analysis </p> <Button onClick={() => navigate('/scan')} className="btn-premium"> <Camera className="mr-2 h-4 w-4" /> Start First Analysis </Button> </div> ) : ( <div className="space-y-3"> {scans.map((scan) => { const isHairScan = scan.scan_type === 'hair' || scan.diagnoses?.[0]?.analysis_type === 'hair'; return ( <div key={scan.id} className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 dark: transition-all cursor-pointer group" onClick={() => navigate(`/results/${scan.id}`)} > <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 relative"> {scan.image_url ? ( <img src={scan.image_url} alt="Scan" className="w-full h-full object-cover" /> ) : ( <div className="w-full h-full flex items-center justify-center"> {isHairScan ? ( <Scissors className="w-8 h-8 text-primary" /> ) : ( <Scan className="w-8 h-8 text-rose-400" /> )} </div> )} <div className={`absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-md ${ isHairScan ? 'bg-gradient-to-br from-amber-500 to-yellow-500' : 'bg-gradient-to-br from-rose-500 to-orange-500' }`}> {isHairScan ? ( <Scissors className="w-3 h-3 text-white" /> ) : ( <Scan className="w-3 h-3 text-white" /> )} </div> </div> <div className="flex-1 min-w-0"> <div className="flex items-center gap-2 mb-1 flex-wrap"> <h4 className="font-semibold truncate"> {scan.diagnoses?.[0]?.primary_condition || 'Analysis Pending'} </h4> <Badge variant="secondary" className={`text-xs ${isHairScan ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-rose-500/10 text-rose-600 border-rose-500/20' }`} > {isHairScan ? 'Hair' : 'Skin'} </Badge> {scan.status === 'completed' && ( <span className="badge-success text-xs">Completed</span> )} {scan.status === 'analyzing' && ( <span className="badge-warning text-xs">Analyzing...</span> )} </div> <p className="text-sm text-muted-foreground"> {new Date(scan.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', })} </p> {scan.diagnoses?.[0]?.confidence_score && ( <div className="flex items-center gap-2 mt-2"> <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"> <div className="h-full bg-gradient-to-r from-purple-500 to-amber-500 rounded-full" style={{ width: `${scan.diagnoses[0].confidence_score}%` }} /> </div> <span className="text-xs font-medium text-purple-600"> {scan.diagnoses[0].confidence_score}% </span> </div> )} </div> <ChevronRight className="w-5 h-5 text-slate-400 group- group-hover:translate-x-1 transition-all flex-shrink-0 hidden sm:block" /> </div> ); })} </div> )} </div> </div> </div> </div> <Footer /> </div> ); }; const QuickActionCard = ({ icon, title, subtitle, gradient, onClick }: { icon: React.ReactNode; title: string; subtitle: string; gradient: string; onClick: () => void; }) => ( <div className="card-interactive p-4 cursor-pointer group" onClick={onClick} > <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mb-3 group-hover:scale-110 transition-transform`}> {icon} </div> <h3 className="font-semibold text-sm sm:text-base">{title}</h3> <p className="text-xs sm:text-sm text-muted-foreground">{subtitle}</p> </div> ); const PremiumCard = ({ icon, title, value, gradient, onClick }: { icon: React.ReactNode; title: string; value: string; gradient: string; onClick: () => void; }) => ( <div className="card-interactive p-4 cursor-pointer group text-center" onClick={onClick} > <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mx-auto mb-2 group-hover:scale-110 transition-transform`}> {icon} </div> <h3 className="font-medium text-xs sm:text-sm">{title}</h3> <p className="text-xs text-muted-foreground truncate">{value}</p> </div> ); export default Dashboard; 
+import { useCallback, useEffect, useState } from "react";
+import {
+  ArrowUpRight,
+  Calendar,
+  Camera,
+  Check,
+  ChevronRight,
+  Crown,
+  FlaskConical,
+  History,
+  Loader2,
+  LogOut,
+  Package,
+  Scan,
+  Scissors,
+  ShoppingBag,
+  Leaf,
+  Stethoscope,
+  User,
+  Users,
+  Video,
+} from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Profile from "@/pages/Profile";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { supabase } from "@/integrations/supabase/client";
+
+type DashboardUser = { id: string; email?: string | null };
+type DashboardProfile = { full_name?: string | null; age?: number | null; skin_type?: string | null; fitzpatrick_scale?: string | null };
+type DashboardDiagnosis = { primary_condition?: string | null; confidence_score?: number | null; analysis_type?: string | null };
+type DashboardScan = { id: string; scan_type?: string | null; created_at: string; image_url?: string | null; status?: string | null; diagnoses?: DashboardDiagnosis[] | null };
+type DashboardSubscription = { subscription_plans?: { name?: string | null } | null } | null;
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const showProfile = searchParams.get("section") === "profile";
+  const [user, setUser] = useState<DashboardUser | null>(null);
+  const [profile, setProfile] = useState<DashboardProfile | null>(null);
+  const [scans, setScans] = useState<DashboardScan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<DashboardSubscription>(null);
+  const [isClinician, setIsClinician] = useState(false);
+
+  const checkUser = useCallback(async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) {
+      navigate("/auth");
+      return;
+    }
+
+    setUser(currentUser as DashboardUser);
+    const [{ data: profileData }, { data: roleData }, { data: subData }, { data: scansData }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", currentUser.id).single(),
+      supabase.from("user_roles").select("*").eq("user_id", currentUser.id).eq("role", "clinician").maybeSingle(),
+      supabase.from("subscriptions").select("*, subscription_plans (*)").eq("user_id", currentUser.id).eq("status", "active").maybeSingle(),
+      supabase.from("scans").select("*, diagnoses ( primary_condition, confidence_score, triage_level, analysis_type )").eq("user_id", currentUser.id).order("created_at", { ascending: false }).limit(5),
+    ]);
+
+    setProfile((profileData as DashboardProfile | null) || null);
+    setIsClinician(!!roleData);
+    setSubscription((subData as DashboardSubscription) || null);
+    setScans((scansData as DashboardScan[] | null) || []);
+    setLoading(false);
+  }, [navigate]);
+
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="dashboard-loading-mark"><Leaf className="h-5 w-5" /></div>
+        <Loader2 className="h-7 w-7 animate-spin" />
+        <p>Preparing your care space…</p>
+      </div>
+    );
+  }
+
+  if (showProfile) {
+    return (
+      <div className="dashboard-page">
+        <Navbar />
+        <main className="dashboard-shell">
+          <div className="dashboard-container">
+            <Profile embedded />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const initials = profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || "U";
+  const planName = subscription?.subscription_plans?.name || "Essential";
+
+  return (
+    <div className="dashboard-page">
+      <Navbar />
+      <main className="dashboard-shell">
+        <div className="dashboard-container">
+          <section className="dashboard-welcome">
+            <div className="dashboard-welcome-copy">
+              <span className="dashboard-overline"><Leaf className="h-3.5 w-3.5" /> Your private care space</span>
+              <h1>Good morning, <em>{firstName}.</em></h1>
+              <p>A considered next step for the hair and skin you already have.</p>
+            </div>
+            <div className="dashboard-welcome-actions">
+              <div className="dashboard-identity">
+                <span className="dashboard-avatar">{initials.toUpperCase()}</span>
+                <span><strong>{planName}</strong><small>Care member</small></span>
+              </div>
+              <button type="button" className="dashboard-signout" onClick={handleLogout}><LogOut className="h-4 w-4" /> <span>Sign out</span></button>
+            </div>
+          </section>
+
+          <section className="dashboard-essence-hero">
+            <div className="dashboard-essence-copy">
+              <span className="dashboard-section-label">The IMSTEV method</span>
+              <h2>Care that starts<br /><em>with understanding.</em></h2>
+              <p>One considered place to understand your hair and skin, speak with a specialist, build a ritual, and stay close to the community around you.</p>
+              <div className="dashboard-hero-actions">
+                <Button type="button" className="dashboard-primary-button" onClick={() => navigate("/scan")}><Scan className="mr-2 h-4 w-4" /> Begin a new scan <ArrowUpRight className="ml-2 h-4 w-4" /></Button>
+                <button type="button" className="dashboard-text-button" onClick={() => navigate("/salon-booking")}>Talk to a specialist <ChevronRight className="h-4 w-4" /></button>
+              </div>
+              <div className="dashboard-trust-line"><span className="dashboard-pulse" /> Private by design <span className="dashboard-divider" /> Made for African textures</div>
+            </div>
+            <div className="dashboard-essence-visual">
+              <div className="dashboard-essence-image-main"><img src="/imstev-client-texture.jpeg" alt="Natural hair texture cared for at IMSTEV NATURALS" /></div>
+              <div className="dashboard-essence-image-detail"><img src="/imstev-community-braids.jpeg" alt="Braided natural hairstyle" /></div>
+              <div className="dashboard-essence-note"><span className="dashboard-essence-note-icon"><Leaf className="h-4 w-4" /></span><span><strong>Care, not clutter.</strong><small>Guidance in plain language.</small></span></div>
+              <div className="dashboard-essence-stamp"><span>4A</span><span>—</span><span>4C</span><small>Texture-aware</small></div>
+            </div>
+          </section>
+          <section className="dashboard-method-strip" aria-label="The IMSTEV care method">
+            <MethodStep index="01" title="Understand" text="Scan your story" icon={<Scan className="h-4 w-4" />} active />
+            <MethodStep index="02" title="Be cared for" text="Meet an expert" icon={<Video className="h-4 w-4" />} />
+            <MethodStep index="03" title="Nurture" text="Build your ritual" icon={<FlaskConical className="h-4 w-4" />} />
+            <MethodStep index="04" title="Grow together" text="Find your people" icon={<Users className="h-4 w-4" />} />
+          </section>
+
+          <section className="dashboard-section dashboard-next-section">
+            <div className="dashboard-section-heading">
+              <div><span className="dashboard-section-label">Your next best step</span><h2>Care, made <em>clear.</em></h2></div>
+              <span className="dashboard-heading-note">Kept close to your journey</span>
+            </div>
+            <div className="dashboard-care-grid">
+              <CareActionCard tone="clay" icon={<Scan className="h-5 w-5" />} eyebrow="01 / Understand" title="Read your story" text="A guided hair and skin scan for a clearer starting point." action="Start a scan" onClick={() => navigate("/scan")} />
+              <CareActionCard tone="espresso" icon={<Video className="h-5 w-5" />} eyebrow="02 / Be cared for" title="Talk to an expert" text="Bring your questions to a specialist who understands your texture." action="Book a consultation" onClick={() => navigate("/salon-booking")} />
+              <CareActionCard tone="olive" icon={<ShoppingBag className="h-5 w-5" />} eyebrow="03 / Nurture" title="Edit your ritual" text="Shop thoughtful products selected for how you actually care." action="Shop the edit" onClick={() => navigate("/shop")} />
+            </div>
+          </section>
+
+          <section className="dashboard-section dashboard-utility-section">
+            <div className="dashboard-section-heading compact"><div><span className="dashboard-section-label">Keep close</span><h2>Your care <em>library.</em></h2></div></div>
+            <div className="dashboard-utility-grid">
+              <UtilityCard icon={<History className="h-5 w-5" />} title="Timeline" subtitle="See your progress" route="/timeline" onClick={() => navigate("/timeline")} />
+              <UtilityCard icon={<Calendar className="h-5 w-5" />} title="Appointments" subtitle="Your next visit" route="/telehealth" onClick={() => navigate("/telehealth")} />
+              <UtilityCard icon={<Package className="h-5 w-5" />} title="Orders" subtitle="Track your edit" route="/orders" onClick={() => navigate("/orders")} />
+              <UtilityCard icon={<User className="h-5 w-5" />} title="Profile" subtitle="Your preferences" route="/dashboard?section=profile" onClick={() => navigate("/dashboard?section=profile")} />
+            </div>
+          </section>
+
+          <section className="dashboard-lower-grid">
+            <div className="dashboard-section dashboard-scans-card">
+              <div className="dashboard-section-heading compact"><div><span className="dashboard-section-label">Your record</span><h2>Recent <em>insights.</em></h2></div>{scans.length > 0 && <button type="button" className="dashboard-view-link" onClick={() => navigate("/timeline")}>View all <ArrowUpRight className="h-3.5 w-3.5" /></button>}</div>
+              {scans.length === 0 ? (
+                <div className="dashboard-empty-state"><div className="dashboard-empty-icon"><Camera className="h-6 w-6" /></div><h3>Your first insight starts here.</h3><p>Begin with a scan and we’ll help you understand what your hair and skin are asking for.</p><Button type="button" className="dashboard-outline-button" onClick={() => navigate("/scan")}>Start your first scan <ArrowUpRight className="ml-2 h-4 w-4" /></Button></div>
+              ) : (
+                <div className="dashboard-scan-list">{scans.map((scan) => <ScanRow key={scan.id} scan={scan} onClick={() => navigate(`/results/${scan.id}`)} />)}</div>
+              )}
+            </div>
+
+            <div className="dashboard-side-stack">
+              {(!profile?.age || !profile?.skin_type) && <div className="dashboard-profile-prompt"><div className="dashboard-prompt-icon"><Leaf className="h-4 w-4" /></div><div><span className="dashboard-section-label">Make it yours</span><h3>Complete your care profile.</h3><p>Give your care notes a little more of you.</p><button type="button" onClick={() => navigate("/dashboard?section=profile")}>Complete profile <ArrowUpRight className="h-3.5 w-3.5" /></button></div></div>}
+              {isClinician && <div className="dashboard-clinician-prompt"><div className="dashboard-prompt-icon"><Stethoscope className="h-4 w-4" /></div><div><span className="dashboard-section-label">Studio access</span><h3>Clinician dashboard</h3><p>Manage your appointments and patients.</p><button type="button" onClick={() => navigate("/clinician")}>Open workspace <ArrowUpRight className="h-3.5 w-3.5" /></button></div></div>}
+              <div className="dashboard-membership-card"><div className="dashboard-membership-top"><span className="dashboard-section-label">Your membership</span><Crown className="h-4 w-4" /></div><h3>{planName}<em>+</em></h3><p>Thoughtful care, considered products, and a specialist when you need one.</p><div className="dashboard-membership-meta"><span><Check className="h-3 w-3" /> Care plan</span><span><Check className="h-3 w-3" /> Member edit</span></div><button type="button" onClick={() => navigate("/subscription")}>Explore membership <ArrowUpRight className="h-3.5 w-3.5" /></button></div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+const MethodStep = ({ index, title, text, icon, active = false }: { index: string; title: string; text: string; icon: React.ReactNode; active?: boolean }) => (
+  <div className={`dashboard-method-step ${active ? "is-active" : ""}`}><span className="dashboard-method-index">{index}</span><span className="dashboard-method-icon">{icon}</span><span><strong>{title}</strong><small>{text}</small></span></div>
+);
+
+const CareActionCard = ({ tone, icon, eyebrow, title, text, action, onClick }: { tone: string; icon: React.ReactNode; eyebrow: string; title: string; text: string; action: string; onClick: () => void }) => (
+  <button type="button" className={`dashboard-care-card tone-${tone}`} onClick={onClick}><span className="dashboard-care-icon">{icon}</span><span className="dashboard-card-eyebrow">{eyebrow}</span><strong>{title}</strong><span className="dashboard-card-text">{text}</span><span className="dashboard-card-action">{action} <ArrowUpRight className="h-4 w-4" /></span></button>
+);
+
+const UtilityCard = ({ icon, title, subtitle, route, onClick }: { icon: React.ReactNode; title: string; subtitle: string; route: string; onClick: () => void }) => (
+  <button type="button" className="dashboard-utility-card" onClick={onClick}><span className="dashboard-utility-icon">{icon}</span><span className="dashboard-utility-route">{route.replace("/", "")}</span><strong>{title}</strong><small>{subtitle}</small><ArrowUpRight className="dashboard-utility-arrow h-4 w-4" /></button>
+);
+
+const ScanRow = ({ scan, onClick }: { scan: DashboardScan; onClick: () => void }) => {
+  const isHairScan = scan.scan_type === "hair" || scan.diagnoses?.[0]?.analysis_type === "hair";
+  const diagnosis = scan.diagnoses?.[0];
+  return <button type="button" className="dashboard-scan-row" onClick={onClick}><span className={`dashboard-scan-thumb ${isHairScan ? "hair" : "skin"}`}>{scan.image_url ? <img src={scan.image_url} alt="" /> : isHairScan ? <Scissors className="h-5 w-5" /> : <Scan className="h-5 w-5" />}</span><span className="dashboard-scan-info"><span><strong>{diagnosis?.primary_condition || "Analysis pending"}</strong><Badge variant="outline">{isHairScan ? "Hair" : "Skin"}</Badge></span><small>{new Date(scan.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</small></span>{diagnosis?.confidence_score ? <span className="dashboard-confidence"><span style={{ width: `${diagnosis.confidence_score}%` }} /><small>{diagnosis.confidence_score}%</small></span> : <ChevronRight className="h-4 w-4" />}</button>;
+};
+
+export default Dashboard;

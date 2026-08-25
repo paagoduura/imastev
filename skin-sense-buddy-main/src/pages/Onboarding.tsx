@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ChevronRight, ChevronLeft, CheckCircle2, User, Palette, Sparkles, Droplets, FlaskConical, Heart, Shield } from "lucide-react";
+import { Loader2, ChevronRight, ChevronLeft, CheckCircle2, User, Palette, Droplets, FlaskConical, Heart, Shield } from "lucide-react";
 import { HairProfileStep } from "@/components/onboarding/HairProfileStep";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +55,7 @@ type OnboardingFormData = z.infer<typeof onboardingSchema>;
 const STEPS = [
   { id: 1, title: "Basic Info", icon: User, description: "Your personal details" },
   { id: 2, title: "Skin Profile", icon: Palette, description: "Skin type & tone" },
-  { id: 3, title: "Hair Type", icon: Sparkles, description: "Texture & density" },
+  { id: 3, title: "Hair Type", icon: Palette, description: "Texture & density" },
   { id: 4, title: "Hair Health", icon: Droplets, description: "Porosity & concerns" },
   { id: 5, title: "Treatments", icon: FlaskConical, description: "Chemical history" },
   { id: 6, title: "Medical", icon: Heart, description: "Health conditions" },
@@ -133,10 +133,10 @@ export default function Onboarding() {
       });
 
       navigate("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unable to save your profile.",
         variant: "destructive",
       });
     } finally {
@@ -343,8 +343,7 @@ export default function Onboarding() {
                     render={({ field }) => (
                       <FormItem className="space-y-3">
                         <FormLabel className="text-base font-semibold">Skin Type *</FormLabel>
-                        <FormControl>
-                          <RadioGroup
+                        <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                             className="grid md:grid-cols-2 gap-3"
@@ -357,8 +356,7 @@ export default function Onboarding() {
                               { value: "sensitive", label: "Sensitive", description: "Easily irritated, reactive" },
                             ].map((type) => (
                               <FormItem key={type.value}>
-                                <FormControl>
-                                  <div
+                                <div
                                     className={cn(
                                       "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
                                       field.value === type.value
@@ -375,11 +373,9 @@ export default function Onboarding() {
                                       <p className="text-xs text-muted-foreground">{type.description}</p>
                                     </div>
                                   </div>
-                                </FormControl>
                               </FormItem>
                             ))}
                           </RadioGroup>
-                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -394,8 +390,7 @@ export default function Onboarding() {
                         <FormDescription>
                           This helps us provide accurate analysis for your skin tone
                         </FormDescription>
-                        <FormControl>
-                          <RadioGroup
+                        <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                             className="grid md:grid-cols-2 gap-3"
@@ -409,8 +404,7 @@ export default function Onboarding() {
                               { value: "VI", label: "Type VI", description: "Dark brown to black" },
                             ].map((type) => (
                               <FormItem key={type.value}>
-                                <FormControl>
-                                  <div
+                                <div
                                     className={cn(
                                       "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
                                       field.value === type.value
@@ -427,11 +421,9 @@ export default function Onboarding() {
                                       <p className="text-xs text-muted-foreground">{type.description}</p>
                                     </div>
                                   </div>
-                                </FormControl>
                               </FormItem>
                             ))}
                           </RadioGroup>
-                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -563,8 +555,7 @@ export default function Onboarding() {
                       <div>
                         <p className="font-medium text-primary">You're all set!</p>
                         <p className="text-sm text-muted-foreground">
-                          Your complete skin and hair profile will enable personalized analysis, 
-                          treatment recommendations, and product suggestions tailored specifically for you.
+                          Your complete skin and hair profile helps our team prepare clearer notes, treatment options, and product suggestions for your routine.
                         </p>
                       </div>
                     </div>

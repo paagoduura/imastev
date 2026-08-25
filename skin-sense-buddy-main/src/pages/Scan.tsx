@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, AlertCircle, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Video } from "lucide-react";
+import { Camera, Upload, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft, Video } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,6 @@ import { AnalysisTypeSelector } from "@/components/scan/AnalysisTypeSelector";
 import { HairCaptureGuidelines, HAIR_REQUIRED_ANGLES, HAIR_OPTIONAL_ANGLES, HAIR_ANGLE_DESCRIPTIONS } from "@/components/scan/HairCaptureGuidelines";
 import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
 import { PorosityTest } from "@/components/scan/PorosityTest";
-import { QuicktellerCheckout } from "@/components/checkout/QuicktellerCheckout";
 import { PaymentOptionsModal } from "@/components/checkout/PaymentOptionsModal";
 import { buildApiUrl } from "@/lib/config";
 import { MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN, ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
@@ -86,18 +85,6 @@ const Scan = () => {
   const [porosityResult, setPorosityResult] = useState<PorosityResult | null>(null);
   const [showPaymentOptionsModal, setShowPaymentOptionsModal] = useState(false);
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<"one-time" | "subscription" | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState<{
-    amount: number;
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-  } | null>(null);
-  const [paymentContext, setPaymentContext] = useState<{
-    paymentType: "analysis" | "subscription";
-    planId?: string;
-    scanId?: string;
-  } | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -537,16 +524,18 @@ const Scan = () => {
       .map(r => r.value);
 
     const frontAngle = analysisType === 'hair' ? 'crown' : 'front';
-    const { data: scan, error: scanError } = await supabase
-      .from('scans')
-      .insert({
-        user_id: user.id,
+    const scanResponse = await fetch(buildApiUrl('/scans'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
         image_url: uploadedImages.find(i => i.angle === frontAngle)?.url || uploadedImages[0].url,
         scan_type: analysisType,
-        status: 'pending',
-        multi_angle_urls: uploadedImages.reduce((acc, img) => ({
+        multi_angle_urls: uploadedImages.reduce<Record<string, string>>((acc, img) => ({
           ...acc,
-          [img.angle]: img.url
+          [img.angle]: img.url,
         }), {}),
         calibration_data: {
           angles: uploadedImages.map(i => i.angle),
@@ -554,16 +543,18 @@ const Scan = () => {
             angle: i.angle,
             blur: i.quality.blurScore,
             lighting: i.quality.lightingScore,
-            contrast: i.quality.contrastScore
+            contrast: i.quality.contrastScore,
           })),
         },
-        porosity_test_result: porosityResult
-      })
-      .select()
-      .single();
+        porosity_test_result: porosityResult,
+      }),
+    });
+    const scanPayload = await scanResponse.json().catch(() => ({}));
+    if (!scanResponse.ok || !scanPayload?.id) {
+      throw new Error(scanPayload?.error || `Unable to save scan (${scanResponse.status})`);
+    }
 
-    if (scanError) throw scanError;
-    return { scan, uploadedImages };
+    return { scan: scanPayload as ScanRecord, uploadedImages };
   };
 
   const handlePayAndAnalyze = async () => {
@@ -665,19 +656,6 @@ const Scan = () => {
       const paymentType = option === 'one-time' ? 'analysis' : 'subscription';
       const { scan } = await prepareScan(user);
 
-      // Store payment details and show payment modal
-      setPaymentDetails({
-        amount,
-        customerEmail: user.email!,
-        customerName: profileData?.full_name || user.email?.split('@')[0] || 'IMSTEV User',
-        customerPhone: formattedPhone,
-      });
-
-      setPaymentContext({
-        paymentType,
-        scanId: scan.id,
-      });
-
       // Keep scan/payment context available even if checkout redirects away from this page.
       sessionStorage.setItem('pendingPaymentType', paymentType);
       sessionStorage.setItem('pendingAnalysisScanId', scan.id);
@@ -687,9 +665,19 @@ const Scan = () => {
       } else {
         sessionStorage.removeItem('pendingSubscriptionPlanId');
       }
-      
-      setShowPaymentModal(true);
+      sessionStorage.setItem('pendingPaymentPage', JSON.stringify({
+        amount,
+        customerEmail: user.email || '',
+        customerName: profileData?.full_name || user.email?.split('@')[0] || 'IMSTEV User',
+        customerPhone: formattedPhone,
+        paymentType,
+        scanId: scan.id,
+        planId: paymentType === 'subscription' ? 'monthly-scan-plan' : undefined,
+        description: paymentType === 'subscription' ? 'Monthly Scan Plan' : `${analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis`,
+      }));
+
       setPaymentLoading(false);
+      navigate('/payment');
 
     } catch (error) {
       console.error('Payment option error:', error);
@@ -700,54 +688,15 @@ const Scan = () => {
       });
       setPaymentLoading(false);
       setSelectedPaymentOption(null);
-      setPaymentContext(null);
-    }
-  };
-
-  const handlePaymentSuccess = async (transactionRef: string) => {
-    try {
-      setShowPaymentModal(false);
-
-      toast({
-        title: "Payment Successful",
-        description: "Preparing your scan and continuing analysis...",
-      });
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User session not found. Please sign in and try again.");
-      const scanId = paymentContext?.scanId;
-      const pendingType = paymentContext?.paymentType || (selectedPaymentOption === 'subscription' ? 'subscription' : 'analysis');
-      if (!scanId) {
-        throw new Error("Scan information missing. Please try payment again.");
-      }
-
-      sessionStorage.setItem('pendingPaymentType', pendingType);
-      sessionStorage.setItem('pendingAnalysisScanId', scanId);
-      sessionStorage.setItem('paymentOption', selectedPaymentOption || 'one-time');
-      sessionStorage.setItem('paymentTransactionRef', transactionRef);
-      navigate(`/payment-callback?txnref=${encodeURIComponent(transactionRef)}`);
-
-      setSelectedPaymentOption(null);
-      setPaymentContext(null);
-    } catch (error) {
-      console.error('Error processing payment and images:', error);
-      toast({
-        title: "Error",
-        description: getErrorMessage(error),
-        variant: "destructive",
-      });
-      setShowPaymentModal(false);
-      setSelectedPaymentOption(null);
-      setPaymentContext(null);
     }
   };
 
   const stepLabels: Record<string, string> = {
     type: 'Select the type of analysis you need',
-    porosity: 'Test your hair porosity for personalized recommendations',
-    capture: 'Capture high-quality images for accurate AI analysis',
+    porosity: 'Test your hair porosity to choose suitable care',
+    capture: 'Capture clear images for a careful assessment',
     review: 'Review your images before analysis',
-    analyze: 'Ready to analyze your images'
+    analyze: 'Ready to review your images'
   };
 
   const steps = analysisType === 'hair' 
@@ -866,7 +815,7 @@ const Scan = () => {
             >
               {processing ? (
                 <>
-                  <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Processing...
                 </>
               ) : (
@@ -1024,12 +973,12 @@ const Scan = () => {
         >
           {paymentLoading ? (
             <>
-              <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Starting payment...
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-5 w-5" />
+              <CheckCircle2 className="mr-2 h-5 w-5" />
               Continue to Payment
             </>
           )}
@@ -1043,11 +992,11 @@ const Scan = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8f3ec] text-slate-900">
       <Navbar />
       
       <div className="gradient-mesh min-h-screen">
-        <div className={`container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8 transition-all ${showPaymentModal ? 'pointer-events-none opacity-50' : ''}`}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8 transition-all">
           <div className="mb-6 sm:mb-8 flex items-center justify-between">
             <Button 
               variant="ghost" 
@@ -1059,13 +1008,32 @@ const Scan = () => {
             </Button>
           </div>
 
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-3 text-gradient-premium">
-              {analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
-              {stepLabels[step]}
-            </p>
+          <div className="mb-6 rounded-[28px] border border-primary/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:mb-8 sm:p-7">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Plain-language care notes
+                </span>
+                <h1 className="text-3xl font-display font-bold text-slate-900 sm:text-4xl lg:text-5xl">
+                  {analysisType === 'hair' ? 'Hair' : 'Skin'} <span className="text-gradient-premium">Analysis</span>
+                </h1>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
+                  {stepLabels[step]} Your images stay part of your private care record, ready for a clearer conversation with an IMSTEV specialist.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center sm:gap-3">
+                {[
+                  ['01', 'Capture'],
+                  ['02', 'Understand'],
+                  ['03', 'Nurture'],
+                ].map(([number, label]) => (
+                  <div key={number} className="min-w-[74px] rounded-2xl border border-primary/10 bg-white px-3 py-3">
+                    <p className="text-lg font-display font-bold text-primary">{number}</p>
+                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-10">
@@ -1090,7 +1058,7 @@ const Scan = () => {
               />
             )}
             {step === 'capture' && renderCaptureStep()}
-            {step === 'review' && !showPaymentModal && renderReviewStep()}
+            {step === 'review' && renderReviewStep()}
             {step === 'analyze' && renderAnalyzeStep()}
           </div>
         </div>
@@ -1104,46 +1072,6 @@ const Scan = () => {
         isLoading={paymentLoading}
         userEmail={''}
       />
-
-      {/* Payment Modal */}
-      {showPaymentModal && paymentDetails && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 flex justify-between items-center">
-              <h2 className="text-lg font-bold">Complete Payment</h2>
-              <button 
-                onClick={() => setShowPaymentModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-4">
-              <QuicktellerCheckout
-                amount={paymentDetails.amount}
-                customerName={paymentDetails.customerName}
-                customerEmail={paymentDetails.customerEmail}
-                customerPhone={paymentDetails.customerPhone}
-                description={`${analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis - ${selectedPaymentOption === 'subscription' ? 'Monthly Subscription' : 'Single Scan'}`}
-                paymentType={paymentContext?.paymentType || "analysis"}
-                planId={paymentContext?.planId}
-                scanId={paymentContext?.scanId}
-                metadata={
-                  selectedPaymentOption
-                    ? {
-                        source: "scan_flow",
-                        paymentOption: selectedPaymentOption,
-                        scanId: paymentContext?.scanId,
-                      }
-                    : { source: "scan_flow", scanId: paymentContext?.scanId }
-                }
-                onPaymentSuccess={handlePaymentSuccess}
-                onDismiss={() => setShowPaymentModal(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>

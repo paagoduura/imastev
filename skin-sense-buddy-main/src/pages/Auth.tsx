@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Loader2, Lock, Mail, ArrowRight, ThumbsUp, Users, Eye, EyeOff } from "lucide-react";
 
@@ -45,7 +45,7 @@ const Auth = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const finishSignedInUser = async (userId: string, welcomeMessage = "Successfully signed in.") => {
+  const finishSignedInUser = useCallback(async (userId: string, welcomeMessage = "Successfully signed in.") => {
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('full_name, age, skin_type, fitzpatrick_scale')
@@ -67,7 +67,7 @@ const Auth = () => {
         title: "Welcome!",
         description: "Let's complete your profile setup.",
       });
-      navigate("/onboarding", { replace: true });
+      navigate("/dashboard", { replace: true });
       return;
     }
 
@@ -76,7 +76,7 @@ const Auth = () => {
       description: welcomeMessage,
     });
     navigate("/dashboard", { replace: true });
-  };
+  }, [navigate, toast]);
 
   useEffect(() => {
     const token = searchParams.get("token")?.trim() || searchParams.get("verify_token")?.trim();
@@ -102,7 +102,7 @@ const Auth = () => {
             title: "Email verified",
             description: "Your account is ready. Let's finish setting up your profile.",
           });
-          navigate("/onboarding", { replace: true });
+          navigate("/dashboard", { replace: true });
         }
       } finally {
         if (!cancelled) {
@@ -120,7 +120,7 @@ const Auth = () => {
     return () => {
       cancelled = true;
     };
-  }, [navigate, searchParams, setSearchParams, toast]);
+  }, [finishSignedInUser, navigate, searchParams, setSearchParams, toast]);
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
@@ -199,7 +199,7 @@ const Auth = () => {
     document.head.appendChild(script);
 
     return () => script.removeEventListener("load", renderGoogleButton);
-  }, [activeTab, navigate, toast]);
+  }, [activeTab, finishSignedInUser, navigate, toast]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -266,15 +266,20 @@ const Auth = () => {
         return;
       }
 
-      setPendingVerificationEmail(normalizedEmail);
-      setActiveTab("signin");
       setSignInPassword("");
       setSignUpPassword("");
+
+      if (data.session?.user?.id) {
+        setPendingVerificationEmail("");
+        await finishSignedInUser(data.session.user.id, "Your account is ready.");
+        return;
+      }
+
+      setPendingVerificationEmail(normalizedEmail);
+      setActiveTab("signin");
       toast({
         title: "Account created",
-        description: data?.session
-          ? "Your account is ready. You can sign in now."
-          : "Check your email for the verification link before signing in.",
+        description: "Check your email for the verification link before signing in.",
       });
     } catch (error) {
       toast({
@@ -370,13 +375,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="h-screen w-screen max-w-none overflow-hidden bg-[#f7efe8] text-foreground">
-      <section className="relative h-screen overflow-hidden bg-gradient-to-br from-[#efe2d6] via-[#fffaf6] to-[#d7c0ab]">
+    <div className="min-h-screen w-full max-w-none overflow-x-hidden bg-[#f7efe8] text-foreground">
+      <section className="relative min-h-screen bg-gradient-to-br from-[#efe2d6] via-[#fffaf6] to-[#d7c0ab]">
           <div className="absolute inset-0 gradient-mesh opacity-60" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(98,63,41,0.18),transparent_28%),radial-gradient(circle_at_75%_15%,rgba(255,255,255,0.7),transparent_26%),radial-gradient(circle_at_60%_80%,rgba(140,98,66,0.18),transparent_28%)]" />
-          <div className="relative flex h-full w-full items-stretch justify-stretch px-0 py-0">
-            <div className="relative w-screen overflow-hidden bg-transparent">
-              <div className="grid h-full min-h-0 w-full lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="relative flex min-h-screen w-full items-stretch justify-stretch px-0 py-0">
+            <div className="relative w-full overflow-hidden bg-transparent">
+              <div className="grid min-h-screen w-full lg:grid-cols-[1.1fr_0.9fr]">
                 <div className="relative h-full min-h-0 overflow-hidden bg-[#1b120d]">
                   <video
                     src="/auth-drop.mp4"
@@ -439,16 +444,15 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <div className="relative flex h-full w-full items-center justify-center bg-[#fffaf5] px-4 py-4 sm:px-6 lg:px-8">
+                <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-[#fffaf5] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
                   <div className="w-full max-w-none">
-                    <div className="mb-4 text-center lg:text-left sm:mb-6">
-                      <div className="inline-flex items-center justify-center mb-4 sm:mb-5">
-                        <div className="relative">
-                          <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl" />
+                      <div className="mb-4 text-center lg:text-left sm:mb-6">
+                      <div className="mb-4 flex justify-center lg:justify-start sm:mb-5">
+                        <div className="w-44 rounded-2xl border border-[#3b271b]/10 bg-white p-2 shadow-[0_12px_36px_rgba(59,39,27,0.12)] sm:w-52">
                           <img
-                            src="/imstev-logo.jpeg"
-                            alt="IMSTEV NATURALS"
-                            className="relative h-20 w-20 rounded-full object-cover ring-4 ring-primary/10 shadow-2xl"
+                            src="/imstev-naturals-logo.jpeg"
+                            alt="IMSTEV NATURALS — Home of nature's beauty"
+                            className="h-auto w-full"
                           />
                         </div>
                       </div>
@@ -527,7 +531,7 @@ const Auth = () => {
                           </TabsList>
 
                           <TabsContent value="signin" className="mt-0">
-                            <form onSubmit={handleSignIn} className="space-y-4">
+                            <form onSubmit={handleSignIn} className="space-y-4" autoComplete="on">
                               <div className="space-y-1.5">
                                 <Label htmlFor="signin-email" className="font-medium text-foreground">
                                   Email Address
@@ -561,6 +565,7 @@ const Auth = () => {
                                     required
                                     value={signInPassword}
                                     onChange={(e) => setSignInPassword(e.target.value)}
+                                    autoComplete="current-password"
                                     className="h-12 rounded-xl border-primary/15 bg-white pl-11 pr-12 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
                                   />
                                   <button
@@ -591,11 +596,17 @@ const Auth = () => {
                                   </span>
                                 )}
                               </Button>
+                              <div className="flex items-center justify-between gap-3 border-t border-primary/10 pt-3 text-xs text-muted-foreground">
+                                <span>Need help getting back in?</span>
+                                <Link to="/forgot-password" className="font-semibold text-primary transition-colors hover:text-primary/80">
+                                  Forgot password?
+                                </Link>
+                              </div>
                             </form>
                           </TabsContent>
 
                           <TabsContent value="signup" className="mt-0">
-                            <form onSubmit={handleSignUp} className="space-y-4">
+                            <form onSubmit={handleSignUp} className="space-y-4" autoComplete="on">
                               <div className="space-y-1.5">
                                 <Label htmlFor="signup-email" className="font-medium text-foreground">
                                   Email Address
@@ -627,9 +638,10 @@ const Auth = () => {
                                     type={showSignUpPassword ? "text" : "password"}
                                     placeholder="Create your password"
                                     required
-                                    minLength={6}
+                                    minLength={8}
                                     value={signUpPassword}
                                     onChange={(e) => setSignUpPassword(e.target.value)}
+                                    autoComplete="new-password"
                                     className="h-12 rounded-xl border-primary/15 bg-white pl-11 pr-12 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
                                   />
                                   <button
@@ -641,7 +653,7 @@ const Auth = () => {
                                     {showSignUpPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                   </button>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
+                                <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
                               </div>
 
                               <Button
@@ -664,6 +676,7 @@ const Auth = () => {
                             </form>
                           </TabsContent>
                         </Tabs>
+
                       </CardContent>
                     </Card>
 

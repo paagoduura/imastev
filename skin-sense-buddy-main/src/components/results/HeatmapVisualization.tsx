@@ -123,13 +123,13 @@ export const HeatmapVisualization = ({ imageUrl, regions }: Props) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>AI Visual Analysis</span>
+          <span>Image review</span>
           <Badge variant="secondary">
             {regions.length} Key Region{regions.length !== 1 ? 's' : ''}
           </Badge>
         </CardTitle>
         <CardDescription>
-          Heatmap showing AI-identified diagnostic features
+          Areas highlighted for closer review
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

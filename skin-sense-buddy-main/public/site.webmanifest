@@ -1,0 +1,21 @@
+{
+  "name": "IMSTEV NATURALS",
+  "short_name": "IMSTEV",
+  "description": "Premium natural hair and skin care from Nigeria.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f0e7",
+  "theme_color": "#f5f0e7",
+  "icons": [
+    {
+      "src": "/imstev-naturals-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/imstev-naturals-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
