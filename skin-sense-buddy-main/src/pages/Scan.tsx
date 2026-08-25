@@ -852,12 +852,12 @@ const Scan = () => {
             className="hidden"
           />
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Button
               size="lg"
               onClick={() => setShowLiveCamera(true)}
               disabled={processing}
-              className="flex-1"
+              className="w-full sm:flex-1"
             >
               {processing ? (
                 <>
@@ -876,6 +876,7 @@ const Scan = () => {
               variant="outline"
               onClick={() => cameraInputRef.current?.click()}
               disabled={processing}
+              className="w-full sm:w-auto"
             >
               <Camera className="mr-2 h-5 w-5" />
               Take Photo
@@ -885,6 +886,7 @@ const Scan = () => {
               variant="outline"
               onClick={() => uploadInputRef.current?.click()}
               disabled={processing}
+              className="w-full sm:w-auto"
             >
               <Upload className="mr-2 h-5 w-5" />
               Upload
@@ -917,11 +919,12 @@ const Scan = () => {
             />
           )}
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Button
               size="lg"
               variant="outline"
               onClick={() => setStep('type')}
+              className="w-full sm:w-auto"
             >
               <ArrowLeft className="mr-2 h-5 w-5" />
               Change Type
@@ -929,7 +932,7 @@ const Scan = () => {
             <Button
               size="lg"
               onClick={handleProceedToReview}
-              className="flex-1"
+              className="w-full sm:flex-1"
             >
               Continue to Review
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -958,12 +961,12 @@ const Scan = () => {
         onRetake={handleRetakeCapture}
       />
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <Button
           size="lg"
           variant="outline"
           onClick={() => setStep('capture')}
-          className="flex-1"
+          className="w-full sm:flex-1"
         >
           <ArrowLeft className="mr-2 h-5 w-5" />
           Add More
@@ -971,7 +974,7 @@ const Scan = () => {
         <Button
           size="lg"
           onClick={() => setStep('analyze')}
-          className="flex-1"
+          className="w-full sm:flex-1"
         >
           Continue to Analysis
           <ArrowRight className="ml-2 h-5 w-5" />
@@ -1001,17 +1004,17 @@ const Scan = () => {
         </CardContent>
       </Card>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <Button
           size="lg"
           variant="outline"
           onClick={() => setStep('review')}
-          className="flex-1"
+          className="w-full sm:flex-1"
         >
           <ArrowLeft className="mr-2 h-5 w-5" />
           Back
         </Button>
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex w-full flex-1 flex-col gap-3 sm:w-auto">
           <Button
             size="lg"
             onClick={handleOneTimePreview}
@@ -1053,26 +1056,26 @@ const Scan = () => {
     <div className="min-h-screen bg-[#f8f3ec] text-slate-900">
       <Navbar />
 
-      <div className="gradient-mesh min-h-screen">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8 transition-all">
-          <div className="mb-6 sm:mb-8 flex items-center justify-between">
+      <div className="gradient-mesh min-h-screen pb-24 sm:pb-0">
+        <div className="container mx-auto min-w-0 max-w-4xl px-4 py-5 transition-all sm:px-6 sm:py-8 lg:px-8">
+          <div className="mb-4 flex items-center justify-between sm:mb-8">
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}
-              className="text-slate-600 dark:text-slate-400 -ml-2"
+              className="-ml-2 w-full justify-start text-slate-600 dark:text-slate-400 sm:w-auto"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Button>
           </div>
 
-          <div className="mb-6 rounded-[28px] border border-primary/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:mb-8 sm:p-7">
+          <div className="mb-4 rounded-2xl border border-primary/10 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:mb-8 sm:rounded-[28px] sm:p-7">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Plain-language care notes
                 </span>
-                <h1 className="text-3xl font-display font-bold text-slate-900 sm:text-4xl lg:text-5xl">
+                <h1 className="text-[2rem] leading-tight font-display font-bold text-slate-900 sm:text-4xl lg:text-5xl">
                   {analysisType === 'hair' ? 'Hair' : 'Skin'} <span className="text-gradient-premium">Analysis</span>
                 </h1>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
@@ -1085,7 +1088,7 @@ const Scan = () => {
                   ['02', 'Understand'],
                   ['03', 'Nurture'],
                 ].map(([number, label]) => (
-                  <div key={number} className="min-w-[74px] rounded-2xl border border-primary/10 bg-white px-3 py-3">
+                  <div key={number} className="min-w-0 rounded-2xl border border-primary/10 bg-white px-1.5 py-2 sm:min-w-[74px] sm:px-3 sm:py-3">
                     <p className="text-lg font-display font-bold text-primary">{number}</p>
                     <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</p>
                   </div>
@@ -1094,14 +1097,14 @@ const Scan = () => {
             </div>
           </div>
 
-          <div className="flex justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-10">
+          <div className="mb-7 flex min-w-0 justify-center gap-1.5 overflow-hidden pb-2 sm:mb-10 sm:gap-2">
             {steps.map((s, i) => (
               <div
                 key={s}
-                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                className={`h-1.5 min-w-0 flex-1 rounded-full transition-all duration-300 sm:h-2 ${
                   steps.indexOf(step) >= i
-                    ? 'w-10 sm:w-12 bg-gradient-to-r from-purple-600 to-amber-500'
-                    : 'w-6 sm:w-8 bg-slate-200 dark:bg-slate-700'
+                    ? 'max-w-12 bg-gradient-to-r from-purple-600 to-amber-500'
+                    : 'max-w-8 bg-slate-200 dark:bg-slate-700'
                 }`}
               />
             ))}
