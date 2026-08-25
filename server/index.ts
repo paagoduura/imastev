@@ -3839,9 +3839,9 @@ app.post('/api/community/upload-image', authenticateToken, async (req: any, res)
 
     const normalized = base64.includes(',') ? base64.split(',').pop() || '' : base64;
     const bytes = Buffer.from(normalized, 'base64');
-    const maxSizeBytes = 10 * 1024 * 1024;
+    const maxSizeBytes = 8 * 1024 * 1024;
     if (bytes.length > maxSizeBytes) {
-      return res.status(400).json({ error: 'Image is too large. Maximum size is 10MB.' });
+      return res.status(400).json({ error: 'Image is too large. Maximum size is 8MB.' });
     }
 
     const extension = normalizeCommunityFileExtension(contentType, fileName);

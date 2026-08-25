@@ -2321,8 +2321,8 @@ serve(async (req) => {
       } catch {
         return json({ error: "Invalid image payload" }, 400);
       }
-      if (bytes.byteLength > 10 * 1024 * 1024) {
-        return json({ error: "Image is too large. Maximum size is 10MB." }, 400);
+      if (bytes.byteLength > 8 * 1024 * 1024) {
+        return json({ error: "Image is too large. Maximum size is 8MB." }, 400);
       }
 
       const { data: buckets, error: bucketsError } = await service.storage.listBuckets();

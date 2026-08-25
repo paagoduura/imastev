@@ -47,6 +47,7 @@ type Post = {
 };
 
 const QUICK_PHRASES = ["Wash day win", "Routine question", "Protective style", "Texture note"];
+const MAX_COMMUNITY_IMAGE_BYTES = 8 * 1024 * 1024;
 
 const normalizeReply = (value: unknown): Reply | null => {
   if (!value || typeof value !== "object") return null;
@@ -158,6 +159,7 @@ const Community = () => {
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+  const [reactingKey, setReactingKey] = useState<string | null>(null);
 
   const getToken = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
@@ -290,13 +292,17 @@ const Community = () => {
 
     if (!file.type.startsWith("image/")) {
       setSelectedImageFile(null);
+      if (selectedImagePreview) URL.revokeObjectURL(selectedImagePreview);
+      setSelectedImagePreview(null);
       setError("Please select a valid image file.");
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_COMMUNITY_IMAGE_BYTES) {
       setSelectedImageFile(null);
-      setError("Image is too large. Maximum size is 10MB.");
+      if (selectedImagePreview) URL.revokeObjectURL(selectedImagePreview);
+      setSelectedImagePreview(null);
+      setError("Image is too large. Maximum size is 8MB.");
       return;
     }
 
@@ -357,6 +363,16 @@ const Community = () => {
   };
 
   const react = async (params: { postId?: string; commentId?: string; reaction: ReactionType }) => {
+    const token = await getToken();
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
+
+    const targetKey = `${params.postId || "comment"}:${params.commentId || "post"}`;
+    if (reactingKey === targetKey) return;
+
+    setReactingKey(targetKey);
     setError("");
     try {
       await apiRequest(
@@ -370,6 +386,8 @@ const Community = () => {
       await loadPosts(selectedCommunity);
     } catch (reactionError) {
       setError(reactionError instanceof Error ? reactionError.message : "Unable to update reaction.");
+    } finally {
+      setReactingKey(null);
     }
   };
 
@@ -552,17 +570,17 @@ const Community = () => {
                       </span>
                       <div>
                         <p className="text-sm font-semibold text-slate-900">Add a polished image</p>
-                        <p className="mt-1 text-xs leading-5 text-slate-500">Best with portrait or balanced landscape framing. Up to 10MB.</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">Best with portrait or balanced landscape framing. Up to 8MB.</p>
                       </div>
                     </label>
                   ) : (
                     <div className="space-y-3">
                       <div className="overflow-hidden rounded-2xl border border-primary/10 bg-white">
-                        <div className="aspect-[4/3] w-full bg-slate-100">
+                          <div className="h-[min(55vw,260px)] min-h-[160px] w-full bg-slate-100">
                           <img
                             src={selectedImagePreview}
                             alt="Selected post image preview"
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain"
                           />
                         </div>
                       </div>
@@ -664,11 +682,11 @@ const Community = () => {
                           onClick={() => setActiveImageUrl(post.imageUrl || null)}
                           className="block w-full text-left"
                         >
-                          <div className="aspect-[4/5] w-full sm:aspect-[16/10] lg:aspect-[4/3]">
+                          <div className="h-[min(72vw,320px)] min-h-[180px] w-full bg-slate-100 sm:h-[min(48vw,380px)] lg:h-[420px]">
                             <img
                               src={post.imageUrl}
                               alt={`${post.community} journey post`}
-                              className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
+                              className="h-full w-full object-contain transition duration-300 hover:scale-[1.01]"
                               loading="lazy"
                               onError={() => markImageAsFailed(post.imageUrl)}
                             />
@@ -681,8 +699,11 @@ const Community = () => {
                       <Button
                         variant={post.userReaction === "like" ? "default" : "outline"}
                         size="sm"
-                        className="h-10 justify-center gap-2 rounded-xl border-primary/15 bg-white px-4 sm:justify-start"
+                        className={`h-10 justify-center gap-2 rounded-xl border-primary/15 px-4 sm:justify-start ${post.userReaction === "like" ? "bg-[#3b271b] text-white hover:bg-[#513622]" : "bg-white"}`}
                         onClick={() => react({ postId: post.id, reaction: "like" })}
+                        disabled={reactingKey === `${post.id}:post`}
+                        aria-busy={reactingKey === `${post.id}:post`}
+                        aria-pressed={post.userReaction === "like"}
                       >
                         <ThumbsUp className="h-4 w-4" />
                         Like ({post.likes})
@@ -690,8 +711,11 @@ const Community = () => {
                       <Button
                         variant={post.userReaction === "love" ? "default" : "outline"}
                         size="sm"
-                        className="h-10 justify-center gap-2 rounded-xl border-primary/15 bg-white px-4 sm:justify-start"
+                        className={`h-10 justify-center gap-2 rounded-xl border-primary/15 px-4 sm:justify-start ${post.userReaction === "love" ? "bg-[#3b271b] text-white hover:bg-[#513622]" : "bg-white"}`}
                         onClick={() => react({ postId: post.id, reaction: "love" })}
+                        disabled={reactingKey === `${post.id}:post`}
+                        aria-busy={reactingKey === `${post.id}:post`}
+                        aria-pressed={post.userReaction === "love"}
                       >
                         <Heart className="h-4 w-4" />
                         Love ({post.loves})
@@ -728,8 +752,11 @@ const Community = () => {
                                 <Button
                                   size="sm"
                                   variant={comment.userReaction === "like" ? "default" : "outline"}
-                                  className="h-9 rounded-xl border-primary/15 px-3"
+                                  className={`h-9 rounded-xl border-primary/15 px-3 ${comment.userReaction === "like" ? "bg-[#3b271b] text-white hover:bg-[#513622]" : "bg-white"}`}
                                   onClick={() => react({ commentId: comment.id, reaction: "like" })}
+                                  disabled={reactingKey === `comment:${comment.id}`}
+                                  aria-busy={reactingKey === `comment:${comment.id}`}
+                                  aria-pressed={comment.userReaction === "like"}
                                 >
                                   <ThumbsUp className="h-3.5 w-3.5 mr-1" />
                                   Like {comment.likes}
@@ -737,8 +764,11 @@ const Community = () => {
                                 <Button
                                   size="sm"
                                   variant={comment.userReaction === "love" ? "default" : "outline"}
-                                  className="h-9 rounded-xl border-primary/15 px-3"
+                                  className={`h-9 rounded-xl border-primary/15 px-3 ${comment.userReaction === "love" ? "bg-[#3b271b] text-white hover:bg-[#513622]" : "bg-white"}`}
                                   onClick={() => react({ commentId: comment.id, reaction: "love" })}
+                                  disabled={reactingKey === `comment:${comment.id}`}
+                                  aria-busy={reactingKey === `comment:${comment.id}`}
+                                  aria-pressed={comment.userReaction === "love"}
                                 >
                                   <Heart className="h-3.5 w-3.5 mr-1" />
                                   Love {comment.loves}
