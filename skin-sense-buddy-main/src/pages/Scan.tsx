@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft, Video, ShieldCheck } from "lucide-react";
+import { Camera, Upload, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft, Video } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
@@ -219,7 +219,7 @@ const Scan = () => {
 
       const capturedAngles = [...captures.map(c => c.angle), currentAngle];
       const nextRequired = REQUIRED_ANGLES.find(a => !capturedAngles.includes(a));
-      
+
       if (nextRequired) {
         setCurrentAngle(nextRequired);
       } else {
@@ -297,7 +297,7 @@ const Scan = () => {
 
       const capturedAngles = [...captures.map(c => c.angle), currentAngle];
       const nextRequired = REQUIRED_ANGLES.find(a => !capturedAngles.includes(a));
-      
+
       if (nextRequired) {
         setCurrentAngle(nextRequired);
       } else {
@@ -336,7 +336,7 @@ const Scan = () => {
   };
 
   const handleProceedToReview = () => {
-    const requiredCaptured = REQUIRED_ANGLES.every(angle => 
+    const requiredCaptured = REQUIRED_ANGLES.every(angle =>
       captures.some(c => c.angle === angle)
     );
 
@@ -570,7 +570,7 @@ const Scan = () => {
 
   const handlePayAndAnalyze = async () => {
     if (paymentLoading) return;
-    
+
     try {
       setPaymentLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
@@ -705,19 +705,19 @@ const Scan = () => {
     analyze: 'Ready to review your images'
   };
 
-  const steps = analysisType === 'hair' 
-    ? ['type', 'porosity', 'capture', 'review', 'analyze'] 
+  const steps = analysisType === 'hair'
+    ? ['type', 'porosity', 'capture', 'review', 'analyze']
     : ['type', 'capture', 'review', 'analyze'];
 
   const renderTypeStep = () => (
     <div className="space-y-6">
-      <AnalysisTypeSelector 
-        value={analysisType} 
-        onChange={handleAnalysisTypeSelect} 
+      <AnalysisTypeSelector
+        value={analysisType}
+        onChange={handleAnalysisTypeSelect}
       />
-      
-      <Button 
-        size="lg" 
+
+      <Button
+        size="lg"
         className="w-full"
         onClick={handleProceedToCapture}
       >
@@ -1000,12 +1000,12 @@ const Scan = () => {
   return (
     <div className="min-h-screen bg-[#f8f3ec] text-slate-900">
       <Navbar />
-      
+
       <div className="gradient-mesh min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-6 sm:py-8 transition-all">
           <div className="mb-6 sm:mb-8 flex items-center justify-between">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate('/dashboard')}
               className="text-slate-600 dark:text-slate-400 -ml-2"
             >
@@ -1018,13 +1018,13 @@ const Scan = () => {
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Private care scan
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Plain-language care notes
                 </span>
                 <h1 className="text-3xl font-display font-bold text-slate-900 sm:text-4xl lg:text-5xl">
-                  Understand your <span className="text-gradient-premium">{analysisType === 'hair' ? 'hair' : 'skin'}.</span>
+                  {analysisType === 'hair' ? 'Hair' : 'Skin'} <span className="text-gradient-premium">Analysis</span>
                 </h1>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-                  {stepLabels[step]} Take your time. Your images stay part of your private care record and lead to a clearer next step with IMSTEV.
+                  {stepLabels[step]} Your images stay part of your private care record, ready for a clearer conversation with an IMSTEV specialist.
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center sm:gap-3">
@@ -1058,7 +1058,7 @@ const Scan = () => {
           <div className="animate-fade-in">
             {step === 'type' && renderTypeStep()}
             {step === 'porosity' && (
-              <PorosityTest 
+              <PorosityTest
                 onComplete={handlePorosityComplete}
                 onSkip={handlePorositySkip}
               />

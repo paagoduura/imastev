@@ -119,7 +119,7 @@ const Dashboard = () => {
               <div className="dashboard-action-member"><span className="dashboard-avatar">{initials.toUpperCase()}</span><span><strong>{planName}</strong><small>Care member</small></span><button type="button" className="dashboard-signout" onClick={handleLogout} aria-label="Sign out"><LogOut className="h-4 w-4" /><span>Sign out</span></button></div>
             </div>
             <div className="dashboard-action-grid">
-              <DashboardAction icon={<Scan className="h-6 w-6" />} title="Start a scan" description="Choose hair or skin" onClick={() => navigate("/scan")} tone="clay" />
+              <DashboardAction icon={<Scan className="h-6 w-6" />} title="Start a scan" description="Understand your hair and skin" onClick={() => navigate("/scan")} tone="clay" />
               <DashboardAction icon={<Video className="h-6 w-6" />} title="Book a specialist" description="Bring your questions to an expert" onClick={() => navigate("/salon-booking")} tone="espresso" />
               <DashboardAction icon={<ShoppingBag className="h-6 w-6" />} title="Shop the edit" description="Build a considered ritual" onClick={() => navigate("/shop")} tone="olive" />
               <DashboardAction icon={<History className="h-6 w-6" />} title="View timeline" description="See your care progress" onClick={() => navigate("/timeline")} tone="sand" />
@@ -130,11 +130,11 @@ const Dashboard = () => {
 
           <section className="dashboard-lower-grid">
             <div className="dashboard-section dashboard-scans-card">
-              <div className="dashboard-section-heading compact"><div><span className="dashboard-section-label">Your private care record</span><h2>Recent <em>understanding.</em></h2></div>{scans.length > 0 && <button type="button" className="dashboard-view-link" onClick={() => navigate("/timeline")}>View timeline <ArrowUpRight className="h-3.5 w-3.5" /></button>}</div>
+              <div className="dashboard-section-heading compact"><div><span className="dashboard-section-label">Your record</span><h2>Recent <em>insights.</em></h2></div>{scans.length > 0 && <button type="button" className="dashboard-view-link" onClick={() => navigate("/timeline")}>View all <ArrowUpRight className="h-3.5 w-3.5" /></button>}</div>
               {scans.length === 0 ? (
-                <div className="dashboard-empty-state"><div className="dashboard-empty-icon"><Camera className="h-6 w-6" /></div><h3>Start with a clearer view.</h3><p>Your first scan creates a private starting point for understanding what your hair or skin may need next.</p><Button type="button" className="dashboard-outline-button" onClick={() => navigate("/scan")}>Begin my care scan <ArrowUpRight className="ml-2 h-4 w-4" /></Button></div>
+                <div className="dashboard-empty-state"><div className="dashboard-empty-icon"><Camera className="h-6 w-6" /></div><h3>Your first insight starts here.</h3><p>Begin with a scan and we’ll help you understand what your hair and skin are asking for.</p><Button type="button" className="dashboard-outline-button" onClick={() => navigate("/scan")}>Start your first scan <ArrowUpRight className="ml-2 h-4 w-4" /></Button></div>
               ) : (
-                <><div className="dashboard-scan-list">{scans.map((scan) => <ScanRow key={scan.id} scan={scan} onClick={() => navigate(`/results/${scan.id}`)} />)}</div><button type="button" className="dashboard-record-refresh" onClick={() => navigate("/scan")}><Scan className="h-4 w-4" /> Refresh my care view <ArrowUpRight className="h-3.5 w-3.5" /></button></>
+                <div className="dashboard-scan-list">{scans.map((scan) => <ScanRow key={scan.id} scan={scan} onClick={() => navigate(`/results/${scan.id}`)} />)}</div>
               )}
             </div>
 

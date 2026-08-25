@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
-import { ArrowRight, Droplets, Leaf, MoveUpRight, ScanLine, Scissors, ShoppingBag } from "lucide-react";
+import { ArrowRight, Droplets, Leaf, MoveUpRight, ScanLine, Scissors, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface StorySlide {
@@ -8,11 +7,7 @@ interface StorySlide {
   eyebrow: string;
   title: string;
   description: string;
-  image: string;
-  objectPosition?: string;
   accent: string;
-  metric: string;
-  metricLabel: string;
   action: string;
   href: string;
   icon: typeof Leaf;
@@ -24,11 +19,7 @@ const STORY_SLIDES: StorySlide[] = [
     eyebrow: "01 · Understand your texture",
     title: "Your care story starts with seeing yourself clearly.",
     description: "A guided hair and skin scan designed for deeper tones, textured hair, and real routines—not generic beauty advice.",
-    image: "/imstev-client-texture.jpeg",
-    objectPosition: "center 40%",
     accent: "#d99745",
-    metric: "4A–4C",
-    metricLabel: "texture-aware",
     action: "Begin your scan",
     href: "/scan",
     icon: ScanLine,
@@ -38,11 +29,7 @@ const STORY_SLIDES: StorySlide[] = [
     eyebrow: "02 · Be held by expertise",
     title: "A salon ritual rooted in African beauty knowledge.",
     description: "From wash day to protective styling, meet specialists who understand the patience, pride, and precision your hair deserves.",
-    image: "/imstev-client-profile.jpeg",
-    objectPosition: "center 34%",
     accent: "#b9784a",
-    metric: "1:1",
-    metricLabel: "specialist care",
     action: "Book the studio",
     href: "/salon-booking",
     icon: Scissors,
@@ -52,10 +39,7 @@ const STORY_SLIDES: StorySlide[] = [
     eyebrow: "03 · Nurture your glow",
     title: "Thoughtful skin care, made personal.",
     description: "Turn observations into a gentle routine, then choose products and guidance that make sense for your skin and your climate.",
-    image: "/imstev-skin.jpg",
     accent: "#c28b63",
-    metric: "360°",
-    metricLabel: "care perspective",
     action: "Explore skin care",
     href: "/shop",
     icon: Droplets,
@@ -65,11 +49,7 @@ const STORY_SLIDES: StorySlide[] = [
     eyebrow: "04 · Grow together",
     title: "A softer kind of beauty community.",
     description: "Ask better questions, learn from lived experience, and find specialists who celebrate the full range of African beauty.",
-    image: "/imstev-community-braids.jpeg",
-    objectPosition: "center 46%",
     accent: "#879b78",
-    metric: "24/7",
-    metricLabel: "shared wisdom",
     action: "Enter the community",
     href: "/community",
     icon: Leaf,
@@ -143,42 +123,10 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
         </div>
 
         <div className="signature-carousel__stage" aria-live="polite">
-          <div className="signature-carousel__stage-label">
-            <span>IMSTEV / care index</span>
-            <span>{String(activeIndex + 1).padStart(2, "0")} / {String(STORY_SLIDES.length).padStart(2, "0")}</span>
-          </div>
-          <div className="signature-carousel__cards">
-            {STORY_SLIDES.map((slide, index) => {
-              const offset = (index - activeIndex + STORY_SLIDES.length) % STORY_SLIDES.length;
-              const isActive = offset === 0;
-              const isNext = offset === 1;
-              const isPrevious = offset === STORY_SLIDES.length - 1;
-              const positionClass = isActive ? "is-active" : isNext ? "is-next" : isPrevious ? "is-previous" : "is-hidden";
-              return (
-                <button
-                  key={slide.id}
-                  type="button"
-                  className={`signature-carousel__card ${positionClass}`}
-                  style={{ "--slide-accent": slide.accent } as CSSProperties}
-                  onClick={() => setActiveIndex(index)}
-                  aria-label={`Show ${slide.eyebrow}`}
-                  aria-current={isActive ? "true" : undefined}
-                >
-                  <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
-                  <span className="signature-carousel__card-wash" />
-                  <span className="signature-carousel__scanline" />
-                  <span className="signature-carousel__card-meta">
-                    <span className="signature-carousel__metric">{slide.metric}</span>
-                    <span>{slide.metricLabel}</span>
-                  </span>
-                  {isActive && <span className="signature-carousel__card-mark"><ActiveIcon size={15} /></span>}
-                </button>
-              );
-            })}
-          </div>
+          <ScanHeroPanel compact={compact} onNavigate={navigate} />
           {!compact && (
             <div className="signature-carousel__stage-footer">
-              <div className="signature-carousel__stage-note"><ShoppingBag size={14} /> Care, not clutter.</div>
+              <div className="signature-carousel__stage-note"><ShieldCheck size={14} /> Private care, clearly guided.</div>
               <div className="signature-carousel__controls">
                 <button type="button" onClick={() => move(-1)} aria-label="Previous story">←</button>
                 <div className="signature-carousel__progress" aria-hidden="true">
@@ -191,5 +139,32 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function ScanHeroPanel({ compact, onNavigate }: { compact: boolean; onNavigate: (path: string) => void }) {
+  return (
+    <div className={`scan-hero-panel ${compact ? "scan-hero-panel--compact" : ""}`}>
+      <div className="scan-hero-panel__topline"><span>IMSTEV / personal scan</span><span>Hair + skin</span></div>
+      <div className="scan-hero-panel__orbital-mark"><span /><span /><ScanLine size={20} /></div>
+      <div className="scan-hero-panel__heading">
+        <p>See yourself clearly</p>
+        <h3>Start with <em>understanding.</em></h3>
+        {!compact && <span>Choose what you want to understand first. Your care path begins with a closer look.</span>}
+      </div>
+      <div className="scan-hero-panel__paths">
+        <button type="button" className="scan-hero-panel__path scan-hero-panel__path--hair" onClick={() => onNavigate("/scan?type=hair")}>
+          <span className="scan-hero-panel__path-icon"><Scissors size={18} /></span>
+          <span><small>Hair + scalp</small><strong>Find my starting point</strong><em>Texture, porosity, and scalp care</em></span>
+          <ArrowRight size={16} />
+        </button>
+        <button type="button" className="scan-hero-panel__path scan-hero-panel__path--skin" onClick={() => onNavigate("/scan?type=skin")}>
+          <span className="scan-hero-panel__path-icon"><Droplets size={18} /></span>
+          <span><small>Skin</small><strong>Understand my skin</strong><em>Texture, sensitivity, and routine</em></span>
+          <ArrowRight size={16} />
+        </button>
+      </div>
+      {!compact && <div className="scan-hero-panel__foot"><span><ShieldCheck size={13} /> Private care record</span><span><Leaf size={13} /> Made for African textures</span></div>}
+    </div>
   );
 }

@@ -54,33 +54,10 @@ const careJourneys = [
 ];
 
 const serviceCards = [
-  { title: "Hair & scalp scan", body: "Texture-aware guidance for coils, locs, braids, and every stage between.", icon: ScanLine, href: "/scan?type=hair" },
-  { title: "Skin care scan", body: "A calm starting point for understanding what your skin may need next.", icon: Droplets, href: "/scan?type=skin" },
+  { title: "Hair & scalp scan", body: "Texture-aware guidance for coils, locs, braids, and every stage between.", icon: ScanLine, href: "/scan" },
+  { title: "Skin care scan", body: "A calm starting point for understanding what your skin may need next.", icon: Droplets, href: "/scan" },
   { title: "Salon rituals", body: "Expert styling and treatments in a warm, specialist-led studio.", icon: Scissors, href: "/salon-booking" },
   { title: "Video consultation", body: "Speak with a care professional when you want a human point of view.", icon: MessageCircle, href: "/telehealth" },
-];
-
-const scanPaths = [
-  {
-    key: "hair",
-    eyebrow: "Hair + scalp",
-    title: "Find your hair starting point.",
-    body: "Explore texture, porosity, density, scalp comfort, and the care your routine can actually sustain.",
-    link: "/scan?type=hair",
-    action: "Begin hair scan",
-    image: "/imstev-community-braids.jpeg",
-    tone: "scan-path-hair",
-  },
-  {
-    key: "skin",
-    eyebrow: "Skin",
-    title: "See your skin more clearly.",
-    body: "Start with a calmer understanding of visible concerns, sensitivity, and the next gentle step.",
-    link: "/scan?type=skin",
-    action: "Begin skin scan",
-    image: "/imstev-skin.jpg",
-    tone: "scan-path-skin",
-  },
 ];
 
 const communityStories = [
@@ -110,45 +87,26 @@ export default function Index() {
         </section>
 
         <section id="how-it-works" className="container-wide py-16 sm:py-24">
-          <div className="scan-signature-panel">
-            <div className="scan-signature-copy">
-              <p className="eyebrow">01 / Understand</p>
-              <h1>Your hair is speaking.<br /><em>Start by listening.</em></h1>
-              <p className="scan-signature-lede">A considered scan for African hair and skin, followed by clear guidance you can actually use. Begin with what you want to understand, then let your care path unfold from there.</p>
-              <div className="scan-signature-actions">
-                <button type="button" className="ink-button" onClick={() => navigate("/scan")}>Begin my care scan <ScanLine size={16} /></button>
-                <button type="button" className="scan-text-link" onClick={() => document.getElementById("scan-how-it-works")?.scrollIntoView({ behavior: "smooth" })}>How it works <ArrowRight size={15} /></button>
-              </div>
-              <div className="scan-trust-row">
-                <span><ShieldCheck size={15} /> Private care record</span>
-                <span><Users size={15} /> Specialist-led guidance</span>
-                <span><Leaf size={15} /> Made for African textures</span>
-              </div>
+          <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:gap-20">
+            <div className="max-w-md">
+              <p className="eyebrow">A better beauty beginning</p>
+              <h1 className="mt-4 text-4xl leading-[.98] tracking-[-.055em] sm:text-6xl">Your care should feel as considered as you are.</h1>
+              <p className="mt-6 text-base leading-8 text-[#6e5b4c]">IMSTEV brings together guided scans, expert hands, considered products, and a community that understands the beauty of African hair and skin.</p>
+              <button type="button" className="ink-button mt-8" onClick={() => navigate("/scan")}>Discover your care path <ArrowRight size={17} /></button>
             </div>
-            <div className="scan-signature-visual">
-              <img src="/imstev-skin.jpg" alt="Natural skin texture in warm daylight" />
-              <div className="scan-visual-stamp"><ScanLine size={14} /><span>One scan<br /><strong>A clearer next step.</strong></span></div>
-              <div className="scan-result-peek">
-                <span className="scan-result-kicker">Example care focus</span>
-                <strong>Moisture-first care</strong>
-                <p>Personal guidance starts with understanding, not overhauling.</p>
-                <div className="scan-result-line"><span /><span /><span /></div>
-              </div>
-            </div>
-          </div>
-          <div id="scan-how-it-works" className="scan-paths-section">
-            <div className="scan-paths-heading">
-              <div><p className="eyebrow">Choose your starting point</p><h2>One thoughtful look.<br /><em>Two ways into care.</em></h2></div>
-              <p>Take your time. Your result is designed to lead somewhere useful: a ritual, a specialist conversation, or a considered product edit.</p>
-            </div>
-            <div className="scan-path-grid">
-              {scanPaths.map((path) => {
-                const Icon = path.key === "hair" ? Scissors : Droplets;
-                return <button key={path.key} type="button" className={`scan-path-card ${path.tone}`} onClick={() => navigate(path.link)}>
-                  <img src={path.image} alt="" aria-hidden="true" />
-                  <div className="scan-path-overlay" />
-                  <div className="scan-path-content"><span className="scan-path-icon"><Icon size={18} /></span><span className="scan-path-eyebrow">{path.eyebrow}</span><strong>{path.title}</strong><p>{path.body}</p><span className="scan-path-cta">{path.action} <ArrowUpRight size={14} /></span></div>
-                </button>;
+            <div className="grid gap-4 sm:grid-cols-3">
+              {careJourneys.map((journey) => {
+                const Icon = journey.icon;
+                return (
+                  <button key={journey.number} type="button" onClick={() => navigate(journey.href)} className={`group relative min-h-[280px] overflow-hidden rounded-[1.6rem] p-6 text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(72,43,22,.14)] ${journey.className}`}>
+                    <span className="absolute -right-2 -top-5 font-serif text-[8rem] leading-none text-[#24160d]/[.08]">{journey.number}</span>
+                    <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#24160d] text-[#f8f2e8]"><Icon size={18} strokeWidth={1.7} /></span>
+                    <span className="relative mt-20 block text-[10px] font-bold uppercase tracking-[.2em] text-[#6e4d34]">{journey.eyebrow}</span>
+                    <span className="relative mt-2 block font-serif text-2xl leading-none tracking-[-.03em] text-[#24160d]">{journey.title}</span>
+                    <span className="relative mt-3 block text-sm leading-6 text-[#574637]">{journey.body}</span>
+                    <span className="relative mt-5 inline-flex items-center gap-1 text-xs font-bold text-[#24160d]">Explore <ArrowUpRight size={14} /></span>
+                  </button>
+                );
               })}
             </div>
           </div>
