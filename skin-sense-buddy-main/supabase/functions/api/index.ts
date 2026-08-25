@@ -1376,6 +1376,56 @@ serve(async (req) => {
       return json(data);
     }
 
+    if (route === "/admin/product-image" && req.method === "POST") {
+      await requireAdmin(req);
+      const fileName = typeof body.fileName === "string" ? body.fileName.trim() : "";
+      const base64 = typeof body.base64 === "string" ? body.base64.trim() : "";
+      const contentType = typeof body.contentType === "string" ? body.contentType.trim().toLowerCase() : "";
+      const allowedImageTypes = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+
+      if (!fileName || !base64) return json({ error: "Product image payload is required" }, 400);
+      if (!allowedImageTypes.has(contentType)) {
+        return json({ error: "Only JPEG, PNG, and WebP product images are supported" }, 400);
+      }
+
+      let bytes: Uint8Array;
+      try {
+        bytes = decodeBase64Payload(base64);
+      } catch {
+        return json({ error: "Invalid product image payload" }, 400);
+      }
+      if (bytes.byteLength === 0 || bytes.byteLength > 8 * 1024 * 1024) {
+        return json({ error: "Product image must be between 1 byte and 8MB" }, 413);
+      }
+
+      const bucketId = "catalog-media";
+      const { data: buckets, error: bucketsError } = await service.storage.listBuckets();
+      if (bucketsError) return json({ error: bucketsError.message }, 500);
+      if (!ensureArray(buckets).some((bucket) => bucket.id === bucketId)) {
+        const created = await service.storage.createBucket(bucketId, { public: true });
+        if (created.error) return json({ error: created.error.message }, 500);
+      }
+
+      const extension = normalizeCommunityImageExtension(contentType, fileName);
+      const path = `catalog/${Date.now()}-${crypto.randomUUID()}${extension}`;
+      const upload = await service.storage.from(bucketId).upload(path, bytes, {
+        contentType: contentType === "image/jpg" ? "image/jpeg" : contentType,
+        upsert: false,
+      });
+      if (upload.error) return json({ error: upload.error.message }, 500);
+
+      const { data: publicData } = service.storage.from(bucketId).getPublicUrl(path);
+      return json({
+        success: true,
+        url: publicData.publicUrl,
+        publicUrl: publicData.publicUrl,
+        path,
+        filename: fileName,
+        size: bytes.byteLength,
+        mime_type: contentType === "image/jpg" ? "image/jpeg" : contentType,
+      }, 201);
+    }
+
     if (route === "/admin/products" && req.method === "POST") {
       await requireAdmin(req);
       const payload = sanitizePayload(body, PRODUCT_FIELDS);

@@ -24,6 +24,28 @@ const money = (value: number) => `₦${Number(value || 0).toLocaleString("en-NG"
 const dateTime = (value?: string) => value ? new Date(value).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }) : "—";
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 
+async function fileToBase64(file: File) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+  return btoa(binary);
+}
+
+function imageContentType(file: File) {
+  if (file.type) return file.type.toLowerCase();
+  const extension = file.name.toLowerCase().split(".").pop();
+  return extension === "jpg" || extension === "jpeg"
+    ? "image/jpeg"
+    : extension === "png"
+      ? "image/png"
+      : extension === "webp"
+        ? "image/webp"
+        : "";
+}
+
 const navItems: Array<{ id: Section; label: string; icon: typeof LayoutDashboard; note?: string }> = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "shop", label: "Shop & catalogue", icon: Package, note: "Merchandise" },
@@ -93,10 +115,32 @@ export default function AdminDashboard() {
   async function uploadProductImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    const contentType = imageContentType(file);
+    if (!contentType || !["image/jpeg", "image/png", "image/webp"].includes(contentType)) {
+      toast({ title: "Image upload failed", description: "Use a JPEG, PNG, or WebP image under 8MB.", variant: "destructive" });
+      event.target.value = "";
+      return;
+    }
+    if (file.size === 0 || file.size > 8 * 1024 * 1024) {
+      toast({ title: "Image upload failed", description: "Use a JPEG, PNG, or WebP image under 8MB.", variant: "destructive" });
+      event.target.value = "";
+      return;
+    }
     setUploadingImage(true);
-    try { const body = new FormData(); body.append("image", file); const result = await adminFetch("/admin/product-image", { method: "POST", body }); setField("image_url", result.url); toast({ title: "Image uploaded", description: "The product image is ready to publish." }); }
-    catch (error: any) { toast({ title: "Image upload failed", description: error?.message || "Use a JPEG, PNG, or WebP image under 8MB.", variant: "destructive" }); }
-    finally { setUploadingImage(false); event.target.value = ""; }
+    try {
+      const base64 = await fileToBase64(file);
+      const result = await adminFetch("/admin/product-image", {
+        method: "POST",
+        body: JSON.stringify({ fileName: file.name, base64, contentType }),
+      });
+      setField("image_url", result.url || result.publicUrl);
+      toast({ title: "Image uploaded", description: "The product image is ready to publish." });
+    } catch (error: any) {
+      toast({ title: "Image upload failed", description: error?.message || "Use a JPEG, PNG, or WebP image under 8MB.", variant: "destructive" });
+    } finally {
+      setUploadingImage(false);
+      event.target.value = "";
+    }
   }
 
   async function saveProduct(event: FormEvent) {

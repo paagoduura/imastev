@@ -1679,7 +1679,47 @@ app.get('/api/admin/products/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/product-image', authenticateAdmin, (req: any, res: any, next: any) => {
+app.post('/api/admin/product-image', authenticateAdmin, async (req: any, res: any, next: any) => {
+  const contentTypeHeader = String(req.headers['content-type'] || '').toLowerCase();
+  if (!contentTypeHeader.includes('multipart/form-data')) {
+    try {
+      const fileName = typeof req.body?.fileName === 'string' ? req.body.fileName.trim() : '';
+      const base64 = typeof req.body?.base64 === 'string' ? req.body.base64.trim() : '';
+      const contentType = typeof req.body?.contentType === 'string' ? req.body.contentType.trim().toLowerCase() : '';
+      const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+      if (!fileName || !base64) return res.status(400).json({ error: 'Product image payload is required' });
+      if (!allowedImageTypes.has(contentType)) {
+        return res.status(400).json({ error: 'Only JPEG, PNG, and WebP product images are supported' });
+      }
+
+      const normalized = base64.includes(',') ? base64.split(',').pop() || '' : base64;
+      const bytes = Buffer.from(normalized, 'base64');
+      if (bytes.length === 0 || bytes.length > 8 * 1024 * 1024) {
+        return res.status(413).json({ error: 'Product image must be between 1 byte and 8MB' });
+      }
+
+      const extension = normalizeCommunityFileExtension(contentType, fileName);
+      const safeName = `${Date.now()}-${uuidv4()}${extension}`;
+      const relativePath = path.join('catalog', safeName).replace(/\\/g, '/');
+      const absolutePath = path.join(uploadsDir, relativePath);
+      const parentDir = path.dirname(absolutePath);
+      if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir, { recursive: true });
+      fs.writeFileSync(absolutePath, bytes);
+
+      const publicUrl = `${getApiBaseUrl()}/uploads/${relativePath}`.replace(/([^:]\/)\/+/g, '$1');
+      return res.status(201).json({
+        success: true,
+        url: publicUrl,
+        publicUrl,
+        filename: fileName,
+        size: bytes.length,
+        mime_type: contentType,
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: productionErrorMessage(error, 'Failed to upload product image') });
+    }
+  }
+
   catalogUpload.single('image')(req, res, (error: any) => {
     if (error) return next(error);
     if (!req.file) return res.status(400).json({ error: 'A JPEG, PNG, or WebP product image is required' });
