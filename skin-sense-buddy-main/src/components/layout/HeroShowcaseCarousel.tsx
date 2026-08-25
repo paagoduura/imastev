@@ -45,7 +45,7 @@ const STORY_SLIDES: StorySlide[] = [
     accent: "#c7894b",
     metric: "01",
     metricLabel: "guided scan",
-    action: "Begin your hair scan",
+    action: "BEGIN YOUR HAIR SCAN",
     href: "/scan",
     icon: ScanLine,
   },
@@ -60,7 +60,7 @@ const STORY_SLIDES: StorySlide[] = [
     accent: "#9d7657",
     metric: "1:1",
     metricLabel: "care perspective",
-    action: "Explore your scan",
+    action: "BEGIN YOUR SKIN SCAN",
     href: "/scan",
     icon: Droplets,
   },
@@ -122,6 +122,7 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
   const activeSlide = STORY_SLIDES[activeIndex];
   const ActiveIcon = activeSlide.icon;
   const activeKey = useMemo(() => activeSlide.id, [activeSlide.id]);
+  const isScanCta = activeSlide.id === "hair-scan-video" || activeSlide.id === "scan-journey-video";
 
   useEffect(() => {
     if (isPaused) return;
@@ -160,7 +161,7 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
           <h2>{activeSlide.title}</h2>
           {!compact && <p>{activeSlide.description}</p>}
           <div className="signature-carousel__actions">
-            <button type="button" className="signature-carousel__primary" onClick={() => navigate(activeSlide.href)}>
+            <button type="button" className={`signature-carousel__primary ${isScanCta ? "signature-carousel__primary--scan" : ""}`} onClick={() => navigate(activeSlide.href)}>
               <ActiveIcon size={17} strokeWidth={1.8} />
               {activeSlide.action}
               <ArrowRight size={16} />
@@ -213,12 +214,11 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
                     <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
                   )}
                   <span className="signature-carousel__card-wash" />
-                  <span className="signature-carousel__scanline" />
                   <span className="signature-carousel__card-meta">
                     <span className="signature-carousel__metric">{slide.metric}</span>
                     <span>{slide.metricLabel}</span>
                   </span>
-                  {isActive && <span className="signature-carousel__card-mark"><ActiveIcon size={15} /></span>}
+
                 </button>
               );
             })}

@@ -1026,3 +1026,28 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   .payment-order-card h2 { font-size: 3rem; }
   .payment-trust-note { right: 1.25rem; bottom: 1.25rem; left: 1.25rem; }
 }
+
+/* Hero media refinement: one generous landscape frame for images and videos. */
+.signature-carousel__cards { height: clamp(280px, 31vw, 390px); }
+.signature-carousel__card { width: clamp(20rem, 34vw, 30rem); height: auto; aspect-ratio: 16 / 9; }
+.signature-carousel__card img, .signature-carousel__card video { object-fit: cover; }
+.signature-carousel__card-wash { background: linear-gradient(180deg, rgba(18,10,6,.02) 22%, rgba(18,10,6,.7) 100%); }
+.signature-carousel__primary--scan { min-height: 3.2rem; padding: .9rem 1.25rem; font-size: .82rem; font-weight: 800; letter-spacing: .075em; text-transform: uppercase; box-shadow: 0 13px 28px rgba(0,0,0,.2); }
+.signature-carousel__primary--scan:hover { box-shadow: 0 17px 34px rgba(0,0,0,.28); }
+@media (prefers-reduced-motion: no-preference) {
+  .signature-carousel__primary--scan { animation: scan-cta-pulse 2.8s ease-in-out infinite; }
+  .signature-carousel__primary--scan:hover { animation-play-state: paused; }
+}
+@keyframes scan-cta-pulse {
+  0%, 100% { box-shadow: 0 13px 28px rgba(0,0,0,.2); }
+  50% { box-shadow: 0 17px 34px rgba(242,210,166,.3), 0 0 0 5px rgba(242,210,166,.1); }
+}
+@media (max-width: 900px) {
+  .signature-carousel__cards { height: clamp(250px, 48vw, 330px); }
+  .signature-carousel__card { width: min(28rem, 88vw); }
+}
+@media (max-width: 640px) {
+  .signature-carousel__cards { height: clamp(220px, 58vw, 270px); }
+  .signature-carousel__card { width: min(19rem, 88vw); }
+  .signature-carousel__primary--scan { min-height: 2.9rem; padding: .78rem 1rem; font-size: .7rem; letter-spacing: .055em; }
+}
