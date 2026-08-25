@@ -135,11 +135,16 @@ const Dashboard = () => {
               </div>
               <div className="dashboard-trust-line"><span className="dashboard-pulse" /> Private by design <span className="dashboard-divider" /> Made for African textures</div>
             </div>
-            <div className="dashboard-essence-visual">
-              <div className="dashboard-essence-image-main"><img src="/imstev-client-texture.jpeg" alt="Natural hair texture cared for at IMSTEV NATURALS" /></div>
-              <div className="dashboard-essence-image-detail"><img src="/imstev-community-braids.jpeg" alt="Braided natural hairstyle" /></div>
-              <div className="dashboard-essence-note"><span className="dashboard-essence-note-icon"><Leaf className="h-4 w-4" /></span><span><strong>Care, not clutter.</strong><small>Guidance in plain language.</small></span></div>
-              <div className="dashboard-essence-stamp"><span>4A</span><span>—</span><span>4C</span><small>Texture-aware</small></div>
+            <div className="dashboard-essence-panel">
+              <div className="dashboard-panel-top"><span>01 / Understand</span><span className="dashboard-panel-rule" /></div>
+              <div className="dashboard-panel-mark"><strong>4A</strong><span>—</span><strong>4C</strong><small>Texture-aware care</small></div>
+              <p className="dashboard-panel-lead">Your routine deserves attention, not noise.</p>
+              <div className="dashboard-panel-principles">
+                <div><span>01</span><strong>Private by design</strong><small>Your care record stays close.</small></div>
+                <div><span>02</span><strong>Plain-language guidance</strong><small>Clear steps you can actually use.</small></div>
+                <div><span>03</span><strong>Made for African textures</strong><small>Care that starts with context.</small></div>
+              </div>
+              <div className="dashboard-panel-footer"><span className="dashboard-panel-dot" /> A softer way to care <ArrowUpRight className="h-4 w-4" /></div>
             </div>
           </section>
           <section className="dashboard-method-strip" aria-label="The IMSTEV care method">
