@@ -109,70 +109,22 @@ const Dashboard = () => {
       <Navbar />
       <main className="dashboard-shell">
         <div className="dashboard-container">
-          <section className="dashboard-welcome">
-            <div className="dashboard-welcome-copy">
-              <span className="dashboard-overline"><Leaf className="h-3.5 w-3.5" /> Your private care space</span>
-              <h1>Good morning, <em>{firstName}.</em></h1>
-              <p>A considered next step for the hair and skin you already have.</p>
-            </div>
-            <div className="dashboard-welcome-actions">
-              <div className="dashboard-identity">
-                <span className="dashboard-avatar">{initials.toUpperCase()}</span>
-                <span><strong>{planName}</strong><small>Care member</small></span>
+          <section className="dashboard-action-deck" aria-labelledby="dashboard-actions-title">
+            <div className="dashboard-action-heading">
+              <div>
+                <span className="dashboard-section-label">Your care space</span>
+                <h1 id="dashboard-actions-title">Continue with <em>care.</em></h1>
+                <p>Choose what you would like to do next.</p>
               </div>
-              <button type="button" className="dashboard-signout" onClick={handleLogout}><LogOut className="h-4 w-4" /> <span>Sign out</span></button>
+              <div className="dashboard-action-member"><span className="dashboard-avatar">{initials.toUpperCase()}</span><span><strong>{planName}</strong><small>Care member</small></span><button type="button" className="dashboard-signout" onClick={handleLogout} aria-label="Sign out"><LogOut className="h-4 w-4" /><span>Sign out</span></button></div>
             </div>
-          </section>
-
-          <section className="dashboard-essence-hero">
-            <div className="dashboard-essence-copy">
-              <span className="dashboard-section-label">The IMSTEV method</span>
-              <h2>Care that starts<br /><em>with understanding.</em></h2>
-              <p>One considered place to understand your hair and skin, speak with a specialist, build a ritual, and stay close to the community around you.</p>
-              <div className="dashboard-hero-actions">
-                <Button type="button" className="dashboard-primary-button" onClick={() => navigate("/scan")}><Scan className="mr-2 h-4 w-4" /> Begin a new scan <ArrowUpRight className="ml-2 h-4 w-4" /></Button>
-                <button type="button" className="dashboard-text-button" onClick={() => navigate("/salon-booking")}>Talk to a specialist <ChevronRight className="h-4 w-4" /></button>
-              </div>
-              <div className="dashboard-trust-line"><span className="dashboard-pulse" /> Private by design <span className="dashboard-divider" /> Made for African textures</div>
-            </div>
-            <div className="dashboard-essence-panel">
-              <div className="dashboard-panel-top"><span>01 / Understand</span><span className="dashboard-panel-rule" /></div>
-              <div className="dashboard-panel-mark"><strong>4A</strong><span>—</span><strong>4C</strong><small>Texture-aware care</small></div>
-              <p className="dashboard-panel-lead">Your routine deserves attention, not noise.</p>
-              <div className="dashboard-panel-principles">
-                <div><span>01</span><strong>Private by design</strong><small>Your care record stays close.</small></div>
-                <div><span>02</span><strong>Plain-language guidance</strong><small>Clear steps you can actually use.</small></div>
-                <div><span>03</span><strong>Made for African textures</strong><small>Care that starts with context.</small></div>
-              </div>
-              <div className="dashboard-panel-footer"><span className="dashboard-panel-dot" /> A softer way to care <ArrowUpRight className="h-4 w-4" /></div>
-            </div>
-          </section>
-          <section className="dashboard-method-strip" aria-label="The IMSTEV care method">
-            <MethodStep index="01" title="Understand" text="Scan your story" icon={<Scan className="h-4 w-4" />} active />
-            <MethodStep index="02" title="Be cared for" text="Meet an expert" icon={<Video className="h-4 w-4" />} />
-            <MethodStep index="03" title="Nurture" text="Build your ritual" icon={<FlaskConical className="h-4 w-4" />} />
-            <MethodStep index="04" title="Grow together" text="Find your people" icon={<Users className="h-4 w-4" />} />
-          </section>
-
-          <section className="dashboard-section dashboard-next-section">
-            <div className="dashboard-section-heading">
-              <div><span className="dashboard-section-label">Your next best step</span><h2>Care, made <em>clear.</em></h2></div>
-              <span className="dashboard-heading-note">Kept close to your journey</span>
-            </div>
-            <div className="dashboard-care-grid">
-              <CareActionCard tone="clay" icon={<Scan className="h-5 w-5" />} eyebrow="01 / Understand" title="Read your story" text="A guided hair and skin scan for a clearer starting point." action="Start a scan" onClick={() => navigate("/scan")} />
-              <CareActionCard tone="espresso" icon={<Video className="h-5 w-5" />} eyebrow="02 / Be cared for" title="Talk to an expert" text="Bring your questions to a specialist who understands your texture." action="Book a consultation" onClick={() => navigate("/salon-booking")} />
-              <CareActionCard tone="olive" icon={<ShoppingBag className="h-5 w-5" />} eyebrow="03 / Nurture" title="Edit your ritual" text="Shop thoughtful products selected for how you actually care." action="Shop the edit" onClick={() => navigate("/shop")} />
-            </div>
-          </section>
-
-          <section className="dashboard-section dashboard-utility-section">
-            <div className="dashboard-section-heading compact"><div><span className="dashboard-section-label">Keep close</span><h2>Your care <em>library.</em></h2></div></div>
-            <div className="dashboard-utility-grid">
-              <UtilityCard icon={<History className="h-5 w-5" />} title="Timeline" subtitle="See your progress" route="/timeline" onClick={() => navigate("/timeline")} />
-              <UtilityCard icon={<Calendar className="h-5 w-5" />} title="Appointments" subtitle="Your next visit" route="/telehealth" onClick={() => navigate("/telehealth")} />
-              <UtilityCard icon={<Package className="h-5 w-5" />} title="Orders" subtitle="Track your edit" route="/orders" onClick={() => navigate("/orders")} />
-              <UtilityCard icon={<User className="h-5 w-5" />} title="Profile" subtitle="Your preferences" route="/dashboard?section=profile" onClick={() => navigate("/dashboard?section=profile")} />
+            <div className="dashboard-action-grid">
+              <DashboardAction icon={<Scan className="h-6 w-6" />} title="Start a scan" description="Understand your hair and skin" onClick={() => navigate("/scan")} tone="clay" />
+              <DashboardAction icon={<Video className="h-6 w-6" />} title="Book a specialist" description="Bring your questions to an expert" onClick={() => navigate("/salon-booking")} tone="espresso" />
+              <DashboardAction icon={<ShoppingBag className="h-6 w-6" />} title="Shop the edit" description="Build a considered ritual" onClick={() => navigate("/shop")} tone="olive" />
+              <DashboardAction icon={<History className="h-6 w-6" />} title="View timeline" description="See your care progress" onClick={() => navigate("/timeline")} tone="sand" />
+              <DashboardAction icon={<Calendar className="h-6 w-6" />} title="Appointments" description="Keep your next visit close" onClick={() => navigate("/telehealth")} tone="rose" />
+              <DashboardAction icon={<User className="h-6 w-6" />} title="Your profile" description="Update your care preferences" onClick={() => navigate("/dashboard?section=profile")} tone="cream" />
             </div>
           </section>
 
@@ -199,8 +151,12 @@ const Dashboard = () => {
   );
 };
 
-const MethodStep = ({ index, title, text, icon, active = false }: { index: string; title: string; text: string; icon: React.ReactNode; active?: boolean }) => (
-  <div className={`dashboard-method-step ${active ? "is-active" : ""}`}><span className="dashboard-method-index">{index}</span><span className="dashboard-method-icon">{icon}</span><span><strong>{title}</strong><small>{text}</small></span></div>
+const DashboardAction = ({ icon, title, description, onClick, tone }: { icon: React.ReactNode; title: string; description: string; onClick: () => void; tone: string }) => (
+  <button type="button" className={`dashboard-action-card tone-${tone}`} onClick={onClick}>
+    <span className="dashboard-action-icon">{icon}</span>
+    <span className="dashboard-action-copy"><strong>{title}</strong><small>{description}</small></span>
+    <ArrowUpRight className="dashboard-action-arrow h-4 w-4" />
+  </button>
 );
 
 const CareActionCard = ({ tone, icon, eyebrow, title, text, action, onClick }: { tone: string; icon: React.ReactNode; eyebrow: string; title: string; text: string; action: string; onClick: () => void }) => (
