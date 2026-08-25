@@ -14,12 +14,12 @@ How to deploy
 
 Notes & next steps
 - The workflow uses the `supabase functions deploy` command and requires that functions are organized as Deno files in `skin-sense-buddy-main/supabase/functions/<functionName>/index.ts` (already present for `auth`, `analyze-skin`, etc.).
-- After functions are deployed, update your frontend API base or Vite proxy if you want `/api/auth/*` to hit the deployed function endpoint.
+- After functions are deployed, configure the Vercel project with `VITE_SUPABASE_URL=https://<project-ref>.supabase.co` and, preferably, `VITE_USE_SUPABASE_FUNCTIONS=true` or `VITE_SUPABASE_FUNCTIONS_URL=https://<project-ref>.supabase.co/functions/v1`. The production frontend now automatically uses the deployed `/functions/v1/api` endpoint when Supabase is configured instead of sending admin requests into Vercel's static `/api` rewrite.
 - Database migrations, Storage policies, and RLS should be deployed separately; I can add workflows for those too.
 
 Troubleshooting
 - If the workflow fails at installing the CLI, check Actions runner logs (the workflow downloads the latest Linux release).
-- If a function fails at runtime due to missing env vars, add them under Supabase Project Settings → Runtime Config.
+- If a function fails at runtime due to missing env vars, add them under Supabase Project Settings → Runtime Config. Admin access requires an active `admin_credentials` row or securely configured `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_AUTH_SECRET` function secrets; never commit those values.
 
 If you want, I can now:
 - Add a workflow to deploy DB migrations and storage policies.
