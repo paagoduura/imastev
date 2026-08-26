@@ -677,6 +677,19 @@ async function requireUser(req: Request, service = createServiceClient()) {
   return user;
 }
 
+// Community reactions are keyed directly to auth.users. Do not make this social
+// interaction depend on the legacy users table or its compatibility columns.
+async function requireCommunityUser(req: Request, service = createServiceClient()) {
+  const user = await getUserFromRequest(req, service);
+  if (!user) {
+    throw new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  return user;
+}
+
 function getPublicBaseUrl(req: Request) {
   const explicit = getEnv("PUBLIC_APP_URL") || getEnv("APP_BASE_URL") || getEnv("FRONTEND_URL");
   if (explicit) return explicit.replace(/\/+$/g, "");
@@ -2548,7 +2561,7 @@ serve(async (req) => {
     }
 
     if (route === "/community/reactions" && req.method === "POST") {
-      const user = await requireUser(req, service);
+      const user = await requireCommunityUser(req, service);
       const postId = typeof body.postId === "string" ? body.postId.trim() : "";
       const commentId = typeof body.commentId === "string" ? body.commentId.trim() : "";
       const reaction = normalizeCommunityReaction(body.reaction);
