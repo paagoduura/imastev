@@ -322,7 +322,7 @@ const Auth = () => {
                           <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 sm:mb-3 sm:h-12 sm:w-12">
                             <Shield className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                           </div>
-                          <p className="text-[10px] uppercase tracking-[0.38em] text-amber-100/80">Hair ritual cube</p>
+                          <p className="text-[10px] uppercase tracking-[0.38em] text-amber-100/80">Hair care cube</p>
                           <h2 className="mt-2 text-xl font-display font-bold leading-tight text-white sm:mt-3 sm:text-2xl">
                             Beauty in motion
                           </h2>

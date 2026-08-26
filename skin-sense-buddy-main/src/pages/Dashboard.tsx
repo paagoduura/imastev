@@ -121,7 +121,7 @@ const Dashboard = () => {
             <div className="dashboard-action-grid">
               <DashboardAction icon={<Scan className="h-6 w-6" />} title="Start a scan" description="Understand your hair and skin" onClick={() => navigate("/scan")} tone="clay" />
               <DashboardAction icon={<Video className="h-6 w-6" />} title="Book a specialist" description="Bring your questions to an expert" onClick={() => navigate("/salon-booking")} tone="espresso" />
-              <DashboardAction icon={<ShoppingBag className="h-6 w-6" />} title="Shop the edit" description="Build a considered ritual" onClick={() => navigate("/shop")} tone="olive" />
+              <DashboardAction icon={<ShoppingBag className="h-6 w-6" />} title="Shop the edit" description="Build a considered routine" onClick={() => navigate("/shop")} tone="olive" />
               <DashboardAction icon={<History className="h-6 w-6" />} title="View timeline" description="See your care progress" onClick={() => navigate("/timeline")} tone="sand" />
               <DashboardAction icon={<Calendar className="h-6 w-6" />} title="Appointments" description="Keep your next visit close" onClick={() => navigate("/telehealth")} tone="rose" />
               <DashboardAction icon={<User className="h-6 w-6" />} title="Your profile" description="Update your care preferences" onClick={() => navigate("/dashboard?section=profile")} tone="cream" />

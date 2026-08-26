@@ -52,7 +52,7 @@ const STORY_SLIDES: StorySlide[] = [
   {
     id: "scan-journey-video",
     eyebrow: "03 · Understand hair + skin",
-    title: "Your next ritual begins with understanding.",
+    title: "Your next care journey begins with understanding.",
     description: "A calm first look at hair, scalp, and skin—so your next step feels more considered and less generic.",
     image: "/imstev-client-profile.jpeg",
     video: "/imstev-scan-journey.mp4",
@@ -67,7 +67,7 @@ const STORY_SLIDES: StorySlide[] = [
   {
     id: "salon",
     eyebrow: "04 · Be held by expertise",
-    title: "A salon ritual rooted in African beauty knowledge.",
+    title: "A salon experience rooted in African beauty knowledge.",
     description: "From wash day to protective styling, meet specialists who understand the patience, pride, and precision your hair deserves.",
     image: "/imstev-client-profile.jpeg",
     objectPosition: "center 34%",

@@ -273,7 +273,7 @@ export default function Consultation() {
           <section className="mb-6 grid gap-4 rounded-[28px] border border-primary/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:grid-cols-[minmax(0,1fr)_260px] sm:p-7">
             <div>
               <Badge className="mb-3 bg-primary/10 text-primary hover:bg-primary/10">Specialist care, made human</Badge>
-              <h2 className="max-w-xl text-2xl font-display font-bold text-slate-900 sm:text-3xl">Bring the question. Leave with a ritual.</h2>
+              <h2 className="max-w-xl text-2xl font-display font-bold text-slate-900 sm:text-3xl">Bring the question. Leave with a clear care plan.</h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Choose a specialist, find a time that works, and get considered guidance for your hair, scalp, or skin journey.</p>
             </div>
             <div className="grid grid-cols-3 gap-2 self-end text-center sm:gap-3">

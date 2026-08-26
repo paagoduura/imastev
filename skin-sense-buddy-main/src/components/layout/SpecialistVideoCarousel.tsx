@@ -4,7 +4,7 @@ import { Pause, Play, VolumeX } from "lucide-react";
 const videos = [
   { src: "/imstev-specialist-01.mp4", label: "A specialist begins with understanding" },
   { src: "/imstev-specialist-02.mp4", label: "Care shaped around natural texture" },
-  { src: "/imstev-specialist-03.mp4", label: "The detail behind every ritual" },
+  { src: "/imstev-specialist-03.mp4", label: "The detail behind every care experience" },
 ];
 
 export function SpecialistVideoCarousel() {

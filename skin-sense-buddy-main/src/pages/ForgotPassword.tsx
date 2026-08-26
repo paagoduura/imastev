@@ -49,7 +49,7 @@ const ForgotPassword = () => {
             <img src="/imstev-client-profile.jpeg" alt="IMSTEV NATURALS client care" className="absolute inset-0 h-full w-full object-cover opacity-50" />
             <div className="absolute inset-0 bg-gradient-to-br from-[#24160d]/95 via-[#3b271b]/60 to-[#24160d]/80" />
             <div className="relative w-48 rounded-2xl bg-[#fffaf5] p-2 shadow-xl"><img src="/imstev-naturals-logo.jpeg" alt="IMSTEV NATURALS — Home of nature's beauty" className="h-auto w-full" /></div>
-            <div className="relative max-w-sm"><p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#f2d2a6]">A softer way back in</p><h1 className="mt-4 font-display text-5xl leading-[0.95]">Your care space is still here.</h1><p className="mt-5 text-sm leading-7 text-white/70">Reset your password and return to the scans, specialists, rituals, and community that make IMSTEV personal.</p></div>
+            <div className="relative max-w-sm"><p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#f2d2a6]">A softer way back in</p><h1 className="mt-4 font-display text-5xl leading-[0.95]">Your care space is still here.</h1><p className="mt-5 text-sm leading-7 text-white/70">Reset your password and return to the scans, specialists, care routines, and community that make IMSTEV personal.</p></div>
             <div className="relative flex items-center gap-2 text-xs text-white/60"><ShieldCheck className="h-4 w-4 text-[#f2d2a6]" /> Your account details stay private.</div>
           </div>
 

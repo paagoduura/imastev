@@ -37,7 +37,7 @@ const careJourneys = [
     number: "02",
     eyebrow: "Be cared for",
     title: "Meet your specialist",
-    body: "Move from insight to action with salon rituals and consultations shaped around your real routine.",
+    body: "Move from insight to action with salon care and consultations shaped around your real routine.",
     href: "/salon-booking",
     icon: Scissors,
     className: "bg-[#c8d2bd]",
@@ -45,7 +45,7 @@ const careJourneys = [
   {
     number: "03",
     eyebrow: "Keep growing",
-    title: "Build your ritual",
+    title: "Build your routine",
     body: "Shop a considered edit of products, save your routine, and keep your progress close.",
     href: "/shop",
     icon: ShoppingBag,
@@ -56,14 +56,14 @@ const careJourneys = [
 const serviceCards = [
   { title: "Hair & scalp scan", body: "Texture-aware guidance for coils, locs, braids, and every stage between.", icon: ScanLine, href: "/scan" },
   { title: "Skin care scan", body: "A calm starting point for understanding what your skin may need next.", icon: Droplets, href: "/scan" },
-  { title: "Salon rituals", body: "Expert styling and treatments in a warm, specialist-led studio.", icon: Scissors, href: "/salon-booking" },
+  { title: "Salon care", body: "Expert styling and treatments in a warm, specialist-led studio.", icon: Scissors, href: "/salon-booking" },
   { title: "Video consultation", body: "Speak with a care professional when you want a human point of view.", icon: MessageCircle, href: "/telehealth" },
 ];
 
 const communityStories = [
   { tag: "Protective styles", title: "How to keep your scalp cared for between appointments", read: "6 min read" },
   { tag: "Texture notes", title: "Porosity is not a problem to fix—it is a language to learn", read: "4 min read" },
-  { tag: "From the studio", title: "A wash-day ritual for softer, stronger natural hair", read: "5 min read" },
+  { tag: "From the studio", title: "A wash-day routine for softer, stronger natural hair", read: "5 min read" },
 ];
 
 export default function Index() {
@@ -123,7 +123,7 @@ export default function Index() {
               <div className="max-w-xl">
                 <p className="eyebrow">The IMSTEV method</p>
                 <h2 className="mt-4 text-4xl leading-[.98] tracking-[-.055em] sm:text-6xl">Where technology meets the touch of an expert.</h2>
-                <p className="mt-6 text-base leading-8 text-[#6e5b4c]">We believe the best care is both personal and precise. Start with a scan, bring your questions to a specialist, and leave with a ritual you can actually live with.</p>
+                <p className="mt-6 text-base leading-8 text-[#6e5b4c]">We believe the best care is both personal and precise. Start with a scan, bring your questions to a specialist, and leave with a care plan you can actually live with.</p>
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
                   {["Built for 4A–4C textures", "Guidance in plain language", "Human review when needed", "Thoughtful product edits"].map((item) => <div key={item} className="flex items-center gap-3 text-sm font-semibold text-[#4d3b2e]"><span className="grid h-6 w-6 place-items-center rounded-full bg-[#71856b]/15 text-[#536b52]"><Check size={14} /></span>{item}</div>)}
                 </div>
