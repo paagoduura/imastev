@@ -1087,11 +1087,13 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
 }
 
 /* Show hairstyle imagery in full, natural framing inside the shared video-sized card. */
-.signature-carousel__card--image img,
+.signature-carousel__card--image img {
+  object-fit: cover;
+  transform: scale(1.04);
+  background: transparent;
+}
 .signature-carousel__card--image.is-active img {
-  object-fit: contain;
-  transform: none;
-  background: #24160d;
+  transform: scale(1.1);
 }
 
 /* Keep side cards visually quiet so the active hairstyle remains the focus. */
