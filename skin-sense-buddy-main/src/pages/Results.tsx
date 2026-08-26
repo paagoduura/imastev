@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -357,6 +357,19 @@ www.imstevnaturals.com
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!scanId) {
+      setLoadError('This scan link is missing its scan ID.');
+      setPaymentStatus('error');
+      setLoading(false);
+      return;
+    }
+
+    void fetchResults();
+    // The scan ID is the route-level trigger; fetchResults owns its request state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanId]);
 
   const checkPaymentStatus = async (id: string) => {
     try {
