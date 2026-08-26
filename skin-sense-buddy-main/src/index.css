@@ -1132,10 +1132,10 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   z-index: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   background: #2a1b12;
   opacity: 0;
-  transform: scale(1.025);
+  transform: scale(1.045);
   transition: opacity .9s ease, transform 7s cubic-bezier(.23,1,.32,1);
 }
 .specialist-video-carousel__image.is-active {
