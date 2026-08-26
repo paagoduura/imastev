@@ -9,27 +9,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Loader2, Lock, Mail, ArrowRight, ThumbsUp, Users, Eye, EyeOff } from "lucide-react";
 
-declare global {
-  interface Window {
-    google?: {
-      accounts?: {
-        id?: {
-          initialize: (options: {
-            client_id: string;
-            callback: (response: { credential?: string }) => void;
-          }) => void;
-          renderButton: (
-            parent: HTMLElement,
-            options: Record<string, string | number | boolean>
-          ) => void;
-        };
-      };
-    };
-  }
-}
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
-
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
@@ -39,8 +18,6 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
-  const [googleReady, setGoogleReady] = useState(false);
-  const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -121,85 +98,6 @@ const Auth = () => {
       cancelled = true;
     };
   }, [finishSignedInUser, navigate, searchParams, setSearchParams, toast]);
-
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
-
-    let rendered = false;
-
-    const renderGoogleButton = () => {
-      if (!window.google?.accounts?.id || !googleButtonRef.current) return;
-      // Bug 27 fix: clear container before rendering to prevent duplicate buttons
-      if (rendered) return;
-      rendered = true;
-      googleButtonRef.current.innerHTML = "";
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async ({ credential }) => {
-          if (!credential) {
-            toast({
-              title: "Google sign-in failed",
-              description: "Google did not return a usable sign-in credential.",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          setLoading(true);
-          try {
-            const { error, data } = await supabase.auth.signInWithGoogleIdToken({ credential });
-            if (error) {
-              toast({
-                title: "Google sign-in failed",
-                description: error.message,
-                variant: "destructive",
-              });
-              return;
-            }
-
-            if (data?.user?.id) {
-              setPendingVerificationEmail("");
-              setSignInPassword("");
-              setSignUpPassword("");
-              await finishSignedInUser(data.user.id, "Signed in with Google.");
-            }
-          } finally {
-            setLoading(false);
-          }
-        },
-      });
-
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        shape: "pill",
-        width: 320,
-        text: activeTab === "signup" ? "signup_with" : "signin_with",
-      });
-      setGoogleReady(true);
-    };
-
-    if (window.google?.accounts?.id) {
-      renderGoogleButton();
-      return;
-    }
-
-    const existingScript = document.querySelector<HTMLScriptElement>('script[data-google-identity="true"]');
-    if (existingScript) {
-      existingScript.addEventListener("load", renderGoogleButton, { once: true });
-      return () => existingScript.removeEventListener("load", renderGoogleButton);
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.dataset.googleIdentity = "true";
-    script.addEventListener("load", renderGoogleButton, { once: true });
-    document.head.appendChild(script);
-
-    return () => script.removeEventListener("load", renderGoogleButton);
-  }, [activeTab, finishSignedInUser, navigate, toast]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -319,9 +217,6 @@ const Auth = () => {
         const message = error.message.toLowerCase();
         if (message.includes("verify")) {
           setPendingVerificationEmail(normalizedEmail);
-        }
-        if (message.includes("google sign-in")) {
-          setSignInPassword("");
         }
         toast({
           title: "Error",
@@ -495,24 +390,6 @@ const Auth = () => {
                             </Button>
                           </div>
                         ) : null}
-
-                          <div className="mb-4 space-y-3 sm:mb-5">
-                          <div ref={googleButtonRef} className="flex min-h-11 items-center justify-center" />
-                          {!GOOGLE_CLIENT_ID ? (
-                            <p className="text-center text-xs text-muted-foreground">
-                              Add `VITE_GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_ID` to enable Google sign-in.
-                            </p>
-                          ) : googleReady ? null : (
-                            <p className="text-center text-xs text-muted-foreground">
-                              Loading Google sign-in...
-                            </p>
-                          )}
-                          <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:text-xs sm:tracking-[0.24em]">
-                            <div className="h-px flex-1 bg-primary/10" />
-                            <span>or continue with email</span>
-                            <div className="h-px flex-1 bg-primary/10" />
-                          </div>
-                        </div>
 
                         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="w-full">
                           <TabsList className="mb-4 grid w-full grid-cols-2 rounded-xl bg-primary/5 p-1 sm:mb-5">
