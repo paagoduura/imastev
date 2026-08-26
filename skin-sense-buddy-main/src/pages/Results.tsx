@@ -85,13 +85,26 @@ type PaymentStatusResponse = {
   paid?: boolean;
 };
 
+const RESULTS_REQUEST_TIMEOUT_MS = 20_000;
+
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong");
 
+const fetchWithTimeout = async (input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = RESULTS_REQUEST_TIMEOUT_MS) => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+};
+
 const getApiAuthToken = async () => {
-  const legacyToken = localStorage.getItem('glowsense_token');
-  if (legacyToken) return legacyToken;
   const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token || null;
+  const sessionToken = session?.access_token?.trim();
+  const legacyToken = localStorage.getItem('glowsense_token')?.trim();
+  const token = sessionToken || legacyToken;
+  return token?.replace(/^Bearer\s+/i, '').trim() || null;
 };
 
 const Results = () => {
@@ -109,6 +122,7 @@ const Results = () => {
   const [products, setProducts] = useState<ProductRecommendation[]>([]);
   const [imstevProducts, setImstevProducts] = useState<ProductRecommendation[]>([]);
   const [profile, setProfile] = useState<ProfileRecord | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const downloadReport = () => {
     if (!diagnosis || !scan) {
@@ -266,9 +280,10 @@ www.imstevnaturals.com
 
   const fetchResults = async () => {
     try {
+      setLoadError(null);
       // Fetch scan from the same backend path used during scan creation.
       const token = await getApiAuthToken();
-      const scanResponse = await fetch(buildApiUrl(`/scans/${scanId}`), {
+      const scanResponse = await fetchWithTimeout(buildApiUrl(`/scans/${scanId}`), {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!scanResponse.ok) throw new Error(`Unable to load scan (${scanResponse.status})`);
@@ -278,12 +293,15 @@ www.imstevnaturals.com
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('full_name, phone')
-          .eq('user_id', user.id)
-          .single();
-        setProfile(profileData || null);
+        const profileResult = await Promise.race([
+          supabase
+            .from('profiles')
+            .select('full_name, phone')
+            .eq('user_id', user.id)
+            .single(),
+          new Promise<null>((resolve) => window.setTimeout(() => resolve(null), RESULTS_REQUEST_TIMEOUT_MS)),
+        ]);
+        setProfile(profileResult?.data || null);
       }
 
       // The backend controls whether this response contains preview or full care data.
@@ -299,7 +317,7 @@ www.imstevnaturals.com
       if (scanData?.scan_type === 'hair') {
         const token = localStorage.getItem('glowsense_token');
         try {
-          const response = await fetch(buildApiUrl('/products?category=Hair%20Care'), {
+          const response = await fetchWithTimeout(buildApiUrl('/products?category=Hair%20Care'), {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           if (response.ok) {
@@ -325,9 +343,14 @@ www.imstevnaturals.com
 
     } catch (error) {
       console.error('Error fetching results:', error);
+      const message = error instanceof DOMException && error.name === 'AbortError'
+        ? 'The results request took too long. Please retry.'
+        : getErrorMessage(error);
+      setLoadError(message);
+      setPaymentStatus('error');
       toast({
         title: "Error loading results",
-        description: "Please try again later",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -338,8 +361,8 @@ www.imstevnaturals.com
   const checkPaymentStatus = async (id: string) => {
     try {
       setPaymentStatus('checking');
-      const token = localStorage.getItem('glowsense_token');
-      const response = await fetch(buildApiUrl(`/analysis/payment-status?scanId=${id}`), {
+      const token = await getApiAuthToken();
+      const response = await fetchWithTimeout(buildApiUrl(`/analysis/payment-status?scanId=${id}`), {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!response.ok) {
@@ -349,6 +372,9 @@ www.imstevnaturals.com
       setPaymentStatus(data.paid ? 'paid' : 'unpaid');
     } catch (error) {
       console.error('Payment status check failed:', error);
+      setLoadError(error instanceof DOMException && error.name === 'AbortError'
+        ? 'Payment verification took too long. Please retry.'
+        : 'We could not verify access right now. Please retry.');
       setPaymentStatus('error');
     }
   };
@@ -500,12 +526,12 @@ www.imstevnaturals.com
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background flex items-center justify-center p-4">
         <Card className="max-w-md">
-          <CardContent className="pt-6 text-center">
-            <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Unable to confirm payment</h3>
-            <p className="text-muted-foreground mb-6">
-              We couldn't verify your payment status right now. Please try again.
-            </p>
+            <CardContent className="pt-6 text-center">
+              <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Unable to load your results</h3>
+              <p className="text-muted-foreground mb-6">
+                {loadError || "We couldn't load your scan right now. Please try again."}
+              </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button onClick={() => scanId && checkPaymentStatus(scanId)}>Retry</Button>
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
