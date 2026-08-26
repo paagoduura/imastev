@@ -45,10 +45,11 @@ export default function PaymentCallback() {
   }, [analysisDone, analysisScanId, navigate]);
 
   const getApiToken = async (): Promise<string | null> => {
-    const legacyToken = localStorage.getItem('glowsense_token');
-    if (legacyToken) return legacyToken;
     const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
+    const sessionToken = session?.access_token?.trim();
+    const legacyToken = localStorage.getItem('glowsense_token')?.trim();
+    const token = sessionToken || legacyToken;
+    return token?.replace(/^Bearer\s+/i, '').trim() || null;
   };
 
   /**
@@ -77,7 +78,8 @@ export default function PaymentCallback() {
 
     // A preview already contains the stored analysis. After verified payment,
     // the results endpoint will return the full record, so avoid re-running it.
-    if (Array.isArray(scanData.diagnoses) && scanData.diagnoses.length > 0) {
+    const hasPreviewDiagnosis = scanData.status === 'preview_ready';
+    if (Array.isArray(scanData.diagnoses) && scanData.diagnoses.length > 0 && !hasPreviewDiagnosis) {
       setPostPaymentMessage(
         paymentOption === 'subscription'
           ? `Payment verified, your monthly scan plan is active, and your complete care notes are ready.`
@@ -99,6 +101,7 @@ export default function PaymentCallback() {
       },
       body: JSON.stringify({
         scanId: storedScanId,
+        preview: false,
         ...(useDedicatedFunction ? {
           imageUrl: scanData.image_url,
           multiAngleUrls: scanData.multi_angle_urls || {},

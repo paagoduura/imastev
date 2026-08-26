@@ -472,7 +472,7 @@ const Scan = () => {
     return payload;
   };
 
-  const runAnalysis = async (scan: ScanRecord) => {
+  const runAnalysis = async (scan: ScanRecord, preview = false) => {
     const token = await getApiAuthToken();
     if (!token) throw new Error('Authentication required to run analysis');
 
@@ -483,7 +483,11 @@ const Scan = () => {
       ? buildFunctionUrl(`analyze-${analysisType}`)
       : buildApiUrl(`/analyze/${analysisType}`);
     const publicSupabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || import.meta.env.SUPABASE_ANON_KEY?.trim();
-    const response = await fetch(analysisEndpoint, {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), preview ? 60_000 : 120_000);
+    let response: Response;
+    try {
+      response = await fetch(analysisEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -492,13 +496,17 @@ const Scan = () => {
       },
       body: JSON.stringify({
         scanId: scan.id,
+        preview,
         ...(useDedicatedFunction ? {
           imageUrl: scan.image_url,
           multiAngleUrls: scan.multi_angle_urls || {},
           calibration: scan.capture_info || undefined,
         } : {}),
       }),
-    });
+      });
+    } finally {
+      window.clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
@@ -592,7 +600,7 @@ const Scan = () => {
       }
 
       const { scan } = await prepareScan(user);
-      await runAnalysis(scan);
+      await runAnalysis(scan, true);
       toast({
         title: "Your scan preview is ready",
         description: "Review the first care notes, then unlock the complete guidance when you are ready.",

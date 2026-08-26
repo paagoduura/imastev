@@ -30,7 +30,8 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { scanId, imageUrl, multiAngleUrls, calibration } = await req.json();
+    const { scanId, imageUrl, multiAngleUrls, calibration, preview = false } = await req.json();
+    const isPreview = preview === true;
 
     console.log('Analyzing hair scan:', scanId, 'for user:', user.id);
 
@@ -91,7 +92,7 @@ serve(async (req) => {
     const hasMultiAngle = multiAngleUrls && Object.keys(multiAngleUrls).length > 1;
     const hasCalibration = calibration && calibration.pixelsPerMM;
 
-    const systemPrompt = `You are an advanced trichology and hair analysis AI with expertise in African/Nigerian hair types (Type 3C-4C), relaxed hair, and transitioning hair.
+    const fullSystemPrompt = `You are an advanced trichology and hair analysis AI with expertise in African/Nigerian hair types (Type 3C-4C), relaxed hair, and transitioning hair.
 
 USER CONTEXT: ${JSON.stringify(userContext)}
 ${hasCalibration ? `SCALE CALIBRATION: ${calibration.pixelsPerMM.toFixed(2)} pixels/mm using ${calibration.referenceType}` : ''}
@@ -212,8 +213,21 @@ Return ONLY valid JSON in this exact format:
       "importance": 8,
       "color": "orange"
     }
-  ]
+    ]
 }`;
+
+    const previewSystemPrompt = `You are a careful hair-care analysis assistant for African hair textures. Review the supplied image and return ONLY valid JSON in this exact format:
+{
+  "primary_condition": "one concise visible focus",
+  "confidence_score": 0,
+  "severity": "mild|moderate|severe",
+  "triage_level": "self_care|see_trichologist|see_dermatologist|urgent_care",
+  "preview_recommendation": "one practical first care step",
+  "conditions": [{ "condition": "one visible focus", "confidence": 0, "severity": "mild|moderate|severe", "explanation": "one short evidence-based sentence" }],
+  "hair_texture": { "type": "3C|4A|4B|4C|uncertain", "pattern_description": "short description" }
+}
+Use cautious language, do not claim certainty beyond the image, and do not provide a complete care plan.`;
+    const systemPrompt = isPreview ? previewSystemPrompt : fullSystemPrompt;
 
     // Download image from storage and convert to base64
     console.log('Downloading hair image from storage:', imageUrl);
@@ -243,7 +257,11 @@ Return ONLY valid JSON in this exact format:
     const imageBase64Url = `data:${contentType};base64,${base64Image}`;
     console.log('Hair image converted to base64, size:', base64Image.length);
 
-    const aiResponse = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+    const providerController = new AbortController();
+    const providerTimeout = setTimeout(() => providerController.abort(), isPreview ? 45_000 : 90_000);
+    let aiResponse: Response;
+    try {
+      aiResponse = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -252,18 +270,30 @@ Return ONLY valid JSON in this exact format:
       body: JSON.stringify({
         model: OPENAI_MODEL,
         response_format: { type: 'json_object' },
+        max_tokens: isPreview ? 900 : 2200,
         messages: [
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Analyze this hair image and provide a comprehensive hair and scalp assessment. Focus on hair texture, porosity, scalp health, strand condition, and any issues that need attention.' },
+              { type: 'text', text: isPreview
+                ? 'Give a concise first read of this hair image: identify the primary visible focus, confidence, triage level, and one practical first recommendation.'
+                : 'Analyze this hair image and provide a comprehensive hair and scalp assessment. Focus on hair texture, porosity, scalp health, strand condition, and any issues that need attention.' },
               { type: 'image_url', image_url: { url: imageBase64Url } }
             ]
           }
         ],
       }),
-    });
+      signal: providerController.signal,
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error(isPreview ? 'Preview analysis took too long. Please try again.' : 'Full analysis took too long. Please try again.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(providerTimeout);
+    }
 
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
@@ -333,12 +363,14 @@ Return ONLY valid JSON in this exact format:
     }
 
     // Fetch matching hair products based on condition and hair type
-    const { data: products } = await supabaseClient
-      .from('products')
-      .select('*')
-      .eq('product_type', 'hair')
-      .eq('is_active', true)
-      .limit(10);
+    const { data: products } = isPreview
+      ? { data: [] }
+      : await supabaseClient
+        .from('products')
+        .select('*')
+        .eq('product_type', 'hair')
+        .eq('is_active', true)
+        .limit(10);
 
     // Filter products based on user's hair type and concerns
     const filteredProducts = products?.filter(product => {
@@ -364,14 +396,16 @@ Return ONLY valid JSON in this exact format:
       .insert({
         diagnosis_id: diagnosis.id,
         user_id: user.id,
-        recommendations: `Based on your ${analysis.hair_texture?.type || 'hair'} hair type with ${analysis.primary_condition}, we recommend the following routine.`,
+        recommendations: isPreview
+          ? (analysis.preview_recommendation || analysis.treatment_recommendations?.immediate?.[0] || `Start with a gentle routine focused on your ${analysis.primary_condition || 'current hair concern'}.`)
+          : `Based on your ${analysis.hair_texture?.type || 'hair'} hair type with ${analysis.primary_condition}, we recommend the following routine.`,
         ingredients_to_use: treatmentRecs.products_to_use || [],
         ingredients_to_avoid: treatmentRecs.products_to_avoid || [],
         lifestyle_tips: [
           ...(treatmentRecs.styling_recommendations || []),
           treatmentRecs.loc_method || '',
         ].filter(Boolean),
-        product_recommendations: filteredProducts.slice(0, 5).map(p => ({
+        product_recommendations: isPreview ? [] : filteredProducts.slice(0, 5).map(p => ({
           sku: p.sku,
           name: p.name,
           category: p.category,
@@ -383,14 +417,15 @@ Return ONLY valid JSON in this exact format:
     // Update scan status to completed
     await supabaseClient
       .from('scans')
-      .update({ status: 'completed' })
+      .update({ status: isPreview ? 'preview_ready' : 'completed' })
       .eq('id', scanId);
 
     console.log('Hair analysis completed successfully');
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
+        success: true,
+        preview: isPreview,
         diagnosis,
         products: filteredProducts.slice(0, 5),
       }),
