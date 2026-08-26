@@ -272,10 +272,16 @@ function previewDiagnosis(diagnosis: Record<string, unknown> | null) {
       };
     }),
     hair_profile: diagnosis.hair_profile && typeof diagnosis.hair_profile === "object"
-      ? { hair_texture: (diagnosis.hair_profile as Record<string, unknown>).hair_texture }
+      ? {
+          hair_texture: (diagnosis.hair_profile as Record<string, unknown>).hair_texture,
+          scanner_contract: (diagnosis.hair_profile as Record<string, unknown>).scanner_contract,
+        }
       : null,
     skin_profile: diagnosis.skin_profile && typeof diagnosis.skin_profile === "object"
-      ? diagnosis.skin_profile
+      ? {
+          skin_type: (diagnosis.skin_profile as Record<string, unknown>).skin_type,
+          scanner_contract: (diagnosis.skin_profile as Record<string, unknown>).scanner_contract,
+        }
       : null,
   };
 }
@@ -388,7 +394,12 @@ async function signStorageValue(service: SupabaseClient, bucket: string, value: 
 }
 
 async function signScanImageFields(service: SupabaseClient, scan: Record<string, any>) {
-  const bucket = String(scan.scan_type || "skin") === "hair" ? "hair-scans" : "skin-scans";
+  const storedBucket = scan.image_metadata && typeof scan.image_metadata === "object"
+    ? (scan.image_metadata as Record<string, unknown>).storage_bucket
+    : null;
+  const bucket = storedBucket === "skin-scans" || storedBucket === "hair-scans"
+    ? storedBucket
+    : String(scan.scan_type || "skin") === "skin" ? "skin-scans" : "hair-scans";
   const [imageUrl, multiAngleEntries] = await Promise.all([
     signStorageValue(service, bucket, scan.image_url),
     Promise.all(Object.entries(scan.multi_angle_urls || {}).map(async ([angle, value]) => [

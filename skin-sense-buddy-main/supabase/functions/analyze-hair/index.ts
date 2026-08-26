@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizeAnalysis, qualityScoreFromCaptureInfo } from "../_shared/scanContract.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +8,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  let activeScanId: string | null = null;
+  let activeSupabaseClient: ReturnType<typeof createClient> | null = null;
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,6 +19,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
+    activeSupabaseClient = supabaseClient;
 
     // Get user from auth header
     const authHeader = req.headers.get('Authorization') || '';
@@ -30,7 +34,9 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { scanId, imageUrl, multiAngleUrls, calibration, preview = false } = await req.json();
+    const { scanId, imageUrl, multiAngleUrls, calibration, preview = false, analysisScope = 'hair', scanMode = 'hair' } = await req.json();
+    activeScanId = typeof scanId === 'string' ? scanId : null;
+    const normalizedScope = analysisScope === 'scalp' || analysisScope === 'full' ? analysisScope : 'hair';
     const isPreview = preview === true;
 
     console.log('Analyzing hair scan:', scanId, 'for user:', user.id);
@@ -51,6 +57,16 @@ serve(async (req) => {
 
     if (!scan || scan.user_id !== user.id) {
       throw new Error('Scan not found or unauthorized');
+    }
+
+    const qualityScore = qualityScoreFromCaptureInfo(scan.capture_info);
+    const qualityRows = Array.isArray(scan.capture_info?.quality_scores) ? scan.capture_info.quality_scores : [];
+    const qualityRejected = qualityRows.some((row: Record<string, unknown>) => {
+      const scanQuality = row?.scan_quality;
+      return scanQuality && typeof scanQuality === 'object' && (scanQuality as Record<string, unknown>).status === 'retake';
+    });
+    if (qualityRejected) {
+      throw new Error('Image quality is below the reliable analysis threshold. Please retake the flagged view.');
     }
 
     // Update scan status to analyzing
@@ -92,7 +108,15 @@ serve(async (req) => {
     const hasMultiAngle = multiAngleUrls && Object.keys(multiAngleUrls).length > 1;
     const hasCalibration = calibration && calibration.pixelsPerMM;
 
+    const scopeInstruction = normalizedScope === 'scalp'
+      ? 'This is a SCALP-focused review. Assess only visible patterns such as dryness, scaling, buildup, redness, irritation, follicle visibility, density change, and hairline appearance. Do not diagnose fungal infection, alopecia, psoriasis, dermatitis, or another medical disorder from a photograph. Where appropriate say: Visual pattern detected — professional assessment recommended.'
+      : normalizedScope === 'full'
+        ? 'This is part of a FULL CARE SCAN. Give a hair and visible scalp assessment, keep medical claims qualified, and clearly separate visual observation from professional assessment.'
+        : 'This is a HAIR-focused review. Assess visible hair pattern, texture, density, damage, moisture, breakage, hairline, and visible scalp indicators.';
     const fullSystemPrompt = `You are an advanced trichology and hair analysis AI with expertise in African/Nigerian hair types (Type 3C-4C), relaxed hair, and transitioning hair.
+
+ANALYSIS SCOPE: ${normalizedScope.toUpperCase()} (${scanMode})
+${scopeInstruction}
 
 USER CONTEXT: ${JSON.stringify(userContext)}
 ${hasCalibration ? `SCALE CALIBRATION: ${calibration.pixelsPerMM.toFixed(2)} pixels/mm using ${calibration.referenceType}` : ''}
@@ -216,7 +240,7 @@ Return ONLY valid JSON in this exact format:
     ]
 }`;
 
-    const previewSystemPrompt = `You are a careful hair-care analysis assistant for African hair textures. Review the supplied image and return ONLY valid JSON in this exact format:
+    const previewSystemPrompt = `You are a careful hair and scalp analysis assistant for African hair textures. Review the supplied image for the ${normalizedScope} scope and return ONLY valid JSON in this exact format:
 {
   "primary_condition": "one concise visible focus",
   "confidence_score": 0,
@@ -229,33 +253,31 @@ Return ONLY valid JSON in this exact format:
 Use cautious language, do not claim certainty beyond the image, and do not provide a complete care plan.`;
     const systemPrompt = isPreview ? previewSystemPrompt : fullSystemPrompt;
 
-    // Download image from storage and convert to base64
-    console.log('Downloading hair image from storage:', imageUrl);
-    const bucketName = imageUrl.includes('/hair-scans/') ? 'hair-scans' : 'skin-scans';
-    const imageFileName = imageUrl.split(`/${bucketName}/`)[1];
-    const { data: imageData, error: downloadError } = await supabaseClient.storage
-      .from(bucketName)
-      .download(imageFileName);
-
-    if (downloadError || !imageData) {
-      console.error('Failed to download image:', downloadError);
-      throw new Error('Failed to download image from storage');
+    // Download and aggregate the captured views so the provider can compare evidence together.
+    const imageSources = [...new Set([
+      imageUrl,
+      ...Object.values(multiAngleUrls || {}),
+    ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0))].slice(0, 6);
+    const imageBase64Urls: string[] = [];
+    for (const sourceUrl of imageSources) {
+      const bucketName = sourceUrl.includes('/hair-scans/') ? 'hair-scans' : sourceUrl.includes('/skin-scans/') ? 'skin-scans' : 'hair-scans';
+      const marker = `/${bucketName}/`;
+      const imageFileName = sourceUrl.includes(marker)
+        ? sourceUrl.split(marker)[1].split('?')[0]
+        : sourceUrl.split('?')[0].split('/').slice(-2).join('/');
+      if (!imageFileName) continue;
+      const { data: imageData, error: downloadError } = await supabaseClient.storage.from(bucketName).download(imageFileName);
+      if (downloadError || !imageData) {
+        console.warn('Skipping unavailable hair view:', sourceUrl, downloadError?.message || 'download failed');
+        continue;
+      }
+      const imageBuffer = await imageData.arrayBuffer();
+      const base64Image = btoa(new Uint8Array(imageBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+      const contentType = imageData.type || (sourceUrl.toLowerCase().endsWith('.png') ? 'image/png' : sourceUrl.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+      imageBase64Urls.push(`data:${contentType};base64,${base64Image}`);
     }
-
-    // Convert blob to base64
-    const imageBuffer = await imageData.arrayBuffer();
-    const base64Image = btoa(
-      new Uint8Array(imageBuffer).reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ''
-      )
-    );
-    const contentType = imageData.type || (
-      imageUrl.toLowerCase().endsWith('.png') ? 'image/png' :
-      imageUrl.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg'
-    );
-    const imageBase64Url = `data:${contentType};base64,${base64Image}`;
-    console.log('Hair image converted to base64, size:', base64Image.length);
+    if (!imageBase64Urls.length) throw new Error('Failed to download scan images from storage');
+    console.log('Hair scan views prepared:', imageBase64Urls.length);
 
     const providerController = new AbortController();
     const providerTimeout = setTimeout(() => providerController.abort(), isPreview ? 45_000 : 90_000);
@@ -279,7 +301,7 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
               { type: 'text', text: isPreview
                 ? 'Give a concise first read of this hair image: identify the primary visible focus, confidence, triage level, and one practical first recommendation.'
                 : 'Analyze this hair image and provide a comprehensive hair and scalp assessment. Focus on hair texture, porosity, scalp health, strand condition, and any issues that need attention.' },
-              { type: 'image_url', image_url: { url: imageBase64Url } }
+              ...imageBase64Urls.map((url) => ({ type: 'image_url', image_url: { url, detail: isPreview ? 'low' : 'high' } }))
             ]
           }
         ],
@@ -302,11 +324,24 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
       if (aiResponse.status === 401 || aiResponse.status === 403) {
         throw new Error('OpenAI analysis access was rejected. Check the server-side API key and model access.');
       }
-      console.error('OpenAI API error:', aiResponse.status, await aiResponse.text());
+      console.error(JSON.stringify({ event: 'scanner_analysis_error', provider: 'openai-compatible', model: OPENAI_MODEL, scope: normalizedScope, status: aiResponse.status }));
       throw new Error('OpenAI analysis is temporarily unavailable.');
     }
 
     const aiData = await aiResponse.json();
+    const providerRequestId = aiResponse.headers.get('x-request-id') || aiData?.id || null;
+    console.log(JSON.stringify({
+      event: 'scanner_analysis_usage',
+      provider: 'openai-compatible',
+      model: OPENAI_MODEL,
+      scope: normalizedScope,
+      preview: isPreview,
+      request_id: providerRequestId,
+      image_count: imageBase64Urls.length,
+      processing_time_ms: Date.now() - startTime,
+      usage: aiData?.usage || null,
+      estimated_cost_usd: null,
+    }));
     const aiContent = aiData?.choices?.[0]?.message?.content;
     if (typeof aiContent !== 'string' || !aiContent.trim()) {
       throw new Error('OpenAI analysis returned an empty response.');
@@ -320,7 +355,7 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
       const jsonMatch = aiContent.match(/```json\n?([\s\S]*?)\n?```/) || 
                        aiContent.match(/```\n?([\s\S]*?)\n?```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : aiContent;
-      analysis = JSON.parse(jsonStr);
+      analysis = normalizeAnalysis(JSON.parse(jsonStr), normalizedScope, qualityScore);
     } catch (e) {
       console.error('Failed to parse AI response:', aiContent);
       throw new Error('Invalid AI response format');
@@ -334,7 +369,7 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
       .insert({
         scan_id: scanId,
         user_id: user.id,
-        analysis_type: 'hair',
+        analysis_type: normalizedScope === 'scalp' ? 'scalp' : 'hair',
         conditions: analysis.conditions,
         primary_condition: analysis.primary_condition,
         confidence_score: analysis.confidence_score,
@@ -350,6 +385,13 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
           chemical_status: analysis.chemical_status,
           treatment_recommendations: analysis.treatment_recommendations,
           heatmap_regions: analysis.heatmap_regions,
+          scanner_contract: {
+            scope: normalizedScope,
+            scan_quality: qualityScore,
+            evidence_quality: analysis.evidence_quality,
+            analysis_status: analysis.analysis_status,
+            safety_flags: analysis.safety_flags,
+          },
         },
         ai_model_version: 'gemini-2.5-flash-hair',
         processing_time_ms: processingTime,
@@ -417,7 +459,7 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
     // Update scan status to completed
     await supabaseClient
       .from('scans')
-      .update({ status: isPreview ? 'preview_ready' : 'completed' })
+      .update({ status: 'completed' })
       .eq('id', scanId);
 
     console.log('Hair analysis completed successfully');
@@ -434,6 +476,9 @@ Use cautious language, do not claim certainty beyond the image, and do not provi
 
   } catch (error) {
     console.error('Error in analyze-hair function:', error);
+    if (activeScanId && activeSupabaseClient) {
+      await activeSupabaseClient.from('scans').update({ status: 'failed' }).eq('id', activeScanId);
+    }
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: errorMessage }),

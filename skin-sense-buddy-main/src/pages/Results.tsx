@@ -13,6 +13,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PhoneNumberPrompt } from "@/components/checkout/PhoneNumberPrompt";
 import { buildApiUrl } from "@/lib/config";
 import { ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
+import { ScanEvidenceSummary } from "@/components/results/ScanEvidenceSummary";
 
 type AnalysisCondition = {
   condition?: string;
@@ -25,6 +26,15 @@ type AnalysisCondition = {
 type SkinProfile = {
   skin_type?: string;
   fitzpatrick_scale?: string;
+  scanner_contract?: ScannerContract;
+  [key: string]: unknown;
+};
+
+type ScannerContract = {
+  scan_quality?: number;
+  evidence_quality?: string;
+  analysis_status?: string;
+  safety_flags?: string[];
 };
 
 type DiagnosisRecord = {
@@ -51,6 +61,8 @@ type ScanRecord = {
   id: string;
   scan_type?: string;
   image_url?: string;
+  image_metadata?: Record<string, unknown> | null;
+  capture_info?: Record<string, unknown> | null;
   accessLevel?: 'preview' | 'full';
   paymentType?: string | null;
   diagnoses?: DiagnosisRecord[];
@@ -97,6 +109,34 @@ const fetchWithTimeout = async (input: RequestInfo | URL, init: RequestInit = {}
   } finally {
     window.clearTimeout(timeout);
   }
+};
+
+const getScannerContract = (profile: Record<string, unknown> | SkinProfile | null | undefined): ScannerContract | undefined => {
+  const value = profile?.scanner_contract;
+  return value && typeof value === 'object' ? value as ScannerContract : undefined;
+};
+
+const getScannerEvidence = (scan: ScanRecord | null, diagnosis: DiagnosisRecord | null) => {
+  const metadata = scan?.image_metadata || {};
+  const captureInfo = scan?.capture_info || {};
+  const rawScores = Array.isArray(metadata.quality_scores) ? metadata.quality_scores : [];
+  const qualityScores = rawScores.map((value) => {
+    if (!value || typeof value !== 'object') return NaN;
+    const score = (value as Record<string, unknown>).score;
+    return Number(score);
+  }).filter(Number.isFinite);
+  const contract = getScannerContract(diagnosis?.hair_profile) || getScannerContract(diagnosis?.skin_profile);
+  const qualityScore = qualityScores.length ? qualityScores.reduce((sum, value) => sum + value, 0) / qualityScores.length : contract?.scan_quality;
+  const capturedAngles = Array.isArray(captureInfo.captured_angles) ? captureInfo.captured_angles.length : undefined;
+  const requiredAngles = Array.isArray(captureInfo.required_angles) ? captureInfo.required_angles.length : undefined;
+  return {
+    qualityScore,
+    capturedCount: capturedAngles,
+    requiredCount: requiredAngles,
+    evidenceQuality: contract?.evidence_quality,
+    analysisStatus: contract?.analysis_status,
+    safetyFlags: Array.isArray(contract?.safety_flags) ? contract.safety_flags : [],
+  };
 };
 
 const getApiAuthToken = async () => {
@@ -565,6 +605,7 @@ www.imstevnaturals.com
       ? 'The image was reviewed, but it does not support a reliable named finding. A closer, well-lit image can provide a more useful first read.'
       : 'This first read is based on visible cues in the uploaded image.');
     const previewRecommendation = treatmentPlan?.recommendations || 'Your first care note is ready. Unlock the complete routine for the full guidance.';
+    const previewEvidence = getScannerEvidence(scan, diagnosis);
 
     return (
       <>
@@ -590,6 +631,8 @@ www.imstevnaturals.com
                 </CardContent>
               </Card>
             )}
+
+            <ScanEvidenceSummary {...previewEvidence} />
 
             <div className="grid gap-6 md:grid-cols-[1.05fr_0.95fr]">
               <Card className="border-primary/30 bg-primary-light/15">
@@ -734,8 +777,9 @@ www.imstevnaturals.com
     );
   }
 
-  const isHairAnalysis = diagnosis.analysis_type === 'hair' || scan?.scan_type === 'hair';
+  const isHairAnalysis = diagnosis.analysis_type === 'hair' || diagnosis.analysis_type === 'scalp' || scan?.scan_type === 'hair' || scan?.scan_type === 'scalp';
   const triageInfo = getTriageMessage(diagnosis.triage_level, isHairAnalysis);
+  const resultEvidence = getScannerEvidence(scan, diagnosis);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/10 to-background p-4">
@@ -782,6 +826,8 @@ www.imstevnaturals.com
             </CardContent>
           </Card>
         )}
+
+        <ScanEvidenceSummary {...resultEvidence} />
 
         {/* Heatmap Visualization (for skin) */}
         {!isHairAnalysis && diagnosis?.heatmap_regions && diagnosis.heatmap_regions.length > 0 && (

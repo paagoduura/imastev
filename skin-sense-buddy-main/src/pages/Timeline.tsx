@@ -25,12 +25,16 @@ interface Scan {
   image_url: string;
   thumbnail_url?: string;
   scan_type?: string;
+  image_metadata?: Record<string, unknown> | null;
+  capture_info?: Record<string, unknown> | null;
   diagnoses: Array<{
     primary_condition: string;
     confidence_score: number;
     severity?: string;
     triage_level: string;
     analysis_type?: string;
+    conditions?: Array<{ condition?: string; confidence?: number; explanation?: string }>;
+    skin_profile?: Record<string, unknown> | null;
     hair_profile?: {
       moisture_level?: number;
       protein_balance?: number;
@@ -44,6 +48,21 @@ interface Scan {
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Something went wrong");
 
+type JourneyState = "improved" | "stable" | "worsened" | "no_reliable_change";
+
+const severityScore: Record<string, number> = { mild: 1, moderate: 2, severe: 3 };
+
+const getJourneyState = (before?: Scan["diagnoses"][number], after?: Scan["diagnoses"][number]): JourneyState => {
+  if (!before || !after) return "no_reliable_change";
+  if ((before.confidence_score || 0) < 45 || (after.confidence_score || 0) < 45) return "no_reliable_change";
+  const beforeSeverity = severityScore[(before.severity || "").toLowerCase()] || 0;
+  const afterSeverity = severityScore[(after.severity || "").toLowerCase()] || 0;
+  if (!beforeSeverity || !afterSeverity || before.primary_condition !== after.primary_condition) return "no_reliable_change";
+  if (afterSeverity < beforeSeverity) return "improved";
+  if (afterSeverity > beforeSeverity) return "worsened";
+  return "stable";
+};
+
 export default function Timeline() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -54,8 +73,8 @@ export default function Timeline() {
   const [comparisonPair, setComparisonPair] = useState<{ before: Scan; after: Scan } | null>(null);
 
   // Filter scans by journey type
-  const skinScans = scans.filter(s => !s.scan_type || s.scan_type === 'skin');
-  const hairScans = scans.filter(s => s.scan_type === 'hair');
+  const skinScans = scans.filter(s => !s.scan_type || s.scan_type === 'skin' || s.scan_type === 'full');
+  const hairScans = scans.filter(s => s.scan_type === 'hair' || s.scan_type === 'scalp' || s.scan_type === 'full');
   const currentScans = journeyTab === "skin" ? skinScans : hairScans;
 
   useEffect(() => {
@@ -116,42 +135,16 @@ export default function Timeline() {
 
   const calculateStats = (scanList: Scan[]) => {
     if (scanList.length === 0) return null;
-
     const firstScan = scanList[scanList.length - 1];
     const latestScan = scanList[0];
-
-    const daysSinceFirst = differenceInDays(
-      new Date(latestScan.created_at),
-      new Date(firstScan.created_at)
-    );
-
-    const firstConfidence = firstScan.diagnoses[0]?.confidence_score || 0;
-    const latestConfidence = latestScan.diagnoses[0]?.confidence_score || 0;
-    const overallImprovement = firstConfidence > 0 
-      ? Math.round(((firstConfidence - latestConfidence) / firstConfidence) * 100)
-      : 0;
-
-    const avgConfidence = scanList.reduce((sum, scan) => {
-      return sum + (scan.diagnoses[0]?.confidence_score || 0);
-    }, 0) / scanList.length;
-
-    const recentScans = scanList.slice(0, Math.min(3, scanList.length));
-    const olderScans = scanList.slice(Math.min(3, scanList.length));
-    
-    const recentAvg = recentScans.reduce((sum, s) => sum + (s.diagnoses[0]?.confidence_score || 0), 0) / recentScans.length;
-    const olderAvg = olderScans.length > 0 
-      ? olderScans.reduce((sum, s) => sum + (s.diagnoses[0]?.confidence_score || 0), 0) / olderScans.length
-      : recentAvg;
-
-    const trendValue = olderAvg > 0 ? Math.round(((olderAvg - recentAvg) / olderAvg) * 100) : 0;
-
+    const daysSinceFirst = differenceInDays(new Date(latestScan.created_at), new Date(firstScan.created_at));
+    const journeyState = getJourneyState(firstScan.diagnoses[0], latestScan.diagnoses[0]);
+    const avgConfidence = scanList.reduce((sum, scan) => sum + (scan.diagnoses[0]?.confidence_score || 0), 0) / scanList.length;
     return {
       totalScans: scanList.length,
       daysSinceFirst: daysSinceFirst || 0,
-      overallImprovement,
+      journeyState,
       avgConfidence: avgConfidence.toFixed(1),
-      trendValue,
-      isImproving: trendValue > 0,
     };
   };
 
@@ -338,14 +331,10 @@ export default function Timeline() {
                 </div>
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
                   <StatCard
-                    title="Overall Improvement"
-                    value={`${stats.overallImprovement > 0 ? "+" : ""}${stats.overallImprovement}%`}
-                    subtitle="Since first scan"
-                    icon={stats.overallImprovement > 0 ? TrendingDown : TrendingUp}
-                    trend={{
-                      value: Math.abs(stats.overallImprovement),
-                      isPositive: stats.overallImprovement > 0,
-                    }}
+                    title="Current direction"
+                    value={stats.journeyState.replace(/_/g, " ")}
+                    subtitle="Compared with first scan"
+                    icon={stats.journeyState === "improved" ? TrendingDown : TrendingUp}
                   />
                 </div>
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
@@ -358,14 +347,10 @@ export default function Timeline() {
                 </div>
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-500">
                   <StatCard
-                    title="Recent Trend"
-                    value={`${stats.isImproving ? "↓" : "↑"} ${Math.abs(stats.trendValue)}%`}
-                    subtitle="Last 3 scans"
+                    title="Average confidence"
+                    value={`${stats.avgConfidence}%`}
+                    subtitle="Across available scans"
                     icon={Activity}
-                    trend={{
-                      value: Math.abs(stats.trendValue),
-                      isPositive: stats.isImproving,
-                    }}
                   />
                 </div>
               </div>

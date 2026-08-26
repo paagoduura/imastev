@@ -8,6 +8,7 @@ import { CheckCircle2, XCircle, Loader2, Clock } from "lucide-react";
 import { API_BASE, buildFunctionUrl, FUNCTIONS_BASE } from "@/lib/config";
 import { supabase } from "@/integrations/supabase/client";
 import { MONTHLY_SCAN_SUBSCRIPTION_LIMIT } from "@/lib/scanPayments";
+import { isScanMode, type ScanMode } from "@/lib/scanEngine";
 
 export default function PaymentCallback() {
   const navigate = useNavigate();
@@ -53,9 +54,8 @@ export default function PaymentCallback() {
   };
 
   /**
-   * Bug 20 fix: Previously called supabase.functions.invoke('analyze-hair'/'analyze-skin')
-   * which are Supabase Edge Functions that don't exist in this deployment.
-   * Now calls the local Express backend POST /api/analyze/:type instead.
+   * Re-run the provider-backed analysis only after the payment verifier confirms access.
+   * The browser never marks payment or analysis successful on its own.
    */
   const finalizeAnalysisForScan = async (storedScanId: string, paymentOption: string) => {
     const token = await getApiToken();
@@ -74,11 +74,10 @@ export default function PaymentCallback() {
     const scanData = await scanResponse.json();
     if (!scanData) throw new Error('Scan not found');
 
-    const analysisType = scanData.scan_type === 'hair' ? 'hair' : 'skin';
+    const scanMode: ScanMode = isScanMode(scanData.scan_type) ? scanData.scan_type : 'skin';
+    const targets = scanMode === 'full' ? ['skin', 'hair'] as const : scanMode === 'scalp' ? ['scalp'] as const : [scanMode] as const;
 
-    // A preview already contains the stored analysis. After verified payment,
-    // the results endpoint will return the full record, so avoid re-running it.
-    const hasPreviewDiagnosis = scanData.status === 'preview_ready';
+    const hasPreviewDiagnosis = scanData.accessLevel === 'preview' || scanData.status === 'preview_ready';
     if (Array.isArray(scanData.diagnoses) && scanData.diagnoses.length > 0 && !hasPreviewDiagnosis) {
       setPostPaymentMessage(
         paymentOption === 'subscription'
@@ -90,35 +89,38 @@ export default function PaymentCallback() {
     }
 
     const useDedicatedFunction = Boolean(import.meta.env.PROD && FUNCTIONS_BASE);
-    const analysisEndpoint = useDedicatedFunction
-      ? buildFunctionUrl(`analyze-${analysisType}`)
-      : `${API_BASE}/analyze/${analysisType}`;
-    const analysisResponse = await fetch(analysisEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        scanId: storedScanId,
-        preview: false,
-        ...(useDedicatedFunction ? {
-          imageUrl: scanData.image_url,
-          multiAngleUrls: scanData.multi_angle_urls || {},
-          calibration: scanData.capture_info || undefined,
-        } : {}),
-      }),
-    });
-
-    if (!analysisResponse.ok) {
-      const err = await analysisResponse.json().catch(() => ({}));
-      throw new Error(err?.error || `Analysis failed (${analysisResponse.status})`);
-    }
-
-    const analysisData = await analysisResponse.json();
-    if (!analysisData?.success) {
-      throw new Error(analysisData?.error || 'Analysis failed');
-    }
+    const publicSupabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || import.meta.env.SUPABASE_ANON_KEY?.trim();
+    await Promise.all(targets.map(async (target) => {
+      const providerTarget = target === 'skin' ? 'skin' : 'hair';
+      const analysisEndpoint = useDedicatedFunction
+        ? buildFunctionUrl(`analyze-${providerTarget}`)
+        : `${API_BASE}/analyze/${providerTarget}`;
+      const analysisResponse = await fetch(analysisEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(publicSupabaseKey ? { apikey: publicSupabaseKey } : {}),
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          scanId: storedScanId,
+          preview: false,
+          analysisScope: target,
+          scanMode,
+          ...(useDedicatedFunction ? {
+            imageUrl: scanData.image_url,
+            multiAngleUrls: scanData.multi_angle_urls || {},
+            calibration: scanData.capture_info || undefined,
+          } : {}),
+        }),
+      });
+      if (!analysisResponse.ok) {
+        const err = await analysisResponse.json().catch(() => ({}));
+        throw new Error(err?.error || `Analysis failed (${analysisResponse.status})`);
+      }
+      const analysisData = await analysisResponse.json();
+      if (!analysisData?.success) throw new Error(analysisData?.error || 'Analysis failed');
+    }));
 
     setPostPaymentMessage(
       paymentOption === 'subscription'

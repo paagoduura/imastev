@@ -11,12 +11,13 @@ import { preprocessImage } from "@/lib/imagePreprocessing";
 import { ImageQualityIndicator } from "@/components/scan/ImageQualityIndicator";
 import { MultiAngleCapture } from "@/components/scan/MultiAngleCapture";
 import { AnalysisTypeSelector } from "@/components/scan/AnalysisTypeSelector";
-import { HairCaptureGuidelines, HAIR_REQUIRED_ANGLES, HAIR_OPTIONAL_ANGLES, HAIR_ANGLE_DESCRIPTIONS } from "@/components/scan/HairCaptureGuidelines";
+import { ScannerGuidanceCard } from "@/components/scan/ScannerGuidanceCard";
 import { LiveCameraCapture } from "@/components/scan/LiveCameraCapture";
 import { PorosityTest } from "@/components/scan/PorosityTest";
 import { PaymentOptionsModal } from "@/components/checkout/PaymentOptionsModal";
 import { PhoneNumberPrompt } from "@/components/checkout/PhoneNumberPrompt";
 import { buildApiUrl, buildFunctionUrl, FUNCTIONS_BASE } from "@/lib/config";
+import { getQualityFailureMessage, getScanAngles, getScanQuality, isScanMode, SCAN_MODE_CONFIG, type ScanMode, type ScanQuality } from "@/lib/scanEngine";
 import { MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN, ONE_TIME_ANALYSIS_FEE_NGN } from "@/lib/scanPayments";
 
 type CaptureQuality = {
@@ -27,6 +28,7 @@ type CaptureQuality = {
   isAcceptable: boolean;
   issues: string[];
   recommendations: string[];
+  scanQuality?: ScanQuality;
 };
 
 type PorosityResult = {
@@ -35,11 +37,16 @@ type PorosityResult = {
 
 type ScanRecord = {
   id: string;
-  scan_type: "skin" | "hair";
+  scan_type: ScanMode;
   image_url: string;
   multi_angle_urls?: Record<string, string> | null;
   capture_info?: {
     image_urls?: Record<string, string>;
+    scan_mode?: ScanMode;
+    required_angles?: string[];
+    captured_angles?: string[];
+    quality_scores?: Array<Record<string, unknown>>;
+    [key: string]: unknown;
   } | null;
 };
 
@@ -68,6 +75,7 @@ interface CapturedAngle {
   angle: string;
   dataUrl: string;
   blob: Blob;
+  originalBlob?: Blob;
   quality: CaptureQuality;
   metadata: Record<string, unknown>;
 }
@@ -79,7 +87,7 @@ const MONTHLY_SUBSCRIPTION_FEE_NGN = MONTHLY_SCAN_SUBSCRIPTION_FEE_NGN;
 const Scan = () => {
   const [authChecking, setAuthChecking] = useState(true);
   const [step, setStep] = useState<'type' | 'porosity' | 'capture' | 'review' | 'analyze'>('type');
-  const [analysisType, setAnalysisType] = useState<'skin' | 'hair'>('skin');
+  const [analysisType, setAnalysisType] = useState<ScanMode>('skin');
   const [currentAngle, setCurrentAngle] = useState<string>('front');
   const [captures, setCaptures] = useState<CapturedAngle[]>([]);
   const [processing, setProcessing] = useState(false);
@@ -139,15 +147,16 @@ const Scan = () => {
     };
   }, [navigate, toast]);
 
-  // Get the correct angles based on analysis type
-  const REQUIRED_ANGLES = analysisType === 'hair' ? HAIR_REQUIRED_ANGLES : SKIN_REQUIRED_ANGLES;
-  const OPTIONAL_ANGLES = analysisType === 'hair' ? HAIR_OPTIONAL_ANGLES : SKIN_OPTIONAL_ANGLES;
-  const ALL_ANGLES = [...REQUIRED_ANGLES, ...OPTIONAL_ANGLES];
+  const angleConfig = getScanAngles(analysisType);
+  const REQUIRED_ANGLES = angleConfig.required.map((angle) => angle.id);
+  const OPTIONAL_ANGLES = angleConfig.optional.map((angle) => angle.id);
+  const ALL_ANGLES = angleConfig.all.map((angle) => angle.id);
+  const currentAngleConfig = angleConfig.all.find((angle) => angle.id === currentAngle) || angleConfig.required[0];
 
-  const handleAnalysisTypeSelect = (type: 'skin' | 'hair') => {
+  const handleAnalysisTypeSelect = (type: ScanMode) => {
     setAnalysisType(type);
     setCaptures([]);
-    setCurrentAngle(type === 'hair' ? 'crown' : 'front');
+    setCurrentAngle(getScanAngles(type).required[0]?.id || 'front');
   };
 
   const handleProceedToCapture = () => {
@@ -184,20 +193,23 @@ const Scan = () => {
         applyEnhancements: true
       });
 
-      if (!preprocessed.quality.isAcceptable) {
+      const scanQuality = getScanQuality(preprocessed.width, preprocessed.height, preprocessed.quality, analysisType);
+      if (!scanQuality.isAcceptable) {
         toast({
-          title: "Image quality issues detected",
-          description: "We'll proceed but recommend retaking for best results",
-          variant: "default",
+          title: "Retake required for a reliable scan",
+          description: `${getQualityFailureMessage(scanQuality)} ${scanQuality.recommendations[0] || ''}`.trim(),
+          variant: "destructive",
         });
+        return;
       }
 
       const newCapture: CapturedAngle = {
         angle: currentAngle,
         dataUrl: preprocessed.dataUrl,
         blob: preprocessed.blob,
-        quality: preprocessed.quality,
-        metadata: preprocessed.metadata
+        originalBlob: blob,
+        quality: { ...preprocessed.quality, scanQuality },
+        metadata: { ...preprocessed.metadata, width: preprocessed.width, height: preprocessed.height, scanQuality }
       };
 
       setCaptures(prev => {
@@ -262,20 +274,23 @@ const Scan = () => {
         applyEnhancements: true
       });
 
-      if (!preprocessed.quality.isAcceptable) {
+      const scanQuality = getScanQuality(preprocessed.width, preprocessed.height, preprocessed.quality, analysisType);
+      if (!scanQuality.isAcceptable) {
         toast({
-          title: "Image quality issues detected",
-          description: "We'll proceed but recommend retaking for best results",
-          variant: "default",
+          title: "Retake required for a reliable scan",
+          description: `${getQualityFailureMessage(scanQuality)} ${scanQuality.recommendations[0] || ''}`.trim(),
+          variant: "destructive",
         });
+        return;
       }
 
       const newCapture: CapturedAngle = {
         angle: currentAngle,
         dataUrl: preprocessed.dataUrl,
         blob: preprocessed.blob,
-        quality: preprocessed.quality,
-        metadata: preprocessed.metadata
+        originalBlob: file,
+        quality: { ...preprocessed.quality, scanQuality },
+        metadata: { ...preprocessed.metadata, width: preprocessed.width, height: preprocessed.height, scanQuality }
       };
 
       setCaptures(prev => {
@@ -375,9 +390,40 @@ const Scan = () => {
     storageBucket: 'hair-scans' | 'skin-scans',
     token: string | null,
   ) => {
-    const fileName = `${userId}/${Date.now()}_${capture.angle}.jpg`;
+    const timestamp = Date.now();
+    const fileName = `${userId}/${timestamp}_${capture.angle}.jpg`;
+    const originalFileName = `${userId}/original_${timestamp}_${capture.angle}.jpg`;
     const uploadErrors: string[] = [];
     const base64Payload = await blobToBase64(capture.blob);
+    let originalUrl: string | undefined;
+
+    if (capture.originalBlob) {
+      const originalPayload = await blobToBase64(capture.originalBlob);
+      const originalResponse = await fetch(buildApiUrl('/storage/upload-scan'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          bucket: storageBucket,
+          fileName: originalFileName,
+          contentType: capture.originalBlob.type || 'image/jpeg',
+          base64: originalPayload,
+        }),
+      });
+      const originalResult = await originalResponse.json().catch(() => ({}));
+      if (originalResponse.ok && originalResult?.publicUrl) {
+        originalUrl = String(originalResult.publicUrl);
+      } else {
+        const { error: originalUploadError } = await supabase.storage.from(storageBucket).upload(originalFileName, capture.originalBlob, {
+          contentType: capture.originalBlob.type || 'image/jpeg',
+          upsert: false,
+        });
+        if (originalUploadError) throw new Error(`${capture.angle}: original image could not be retained`);
+        originalUrl = supabase.storage.from(storageBucket).getPublicUrl(originalFileName).data.publicUrl;
+      }
+    }
 
     // Primary path: backend upload endpoint (bypasses strict client-side storage RLS differences).
     let shouldTryDirectStorageFallback = false;
@@ -402,6 +448,8 @@ const Scan = () => {
           angle: capture.angle,
           url: String(uploadPayload.publicUrl),
           quality: capture.quality,
+          metadata: capture.metadata,
+          originalUrl,
         };
       }
 
@@ -430,6 +478,8 @@ const Scan = () => {
           angle: capture.angle,
           url: publicUrl,
           quality: capture.quality,
+          metadata: capture.metadata,
+          originalUrl,
         };
       }
 
@@ -476,46 +526,47 @@ const Scan = () => {
     const token = await getApiAuthToken();
     if (!token) throw new Error('Authentication required to run analysis');
 
-    const analysisType = scan.scan_type === 'hair' ? 'hair' : 'skin';
-
+    const scanMode = isScanMode(scan.scan_type) ? scan.scan_type : 'skin';
+    const targets = scanMode === 'full' ? ['skin', 'hair'] as const : scanMode === 'scalp' ? ['scalp'] as const : [scanMode] as const;
     const useDedicatedFunction = Boolean(import.meta.env.PROD && FUNCTIONS_BASE);
-    const analysisEndpoint = useDedicatedFunction
-      ? buildFunctionUrl(`analyze-${analysisType}`)
-      : buildApiUrl(`/analyze/${analysisType}`);
     const publicSupabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || import.meta.env.SUPABASE_ANON_KEY?.trim();
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), preview ? 60_000 : 120_000);
-    let response: Response;
     try {
-      response = await fetch(analysisEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(publicSupabaseKey ? { apikey: publicSupabaseKey } : {}),
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        scanId: scan.id,
-        preview,
-        ...(useDedicatedFunction ? {
-          imageUrl: scan.image_url,
-          multiAngleUrls: scan.multi_angle_urls || {},
-          calibration: scan.capture_info || undefined,
-        } : {}),
-      }),
-      });
+      await Promise.all(targets.map(async (target) => {
+        const providerTarget = target === 'skin' ? 'skin' : 'hair';
+        const analysisEndpoint = useDedicatedFunction
+          ? buildFunctionUrl(`analyze-${providerTarget}`)
+          : buildApiUrl(`/analyze/${providerTarget}`);
+        const response = await fetch(analysisEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(publicSupabaseKey ? { apikey: publicSupabaseKey } : {}),
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            scanId: scan.id,
+            preview,
+            analysisScope: target,
+            scanMode,
+            ...(useDedicatedFunction ? {
+              imageUrl: scan.image_url,
+              multiAngleUrls: scan.multi_angle_urls || {},
+              calibration: scan.capture_info || undefined,
+            } : {}),
+          }),
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err?.error || `Analysis failed (${response.status})`);
+        }
+        const analysisData = await response.json();
+        if (!analysisData?.success) throw new Error(analysisData?.error || 'Analysis failed');
+      }));
     } finally {
       window.clearTimeout(timeout);
-    }
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err?.error || `Analysis failed (${response.status})`);
-    }
-
-    const analysisData = await response.json();
-    if (!analysisData?.success) {
-      throw new Error(analysisData?.error || 'Analysis failed');
     }
   };
 
@@ -531,7 +582,7 @@ const Scan = () => {
       console.warn('Unable to auto-create storage buckets:', error);
     }
 
-    const storageBucket = analysisType === 'hair' ? 'hair-scans' : 'skin-scans';
+    const storageBucket = analysisType === 'skin' ? 'skin-scans' : 'hair-scans';
     const token = await getApiAuthToken();
     const uploadResults = await Promise.allSettled(captures.map((capture) =>
       uploadCaptureWithFallback(capture, user.id, storageBucket, token)
@@ -545,11 +596,9 @@ const Scan = () => {
       throw new Error(`Some images failed to upload: ${failedAngles}`);
     }
 
-    const uploadedImages = uploadResults
-      .filter((r): r is PromiseFulfilledResult<{ angle: string; url: string; quality: CaptureQuality }> => r.status === 'fulfilled')
-      .map(r => r.value);
+    const uploadedImages = uploadResults.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
 
-    const frontAngle = analysisType === 'hair' ? 'crown' : 'front';
+    const frontAngle = angleConfig.required[0]?.id || 'front';
     const scanResponse = await fetch(buildApiUrl('/scans'), {
       method: 'POST',
       headers: {
@@ -563,16 +612,35 @@ const Scan = () => {
           ...acc,
           [img.angle]: img.url,
         }), {}),
-        calibration_data: {
-          angles: uploadedImages.map(i => i.angle),
+        image_metadata: {
+          scanner_version: '2026.08',
+          original_images_retained: true,
+          processed_images_retained: true,
+          quality_scores: uploadedImages.map(i => i.quality.scanQuality || null),
+          dimensions: uploadedImages.map(i => ({
+            angle: i.angle,
+            width: Number(i.metadata?.width || 0),
+            height: Number(i.metadata?.height || 0),
+          })),
+        },
+        capture_info: {
+          scan_mode: analysisType,
+          required_angles: REQUIRED_ANGLES,
+          captured_angles: uploadedImages.map(i => i.angle),
+          original_image_urls: uploadedImages.reduce<Record<string, string>>((acc, image) => {
+            if (image.originalUrl) acc[image.angle] = image.originalUrl;
+            return acc;
+          }, {}),
           quality_scores: uploadedImages.map(i => ({
             angle: i.angle,
             blur: i.quality.blurScore,
             lighting: i.quality.lightingScore,
+            exposure: i.quality.exposureScore,
             contrast: i.quality.contrastScore,
+            scan_quality: i.quality.scanQuality || null,
           })),
+          porosity_test_result: porosityResult,
         },
-        porosity_test_result: porosityResult,
       }),
     });
     const scanPayload = await scanResponse.json().catch(() => ({}));
@@ -749,7 +817,7 @@ const Scan = () => {
   };
 
   const stepLabels: Record<string, string> = {
-    type: 'Select the type of analysis you need',
+    type: 'Select the care view you need',
     porosity: 'Test your hair porosity to choose suitable care',
     capture: 'Capture clear images for a careful assessment',
     review: 'Review your images before analysis',
@@ -772,7 +840,7 @@ const Scan = () => {
         className="w-full"
         onClick={handleProceedToCapture}
       >
-        Continue with {analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis
+        Continue with {SCAN_MODE_CONFIG[analysisType].label}
         <ArrowRight className="ml-2 h-5 w-5" />
       </Button>
     </div>
@@ -780,39 +848,12 @@ const Scan = () => {
 
   const renderCaptureStep = () => (
     <div className="space-y-6">
-      {/* Guidelines */}
-      {analysisType === 'hair' ? (
-        <HairCaptureGuidelines />
-      ) : (
-        <Card className="border-primary/20 bg-primary-light/20">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-primary" />
-              Capture Guidelines
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                <span>Use natural daylight or bright indoor lighting</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                <span>Remove makeup from affected area</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                <span>Hold camera steady, ensure sharp focus</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                <span>Avoid shadows and reflections</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <ScannerGuidanceCard
+        mode={analysisType}
+        angle={currentAngleConfig}
+        capturedCount={captures.length}
+        requiredCount={REQUIRED_ANGLES.length}
+      />
 
       {/* Angle selector */}
       <Card>
@@ -820,9 +861,7 @@ const Scan = () => {
           <CardTitle>Select Angle</CardTitle>
           <CardDescription>
             {REQUIRED_ANGLES.includes(currentAngle) ? 'Required' : 'Optional for better analysis'}
-            {analysisType === 'hair' && HAIR_ANGLE_DESCRIPTIONS[currentAngle] && (
-              <span className="block mt-1 text-xs">{HAIR_ANGLE_DESCRIPTIONS[currentAngle]}</span>
-            )}
+            <span className="block mt-1 text-xs">{currentAngleConfig?.description}</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1000,7 +1039,7 @@ const Scan = () => {
         <CardContent className="p-8 text-center space-y-4">
           <CheckCircle2 className="w-16 h-16 text-success mx-auto" />
           <div>
-            <h3 className="text-2xl font-bold mb-2">Ready for {analysisType === 'hair' ? 'Hair' : 'Skin'} Analysis</h3>
+              <h3 className="text-2xl font-bold mb-2">Ready for {SCAN_MODE_CONFIG[analysisType].label}</h3>
             <p className="text-muted-foreground">
               {captures.length} image{captures.length > 1 ? 's' : ''} captured
             </p>
@@ -1087,7 +1126,7 @@ const Scan = () => {
                   <CheckCircle2 className="h-3.5 w-3.5" /> Plain-language care notes
                 </span>
                 <h1 className="text-[2rem] leading-tight font-display font-bold text-slate-900 sm:text-4xl lg:text-5xl">
-                  {analysisType === 'hair' ? 'Hair' : 'Skin'} <span className="text-gradient-premium">Analysis</span>
+                  {SCAN_MODE_CONFIG[analysisType].shortLabel} <span className="text-gradient-premium">Analysis</span>
                 </h1>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
                   {stepLabels[step]} Your images stay part of your private care record, ready for a clearer conversation with an IMSTEV specialist.

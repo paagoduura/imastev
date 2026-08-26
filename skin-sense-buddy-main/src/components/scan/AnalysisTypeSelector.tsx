@@ -1,1 +1,79 @@
-import { Card, CardContent } from "@/components/ui/card"; import { cn } from "@/lib/utils"; import { Scan, Heart, CheckCircle2 } from "lucide-react"; interface AnalysisTypeSelectorProps { value: 'skin' | 'hair'; onChange: (value: 'skin' | 'hair') => void; } export function AnalysisTypeSelector({ value, onChange }: AnalysisTypeSelectorProps) { return ( <div className="space-y-6"> <div className="text-center space-y-3"> <h2 className="text-2xl sm:text-3xl font-display font-bold text-gradient-premium"> What would you like to analyze? </h2> <p className="text-muted-foreground max-w-md mx-auto"> Choose the area you would like to understand first </p> </div> <div className="grid sm:grid-cols-2 gap-4 sm:gap-6"> <Card className={cn( "cursor-pointer transition-all duration-300 group relative overflow-hidden rounded-2xl no-tap-highlight", value === 'skin' ? "ring-2 ring-rose-500 shadow-xl shadow-rose-500/20 bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/30" : "border-2 border-slate-200 dark:border-slate-700 dark: hover:shadow-lg" )} onClick={() => onChange('skin')} > {value === 'skin' && ( <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center z-10"> <CheckCircle2 className="w-4 h-4 text-white" /> </div> )} <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" /> <CardContent className="p-6 sm:p-8 relative"> <div className="flex flex-col items-center text-center space-y-4"> <div className={cn( "w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-105", value === 'skin' ? "bg-gradient-to-br from-rose-500 to-orange-500 shadow-xl shadow-rose-500/30" : "bg-gradient-to-br from-rose-100 to-orange-100 dark:from-rose-900/30 dark:to-orange-900/30" )}> <Scan className={cn( "w-10 h-10 sm:w-12 sm:h-12 transition-colors", value === 'skin' ? "text-white" : "text-rose-500" )} /> </div> <div> <h3 className="text-xl sm:text-2xl font-display font-semibold mb-2">Skin Analysis</h3> <p className="text-sm text-muted-foreground leading-relaxed"> Analyze skin conditions, acne, pigmentation, aging signs, and get practical skincare guidance </p> </div> <div className="flex flex-wrap gap-2 justify-center"> {['Acne', 'Eczema', 'Hyperpigmentation', 'Aging'].map((tag) => ( <span key={tag} className="px-3 py-1.5 text-xs font-medium rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20" > {tag} </span> ))} </div> </div> </CardContent> </Card> <Card className={cn( "cursor-pointer transition-all duration-300 group relative overflow-hidden rounded-2xl no-tap-highlight", value === 'hair' ? "ring-2 ring-amber-500 shadow-xl shadow-amber-500/20 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30" : "border-2 border-slate-200 dark:border-slate-700 dark: hover:shadow-lg" )} onClick={() => onChange('hair')} > {value === 'hair' && ( <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center z-10"> <CheckCircle2 className="w-4 h-4 text-white" /> </div> )} <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity" /> <CardContent className="p-6 sm:p-8 relative"> <div className="flex flex-col items-center text-center space-y-4"> <div className={cn( "w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-105", value === 'hair' ? "bg-gradient-to-br from-amber-500 to-yellow-500 shadow-xl shadow-amber-500/30" : "bg-gradient-to-br from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30" )}> <Heart className={cn( "w-10 h-10 sm:w-12 sm:h-12 transition-colors", value === 'hair' ? "text-white" : "text-amber-500" )} /> </div> <div> <h3 className="text-xl sm:text-2xl font-display font-semibold mb-2">Hair Analysis</h3> <p className="text-sm text-muted-foreground leading-relaxed"> Analyze hair texture, curl pattern, porosity, scalp health, and get practical care guidance for all hair types </p> </div> <div className="flex flex-wrap gap-2 justify-center"> {['Straight', 'Wavy', 'Curly', 'Coily', 'Scalp Health'].map((tag) => ( <span key={tag} className="px-3 py-1.5 text-xs font-medium rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" > {tag} </span> ))} </div> </div> </CardContent> </Card> </div> </div> ); }
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, CircleUserRound, Layers3, Scissors, ScanFace } from "lucide-react";
+import type { ScanMode } from "@/lib/scanEngine";
+import { SCAN_MODE_CONFIG } from "@/lib/scanEngine";
+
+type AnalysisTypeSelectorProps = {
+  value: ScanMode;
+  onChange: (value: ScanMode) => void;
+};
+
+const modeCards: Array<{ mode: ScanMode; icon: typeof ScanFace; tone: string; activeTone: string; tags: string[] }> = [
+  { mode: "skin", icon: ScanFace, tone: "rose", activeTone: "ring-rose-500 shadow-rose-500/15 bg-rose-50/80", tags: ["Texture", "Tone", "Hydration"] },
+  { mode: "hair", icon: Scissors, tone: "amber", activeTone: "ring-amber-500 shadow-amber-500/15 bg-amber-50/80", tags: ["Pattern", "Density", "Damage"] },
+  { mode: "scalp", icon: CircleUserRound, tone: "teal", activeTone: "ring-teal-600 shadow-teal-500/15 bg-teal-50/80", tags: ["Hairline", "Scaling", "Buildup"] },
+  { mode: "full", icon: Layers3, tone: "violet", activeTone: "ring-violet-600 shadow-violet-500/15 bg-violet-50/80", tags: ["Skin", "Hair", "Scalp"] },
+];
+
+const toneClasses: Record<string, { icon: string; iconInactive: string; tag: string }> = {
+  rose: { icon: "bg-rose-500 text-white shadow-rose-500/25", iconInactive: "bg-rose-100 text-rose-600", tag: "bg-rose-500/10 text-rose-700 border-rose-500/15" },
+  amber: { icon: "bg-amber-500 text-white shadow-amber-500/25", iconInactive: "bg-amber-100 text-amber-700", tag: "bg-amber-500/10 text-amber-800 border-amber-500/15" },
+  teal: { icon: "bg-teal-700 text-white shadow-teal-500/25", iconInactive: "bg-teal-100 text-teal-700", tag: "bg-teal-500/10 text-teal-800 border-teal-500/15" },
+  violet: { icon: "bg-violet-700 text-white shadow-violet-500/25", iconInactive: "bg-violet-100 text-violet-700", tag: "bg-violet-500/10 text-violet-800 border-violet-500/15" },
+};
+
+export function AnalysisTypeSelector({ value, onChange }: AnalysisTypeSelectorProps) {
+  return (
+    <div className="space-y-6">
+      <div className="max-w-2xl space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Choose your care view</p>
+        <h2 className="text-3xl font-display font-bold leading-tight text-slate-900 sm:text-4xl">Start with the area you want to understand.</h2>
+        <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+          Each view uses guided captures and a quality check before analysis. You can choose one area or combine them into one private care record.
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {modeCards.map(({ mode, icon: Icon, tone, activeTone, tags }) => {
+          const selected = value === mode;
+          const toneSet = toneClasses[tone];
+          const config = SCAN_MODE_CONFIG[mode];
+          return (
+            <Card
+              key={mode}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selected}
+              className={cn(
+                "group relative cursor-pointer overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/85 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                selected && `ring-2 ${activeTone}`,
+              )}
+              onClick={() => onChange(mode)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onChange(mode);
+                }
+              }}
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/40 via-amber-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+              {selected && <CheckCircle2 className="absolute right-5 top-5 h-5 w-5 text-primary" />}
+              <CardContent className="space-y-5 p-5 sm:p-6">
+                <div className={cn("flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-transform duration-200 group-hover:scale-[1.03]", selected ? toneSet.icon : toneSet.iconInactive)}>
+                  <Icon className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-semibold text-slate-900">{config.label}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{config.description}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => <span key={tag} className={cn("rounded-full border px-2.5 py-1 text-xs font-medium", toneSet.tag)}>{tag}</span>)}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
