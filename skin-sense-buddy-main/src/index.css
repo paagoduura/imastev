@@ -1052,48 +1052,26 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   .signature-carousel__primary--scan { min-height: 2.9rem; padding: .78rem 1rem; font-size: .7rem; letter-spacing: .055em; }
 }
 
-/* Image cards use the video card's dimensions in the requested swapped orientation. */
-.signature-carousel__card--image {
-  width: 25rem;
-  height: 17rem;
-  aspect-ratio: auto;
-}
-@media (max-width: 900px) {
-  .signature-carousel__card--image {
-    width: 25rem;
-    height: min(28rem, 88vw);
-  }
-}
-@media (max-width: 640px) {
-  .signature-carousel__card--image {
-    width: 14.7rem;
-    height: 9.3rem;
-  }
-  .signature-carousel__card--image.is-active {
-    transform: translate(-50%, -50%) translateY(.85rem) translateZ(60px) rotateY(0deg) scale(1);
-  }
-  .signature-carousel__card--image.is-next {
-    transform: translate(-50%, -50%) translate(54%, .85rem) translateZ(-65px) rotateY(-24deg) scale(.72);
-  }
-  .signature-carousel__card--image.is-previous {
-    transform: translate(-50%, -50%) translate(-54%, .85rem) translateZ(-65px) rotateY(24deg) scale(.72);
-  }
-}
-@media (max-width: 520px) {
-  .signature-carousel__card--image {
-    width: 17.5rem;
-    height: 11.5rem;
-  }
-}
-
-/* Show hairstyle imagery in full, natural framing inside the shared video-sized card. */
+/* Main hero image cards inherit the exact same geometry and 3D transforms as video cards. */
 .signature-carousel__card--image img {
-  object-fit: cover;
-  transform: scale(1.04);
+  object-fit: contain;
+  transform: none;
   background: transparent;
 }
 .signature-carousel__card--image.is-active img {
-  transform: scale(1.1);
+  transform: none;
+}
+
+/* Fill the shared card edges while the foreground preserves the complete hairstyle and head. */
+.signature-carousel__image-backdrop {
+  position: absolute;
+  inset: -1rem;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(18px);
+  opacity: .58;
+  transform: scale(1.08);
 }
 
 /* Keep side cards visually quiet so the active hairstyle remains the focus. */
@@ -1101,30 +1079,6 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-}
-
-/* Slightly enlarge image cards without changing video dimensions. */
-.signature-carousel__card--image {
-  width: 26.5rem;
-  height: 18.25rem;
-}
-@media (max-width: 900px) {
-  .signature-carousel__card--image {
-    width: 26.5rem;
-    height: min(30rem, 92vw);
-  }
-}
-@media (max-width: 640px) {
-  .signature-carousel__card--image {
-    width: 15.7rem;
-    height: 10rem;
-  }
-}
-@media (max-width: 520px) {
-  .signature-carousel__card--image {
-    width: 18.7rem;
-    height: 12.3rem;
-  }
 }
 
 /* Mixed-media specialist carousel: images share the video stage without changing video behavior. */

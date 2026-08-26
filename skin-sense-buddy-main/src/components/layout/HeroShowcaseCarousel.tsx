@@ -211,7 +211,16 @@ function HeroCarouselStage({ compact }: { compact: boolean }) {
                       style={{ objectPosition: slide.objectPosition ?? "center" }}
                     />
                   ) : (
-                    <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
+                    <>
+                      {!slide.video && (
+                        <span
+                          className="signature-carousel__image-backdrop"
+                          aria-hidden="true"
+                          style={{ backgroundImage: `url(${slide.image})`, backgroundPosition: slide.objectPosition ?? "center" }}
+                        />
+                      )}
+                      <img src={slide.image} alt="" aria-hidden="true" style={{ objectPosition: slide.objectPosition ?? "center" }} />
+                    </>
                   )}
                   <span className="signature-carousel__card-wash" />
                   <span className="signature-carousel__card-meta">
