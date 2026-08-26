@@ -336,6 +336,67 @@ function decodeBase64Payload(input: string) {
   return bytes;
 }
 
+function storagePathFromValue(bucket: string, value: unknown) {
+  if (typeof value !== "string" || !value.trim() || value.startsWith("data:")) return null;
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(value.trim());
+  } catch {
+    decoded = value.trim();
+  }
+  const markers = [
+    `/storage/v1/object/public/${bucket}/`,
+    `/storage/v1/object/sign/${bucket}/`,
+    `/storage/v1/object/authenticated/${bucket}/`,
+  ];
+  for (const marker of markers) {
+    const markerIndex = decoded.indexOf(marker);
+    if (markerIndex >= 0) return decoded.slice(markerIndex + marker.length).split("?")[0];
+  }
+  const pathMarker = `${bucket}/`;
+  if (decoded.startsWith(pathMarker)) return decoded.slice(pathMarker.length).split("?")[0];
+  return null;
+}
+
+async function signStorageValue(service: SupabaseClient, bucket: string, value: unknown) {
+  const path = storagePathFromValue(bucket, value);
+  if (!path) return value;
+  const { data, error } = await service.storage.from(bucket).createSignedUrl(path, 60 * 60);
+  if (error || !data?.signedUrl) {
+    console.warn("Unable to create signed scan image URL:", error?.message || "missing signed URL");
+    return value;
+  }
+  return data.signedUrl;
+}
+
+async function signScanImageFields(service: SupabaseClient, scan: Record<string, any>) {
+  const bucket = String(scan.scan_type || "skin") === "hair" ? "hair-scans" : "skin-scans";
+  const [imageUrl, multiAngleEntries] = await Promise.all([
+    signStorageValue(service, bucket, scan.image_url),
+    Promise.all(Object.entries(scan.multi_angle_urls || {}).map(async ([angle, value]) => [
+      angle,
+      await signStorageValue(service, bucket, value),
+    ] as const)),
+  ]);
+  const captureInfo = scan.capture_info && typeof scan.capture_info === "object"
+    ? { ...scan.capture_info }
+    : scan.capture_info;
+  if (captureInfo?.image_urls && typeof captureInfo.image_urls === "object") {
+    captureInfo.image_urls = Object.fromEntries(
+      await Promise.all(Object.entries(captureInfo.image_urls).map(async ([angle, value]) => [
+        angle,
+        await signStorageValue(service, bucket, value),
+      ] as const)),
+    );
+  }
+  return {
+    ...scan,
+    image_url: imageUrl,
+    multi_angle_urls: Object.fromEntries(multiAngleEntries),
+    capture_info: captureInfo,
+  };
+}
+
 function adminEmail() {
   return getEnv("ADMIN_EMAIL").trim().toLowerCase();
 }
@@ -1834,13 +1895,16 @@ serve(async (req) => {
       if (error) return json({ error: error.message }, 500);
       const scanRows = ensureArray(scans);
       const scanIds = scanRows.map((scan) => scan.id);
-      const { data: diagnoses } = await service.from("diagnoses").select("*").in("scan_id", scanIds.length ? scanIds : ["00000000-00000000-0000-000000000000"]);
+      const { data: diagnoses } = await service.from("diagnoses").select("*").in("scan_id", scanIds.length ? scanIds : ["00000000-0000-0000-0000-000000000000"]);
       const diagnosisRows = ensureArray(diagnoses);
       const results = await Promise.all(scanRows.map(async (scan) => {
-        const access = await getScanAccess(service, user.id, scan.id);
+        const [access, signedScan] = await Promise.all([
+          getScanAccess(service, user.id, scan.id),
+          signScanImageFields(service, scan),
+        ]);
         const diagnosis = diagnosisRows.find((item) => item.scan_id === scan.id) || null;
         return {
-          ...scan,
+          ...signedScan,
           accessLevel: access.hasFullAccess ? "full" : "preview",
           paymentType: access.paymentType,
           diagnoses: diagnosis ? [access.hasFullAccess ? diagnosis : previewDiagnosis(diagnosis)] : [],
@@ -1867,8 +1931,9 @@ serve(async (req) => {
         : { data: [] };
       const treatmentPlan = ensureArray(treatmentPlans)[0] || null;
 
+      const signedScan = await signScanImageFields(service, scan);
       return json({
-        ...scan,
+        ...signedScan,
         accessLevel: access.hasFullAccess ? "full" : "preview",
         paymentType: access.paymentType,
         diagnoses: diagnosis ? [access.hasFullAccess ? diagnosis : previewDiagnosis(diagnosis)] : [],
