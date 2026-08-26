@@ -574,7 +574,7 @@ const Auth = () => {
                     </div>
 
                     <p className="mt-4 text-center text-[11px] text-muted-foreground sm:mt-5 sm:text-xs">
-                      By continuing, you agree to our Terms of Service and Privacy Policy
+                      By continuing, you agree to our <Link to="/terms" className="font-semibold text-primary underline-offset-4 hover:underline">Terms and Conditions</Link> and Privacy Policy
                     </p>
                   </div>
                 </div>

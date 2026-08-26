@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1057,6 +1057,9 @@ export default function SalonBooking() {
 
                         <p className="text-xs text-center text-muted-foreground">
                           50% upfront to confirm. Balance due at your appointment.
+                        </p>
+                        <p className="text-center text-xs text-muted-foreground">
+                          By continuing, you agree to our <Link to="/terms" className="font-semibold text-primary underline-offset-4 hover:underline">Terms and Conditions</Link>.
                         </p>
                       </CardContent>
                     </Card>

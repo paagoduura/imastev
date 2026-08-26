@@ -7,6 +7,7 @@ const footerLinks = [
   { label: "Book the studio", href: "/salon-booking" },
   { label: "Shop the edit", href: "/shop" },
   { label: "Community", href: "/community" },
+  { label: "Terms & Conditions", href: "/terms" },
 ];
 
 export function Footer() {

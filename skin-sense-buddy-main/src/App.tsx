@@ -29,6 +29,7 @@ const Payment = lazy(() => import("./pages/Payment"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Community = lazy(() => import("./pages/Community"));
+const Terms = lazy(() => import("./pages/Terms"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -105,6 +106,7 @@ function AppRoutes() {
         <Route path="/results/:id" element={<Results />} />
         <Route path="/timeline" element={<Timeline />} />
         <Route path="/community" element={<Community />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
