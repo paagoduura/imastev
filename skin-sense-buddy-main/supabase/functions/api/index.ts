@@ -540,6 +540,15 @@ async function getUserFromRequest(req: Request, service = createServiceClient())
   };
 }
 
+async function resolveScanOwner(service: SupabaseClient, user: UserContext) {
+  const direct = await service.auth.admin.getUserById(user.id);
+  if (direct.data?.user?.id) return { id: direct.data.user.id, email: direct.data.user.email || user.email };
+  if (!user.email) return null;
+  const listed = await service.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const byEmail = ensureArray(listed.data?.users).find((candidate) => (candidate.email || '').trim().toLowerCase() === user.email.trim().toLowerCase());
+  return byEmail?.id ? { id: byEmail.id, email: byEmail.email || user.email } : null;
+}
+
 async function ensureLegacyUserRecord(service: SupabaseClient, user: UserContext) {
   const existing = await service.from("users").select("id, email").eq("id", user.id).maybeSingle();
   if (existing.data?.id) return existing.data;
@@ -1897,10 +1906,19 @@ serve(async (req) => {
     }
     if (route === "/scans" && req.method === "POST") {
       const user = await requireUser(req, service);
+      const scanOwner = await resolveScanOwner(service, user);
+      if (!scanOwner) {
+        return json({
+          error: "Your sign-in session is out of sync with this account.",
+          code: "AUTH_ACCOUNT_NOT_FOUND",
+          message: "Please sign out, sign in again, and retry the scan.",
+        }, 401);
+      }
+      const scanOwnerId = scanOwner.id;
       const { data: subscriptions } = await service
         .from("subscriptions")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", scanOwnerId)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1);
@@ -1926,7 +1944,7 @@ serve(async (req) => {
       }
 
       if (body.preview === true) {
-        const previewUsage = await hasUsedOneTimePreview(service, user.id);
+        const previewUsage = await hasUsedOneTimePreview(service, scanOwnerId);
         if (previewUsage.error) return json({ error: previewUsage.error.message }, 500);
         if (previewUsage.used) {
           return json({
@@ -1946,7 +1964,7 @@ serve(async (req) => {
         : (typeof requestNotes === "string" ? requestNotes : null);
       const payload = {
         ...bodyWithoutUnsupportedMetadata,
-        user_id: user.id,
+        user_id: scanOwnerId,
         scan_type: typeof body.scan_type === "string" ? body.scan_type : "skin",
         status: body.status || "pending",
         ...(notes !== null ? { notes } : {}),
