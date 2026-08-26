@@ -352,10 +352,11 @@ const Scan = () => {
   }).format(amount);
 
   const getApiAuthToken = async () => {
-    const legacyToken = localStorage.getItem('glowsense_token');
-    if (legacyToken) return legacyToken;
     const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
+    const sessionToken = session?.access_token?.trim();
+    const legacyToken = localStorage.getItem('glowsense_token')?.trim();
+    const token = sessionToken || legacyToken;
+    return token?.replace(/^Bearer\s+/i, '').trim() || null;
   };
 
   const blobToBase64 = async (blob: Blob) => {
@@ -481,10 +482,12 @@ const Scan = () => {
     const analysisEndpoint = useDedicatedFunction
       ? buildFunctionUrl(`analyze-${analysisType}`)
       : buildApiUrl(`/analyze/${analysisType}`);
+    const publicSupabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || import.meta.env.SUPABASE_ANON_KEY?.trim();
     const response = await fetch(analysisEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(publicSupabaseKey ? { apikey: publicSupabaseKey } : {}),
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({

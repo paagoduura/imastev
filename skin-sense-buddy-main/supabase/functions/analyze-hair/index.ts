@@ -18,14 +18,13 @@ serve(async (req) => {
     );
 
     // Get user from auth header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    const authHeader = req.headers.get('Authorization') || '';
+    const accessToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (!accessToken) {
+      throw new Error('Unauthorized');
     }
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(accessToken);
 
     if (authError || !user) {
       throw new Error('Unauthorized');
