@@ -1051,3 +1051,37 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
   .signature-carousel__card { width: min(19rem, 88vw); }
   .signature-carousel__primary--scan { min-height: 2.9rem; padding: .78rem 1rem; font-size: .7rem; letter-spacing: .055em; }
 }
+
+/* Image cards use the video card's dimensions in the requested swapped orientation. */
+.signature-carousel__card--image {
+  width: 25rem;
+  height: 17rem;
+  aspect-ratio: auto;
+}
+@media (max-width: 900px) {
+  .signature-carousel__card--image {
+    width: 25rem;
+    height: min(28rem, 88vw);
+  }
+}
+@media (max-width: 640px) {
+  .signature-carousel__card--image {
+    width: 14.7rem;
+    height: 9.3rem;
+  }
+  .signature-carousel__card--image.is-active {
+    transform: translate(-50%, -50%) translateY(.85rem) translateZ(60px) rotateY(0deg) scale(1);
+  }
+  .signature-carousel__card--image.is-next {
+    transform: translate(-50%, -50%) translate(54%, .85rem) translateZ(-65px) rotateY(-24deg) scale(.72);
+  }
+  .signature-carousel__card--image.is-previous {
+    transform: translate(-50%, -50%) translate(-54%, .85rem) translateZ(-65px) rotateY(24deg) scale(.72);
+  }
+}
+@media (max-width: 520px) {
+  .signature-carousel__card--image {
+    width: 17.5rem;
+    height: 11.5rem;
+  }
+}
