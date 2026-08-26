@@ -61,11 +61,17 @@ serve(async (req) => {
 
     const startTime = Date.now();
 
-    // Call Lovable AI for analysis
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    // Call the configured OpenAI-compatible provider for skin analysis.
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('AI_INTEGRATIONS_OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
+    const OPENAI_BASE_URL = (
+      Deno.env.get('OPENAI_BASE_URL') ||
+      Deno.env.get('AI_INTEGRATIONS_OPENAI_BASE_URL') ||
+      'https://api.openai.com/v1'
+    ).replace(/\/+$/, '');
+    const OPENAI_MODEL = Deno.env.get('OPENAI_MODEL') || 'gpt-4o-mini';
 
     // Prepare context for AI
     const userContext = {
@@ -165,17 +171,22 @@ Return ONLY valid JSON in this exact format:
         ''
       )
     );
-    const imageBase64Url = `data:image/jpeg;base64,${base64Image}`;
+    const contentType = imageData.type || (
+      imageUrl.toLowerCase().endsWith('.png') ? 'image/png' :
+      imageUrl.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg'
+    );
+    const imageBase64Url = `data:${contentType};base64,${base64Image}`;
     console.log('Image converted to base64, size:', base64Image.length);
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const aiResponse = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: OPENAI_MODEL,
+        response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
           {
@@ -191,19 +202,22 @@ Return ONLY valid JSON in this exact format:
 
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
-        throw new Error('AI rate limit exceeded. Please try again later.');
+        throw new Error('OpenAI rate limit reached. Please try again later.');
       }
-      if (aiResponse.status === 402) {
-        throw new Error('AI credits exhausted. Please add credits to your workspace.');
+      if (aiResponse.status === 401 || aiResponse.status === 403) {
+        throw new Error('OpenAI analysis access was rejected. Check the server-side API key and model access.');
       }
-      console.error('AI API error:', aiResponse.status, await aiResponse.text());
-      throw new Error('AI analysis failed');
+      console.error('OpenAI API error:', aiResponse.status, await aiResponse.text());
+      throw new Error('OpenAI analysis is temporarily unavailable.');
     }
 
     const aiData = await aiResponse.json();
-    const aiContent = aiData.choices[0].message.content;
+    const aiContent = aiData?.choices?.[0]?.message?.content;
+    if (typeof aiContent !== 'string' || !aiContent.trim()) {
+      throw new Error('OpenAI analysis returned an empty response.');
+    }
     
-    console.log('AI Response:', aiContent);
+    console.log('Skin analysis response received.');
 
     // Parse AI response
     let analysis;
