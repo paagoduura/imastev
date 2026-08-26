@@ -410,9 +410,12 @@ async function signStorageValue(service: SupabaseClient, bucket: string, value: 
 }
 
 async function signScanImageFields(service: SupabaseClient, scan: Record<string, any>) {
+  const parsedNotes = typeof scan.notes === "string" ? (() => { try { return JSON.parse(scan.notes); } catch { return null; } })() : null;
+  const noteMetadata = parsedNotes && typeof parsedNotes === "object" ? (parsedNotes.image_metadata || {}) : {};
+  const noteCaptureInfo = parsedNotes && typeof parsedNotes === "object" ? parsedNotes.scan_capture : null;
   const storedBucket = scan.image_metadata && typeof scan.image_metadata === "object"
     ? (scan.image_metadata as Record<string, unknown>).storage_bucket
-    : null;
+    : (noteMetadata && typeof noteMetadata === "object" ? (noteMetadata as Record<string, unknown>).storage_bucket : null);
   const bucket = storedBucket === "skin-scans" || storedBucket === "hair-scans"
     ? storedBucket
     : String(scan.scan_type || "skin") === "skin" ? "skin-scans" : "hair-scans";
@@ -425,7 +428,7 @@ async function signScanImageFields(service: SupabaseClient, scan: Record<string,
   ]);
   const captureInfo = scan.capture_info && typeof scan.capture_info === "object"
     ? { ...scan.capture_info }
-    : scan.capture_info;
+    : (noteCaptureInfo && typeof noteCaptureInfo === "object" ? { ...noteCaptureInfo } : scan.capture_info);
   if (captureInfo?.image_urls && typeof captureInfo.image_urls === "object") {
     captureInfo.image_urls = Object.fromEntries(
       await Promise.all(Object.entries(captureInfo.image_urls).map(async ([angle, value]) => [
@@ -436,6 +439,7 @@ async function signScanImageFields(service: SupabaseClient, scan: Record<string,
   }
   return {
     ...scan,
+    image_metadata: scan.image_metadata || noteMetadata,
     image_url: imageUrl,
     multi_angle_urls: Object.fromEntries(multiAngleEntries),
     capture_info: captureInfo,
@@ -1932,19 +1936,20 @@ serve(async (req) => {
           }, 409);
         }
       }
-      const { capture_info: captureInfo, preview: _preview, ...bodyWithoutCaptureInfo } = body;
-      const existingImageMetadata = bodyWithoutCaptureInfo.image_metadata && typeof bodyWithoutCaptureInfo.image_metadata === "object"
-        ? bodyWithoutCaptureInfo.image_metadata as Record<string, unknown>
-        : {};
-      const imageMetadata = captureInfo && typeof captureInfo === "object"
-        ? { ...existingImageMetadata, scan_capture: captureInfo }
-        : existingImageMetadata;
+      const { capture_info: captureInfo, image_metadata: imageMetadata, preview: _preview, notes: requestNotes, ...bodyWithoutUnsupportedMetadata } = body;
+      const scannerMetadata = {
+        ...(imageMetadata && typeof imageMetadata === "object" ? { image_metadata: imageMetadata } : {}),
+        ...(captureInfo && typeof captureInfo === "object" ? { scan_capture: captureInfo } : {}),
+      };
+      const notes = Object.keys(scannerMetadata).length
+        ? JSON.stringify({ ...(typeof requestNotes === "string" ? { notes: requestNotes } : {}), ...scannerMetadata })
+        : (typeof requestNotes === "string" ? requestNotes : null);
       const payload = {
-        ...bodyWithoutCaptureInfo,
+        ...bodyWithoutUnsupportedMetadata,
         user_id: user.id,
         scan_type: typeof body.scan_type === "string" ? body.scan_type : "skin",
         status: body.status || "pending",
-        ...(Object.keys(imageMetadata).length ? { image_metadata: imageMetadata } : {}),
+        ...(notes !== null ? { notes } : {}),
       };
       const { data, error } = await service.from("scans").insert(payload).select().single();
       if (error) return json({ error: error.message }, 400);

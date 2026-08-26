@@ -59,7 +59,8 @@ serve(async (req) => {
       throw new Error('Scan not found or unauthorized');
     }
 
-    const captureInfo = scan.capture_info || (scan.image_metadata && typeof scan.image_metadata === 'object' ? scan.image_metadata.scan_capture : null);
+    const parsedNotes = typeof scan.notes === 'string' ? (() => { try { return JSON.parse(scan.notes); } catch { return null; } })() : null;
+    const captureInfo = scan.capture_info || (scan.image_metadata && typeof scan.image_metadata === 'object' ? scan.image_metadata.scan_capture : null) || (parsedNotes && typeof parsedNotes === 'object' ? parsedNotes.scan_capture : null);
     const qualityScore = qualityScoreFromCaptureInfo(captureInfo);
     const qualityRows = Array.isArray(captureInfo?.quality_scores) ? captureInfo.quality_scores : [];
     const qualityRejected = qualityRows.some((row: Record<string, unknown>) => {

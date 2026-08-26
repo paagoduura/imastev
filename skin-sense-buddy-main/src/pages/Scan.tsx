@@ -613,35 +613,37 @@ const Scan = () => {
           ...acc,
           [img.angle]: img.url,
         }), {}),
-        image_metadata: {
+        notes: JSON.stringify({
           scanner_version: '2026.08',
           original_images_retained: true,
           processed_images_retained: true,
-          quality_scores: uploadedImages.map(i => i.quality.scanQuality || null),
-          dimensions: uploadedImages.map(i => ({
-            angle: i.angle,
-            width: Number(i.metadata?.width || 0),
-            height: Number(i.metadata?.height || 0),
-          })),
-        },
-        capture_info: {
-          scan_mode: analysisType,
-          required_angles: REQUIRED_ANGLES,
-          captured_angles: uploadedImages.map(i => i.angle),
-          original_image_urls: uploadedImages.reduce<Record<string, string>>((acc, image) => {
-            if (image.originalUrl) acc[image.angle] = image.originalUrl;
-            return acc;
-          }, {}),
-          quality_scores: uploadedImages.map(i => ({
-            angle: i.angle,
-            blur: i.quality.blurScore,
-            lighting: i.quality.lightingScore,
-            exposure: i.quality.exposureScore,
-            contrast: i.quality.contrastScore,
-            scan_quality: i.quality.scanQuality || null,
-          })),
-          porosity_test_result: porosityResult,
-        },
+          image_metadata: {
+            quality_scores: uploadedImages.map(i => i.quality.scanQuality || null),
+            dimensions: uploadedImages.map(i => ({
+              angle: i.angle,
+              width: Number(i.metadata?.width || 0),
+              height: Number(i.metadata?.height || 0),
+            })),
+          },
+          scan_capture: {
+            scan_mode: analysisType,
+            required_angles: REQUIRED_ANGLES,
+            captured_angles: uploadedImages.map(i => i.angle),
+            original_image_urls: uploadedImages.reduce<Record<string, string>>((acc, image) => {
+              if (image.originalUrl) acc[image.angle] = image.originalUrl;
+              return acc;
+            }, {}),
+            quality_scores: uploadedImages.map(i => ({
+              angle: i.angle,
+              blur: i.quality.blurScore,
+              lighting: i.quality.lightingScore,
+              exposure: i.quality.exposureScore,
+              contrast: i.quality.contrastScore,
+              scan_quality: i.quality.scanQuality || null,
+            })),
+            porosity_test_result: porosityResult,
+          },
+        }),
       }),
     });
     const scanPayload = await scanResponse.json().catch(() => ({}));
