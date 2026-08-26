@@ -571,7 +571,7 @@ const Scan = () => {
   };
 
 
-  const prepareScan = async (user: { id: string }) => {
+  const prepareScan = async (user: { id: string }, preview = false) => {
     try {
       const token = await getApiAuthToken();
       await fetch(buildApiUrl('/storage/ensure-buckets'), {
@@ -608,6 +608,7 @@ const Scan = () => {
       body: JSON.stringify({
         image_url: uploadedImages.find(i => i.angle === frontAngle)?.url || uploadedImages[0].url,
         scan_type: analysisType,
+        preview,
         multi_angle_urls: uploadedImages.reduce<Record<string, string>>((acc, img) => ({
           ...acc,
           [img.angle]: img.url,
@@ -667,7 +668,16 @@ const Scan = () => {
         return;
       }
 
-      const { scan } = await prepareScan(user);
+      const eligibilityToken = await getApiAuthToken();
+      const eligibilityResponse = await fetch(buildApiUrl('/scans/preview-eligibility'), {
+        headers: eligibilityToken ? { Authorization: `Bearer ${eligibilityToken}` } : {},
+      });
+      const eligibility = await eligibilityResponse.json().catch(() => ({}));
+      if (!eligibilityResponse.ok || eligibility?.canUsePreview !== true) {
+        throw new Error(eligibility?.message || eligibility?.error || 'Your one-time scan preview has already been used. Unlock the complete analysis to continue.');
+      }
+
+      const { scan } = await prepareScan(user, true);
       await runAnalysis(scan, true);
       toast({
         title: "Your scan preview is ready",
@@ -726,7 +736,7 @@ const Scan = () => {
         (maxScans === null || (maxScans > 0 && scansUsed < maxScans));
 
       if (hasRemainingSubscriptionScans) {
-        const { scan } = await prepareScan(user);
+        const { scan } = await prepareScan(user, false);
         await consumeSubscriptionScan();
         await runAnalysis(scan);
 
@@ -779,8 +789,7 @@ const Scan = () => {
       // Determine payment details based on selected option
       const amount = option === 'one-time' ? ONE_TIME_ANALYSIS_FEE_NGN : MONTHLY_SUBSCRIPTION_FEE_NGN;
       const paymentType = option === 'one-time' ? 'analysis' : 'subscription';
-      const { scan } = await prepareScan(user);
-
+      const { scan } = await prepareScan(user, false);
       // Keep scan/payment context available even if checkout redirects away from this page.
       sessionStorage.setItem('pendingPaymentType', paymentType);
       sessionStorage.setItem('pendingAnalysisScanId', scan.id);

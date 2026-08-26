@@ -298,6 +298,22 @@ function previewTreatmentPlan(treatmentPlan: Record<string, unknown> | null) {
   };
 }
 
+async function hasUsedOneTimePreview(service: SupabaseClient, userId: string) {
+  const { data, error } = await service
+    .from("diagnoses")
+    .select("ai_model_version, hair_profile, skin_profile")
+    .eq("user_id", userId);
+  if (error) return { used: false, error };
+  const used = ensureArray(data).some((diagnosis) => {
+    const model = String(diagnosis.ai_model_version || '').toLowerCase();
+    const hairContract = diagnosis.hair_profile && typeof diagnosis.hair_profile === 'object' ? diagnosis.hair_profile.scanner_contract : null;
+    const skinContract = diagnosis.skin_profile && typeof diagnosis.skin_profile === 'object' ? diagnosis.skin_profile.scanner_contract : null;
+    const contract = hairContract || skinContract;
+    return model.includes('preview') || Boolean(contract && typeof contract === 'object' && contract.preview === true);
+  });
+  return { used, error: null };
+}
+
 async function getScanAccess(service: SupabaseClient, userId: string, scanId: string) {
   const [analysisPayments, subscriptionPayments, subscriptions] = await Promise.all([
     service
@@ -1869,6 +1885,12 @@ serve(async (req) => {
       });
     }
 
+    if (route === "/scans/preview-eligibility" && req.method === "GET") {
+      const user = await requireUser(req, service);
+      const previewUsage = await hasUsedOneTimePreview(service, user.id);
+      if (previewUsage.error) return json({ error: previewUsage.error.message }, 500);
+      return json({ canUsePreview: !previewUsage.used, used: previewUsage.used });
+    }
     if (route === "/scans" && req.method === "POST") {
       const user = await requireUser(req, service);
       const { data: subscriptions } = await service
@@ -1899,11 +1921,30 @@ serve(async (req) => {
         }, 403);
       }
 
+      if (body.preview === true) {
+        const previewUsage = await hasUsedOneTimePreview(service, user.id);
+        if (previewUsage.error) return json({ error: previewUsage.error.message }, 500);
+        if (previewUsage.used) {
+          return json({
+            error: "Your one-time scan preview has already been used.",
+            code: "PREVIEW_ALREADY_USED",
+            message: "Unlock the complete analysis or use a paid subscription for another scan.",
+          }, 409);
+        }
+      }
+      const { capture_info: captureInfo, preview: _preview, ...bodyWithoutCaptureInfo } = body;
+      const existingImageMetadata = bodyWithoutCaptureInfo.image_metadata && typeof bodyWithoutCaptureInfo.image_metadata === "object"
+        ? bodyWithoutCaptureInfo.image_metadata as Record<string, unknown>
+        : {};
+      const imageMetadata = captureInfo && typeof captureInfo === "object"
+        ? { ...existingImageMetadata, scan_capture: captureInfo }
+        : existingImageMetadata;
       const payload = {
-        ...body,
+        ...bodyWithoutCaptureInfo,
         user_id: user.id,
         scan_type: typeof body.scan_type === "string" ? body.scan_type : "skin",
         status: body.status || "pending",
+        ...(Object.keys(imageMetadata).length ? { image_metadata: imageMetadata } : {}),
       };
       const { data, error } = await service.from("scans").insert(payload).select().single();
       if (error) return json({ error: error.message }, 400);

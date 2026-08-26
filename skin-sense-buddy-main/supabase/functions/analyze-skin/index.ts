@@ -59,8 +59,9 @@ serve(async (req) => {
       throw new Error('Scan not found or unauthorized');
     }
 
-    const qualityScore = qualityScoreFromCaptureInfo(scan.capture_info);
-    const qualityRows = Array.isArray(scan.capture_info?.quality_scores) ? scan.capture_info.quality_scores : [];
+    const captureInfo = scan.capture_info || (scan.image_metadata && typeof scan.image_metadata === 'object' ? scan.image_metadata.scan_capture : null);
+    const qualityScore = qualityScoreFromCaptureInfo(captureInfo);
+    const qualityRows = Array.isArray(captureInfo?.quality_scores) ? captureInfo.quality_scores : [];
     const qualityRejected = qualityRows.some((row: Record<string, unknown>) => {
       const scanQuality = row?.scan_quality;
       return scanQuality && typeof scanQuality === 'object' && (scanQuality as Record<string, unknown>).status === 'retake';
