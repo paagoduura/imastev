@@ -236,21 +236,38 @@ function isSuccessfulPayment(status: unknown) {
 function previewDiagnosis(diagnosis: Record<string, unknown> | null) {
   if (!diagnosis) return null;
   const conditions = Array.isArray(diagnosis.conditions) ? diagnosis.conditions : [];
+  const firstCondition = conditions[0] && typeof conditions[0] === "object"
+    ? conditions[0] as Record<string, unknown>
+    : {};
+  const isPlaceholder = (value: unknown) => {
+    if (typeof value !== "string") return true;
+    return new Set(["", "uncertain", "unknown", "not enough information", "insufficient information", "n/a"]).has(value.trim().toLowerCase());
+  };
+  const conditionName = !isPlaceholder(firstCondition.condition)
+    ? firstCondition.condition
+    : !isPlaceholder(firstCondition.name)
+      ? firstCondition.name
+      : null;
+  const primaryCondition = !isPlaceholder(diagnosis.primary_condition)
+    ? diagnosis.primary_condition
+    : conditionName || "Image quality limits a specific finding";
   return {
     id: diagnosis.id,
     analysis_type: diagnosis.analysis_type,
-    primary_condition: diagnosis.primary_condition,
+    primary_condition: primaryCondition,
     confidence_score: diagnosis.confidence_score,
     severity: diagnosis.severity,
     triage_level: diagnosis.triage_level,
     conditions: conditions.slice(0, 1).map((condition) => {
       if (!condition || typeof condition !== "object") return condition;
       const item = condition as Record<string, unknown>;
+      const name = !isPlaceholder(item.condition) ? item.condition : item.name;
       return {
-        condition: item.condition || item.name,
-        name: item.name || item.condition,
+        condition: name || primaryCondition,
+        name: name || primaryCondition,
         severity: item.severity,
         confidence: item.confidence,
+        explanation: item.explanation,
       };
     }),
     hair_profile: diagnosis.hair_profile && typeof diagnosis.hair_profile === "object"

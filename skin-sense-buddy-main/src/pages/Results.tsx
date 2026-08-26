@@ -561,6 +561,9 @@ www.imstevnaturals.com
     const previewIsHair = scan?.scan_type === 'hair' || diagnosis.analysis_type === 'hair';
     const previewTriage = getTriageMessage(diagnosis.triage_level || 'self_care', previewIsHair);
     const previewCondition = diagnosis.primary_condition || diagnosis.conditions?.[0]?.condition || diagnosis.conditions?.[0]?.name || 'Your care focus';
+    const previewExplanation = diagnosis.conditions?.[0]?.explanation || (previewCondition === 'Image quality limits a specific finding'
+      ? 'The image was reviewed, but it does not support a reliable named finding. A closer, well-lit image can provide a more useful first read.'
+      : 'This first read is based on visible cues in the uploaded image.');
     const previewRecommendation = treatmentPlan?.recommendations || 'Your first care note is ready. Unlock the complete routine for the full guidance.';
 
     return (
@@ -598,6 +601,7 @@ www.imstevnaturals.com
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current focus</p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">{previewCondition}</p>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">{previewExplanation}</p>
                   </div>
                   <div className="flex items-start gap-3 rounded-xl bg-background/70 p-4">
                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
