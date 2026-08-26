@@ -1095,8 +1095,7 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
 }
 
 /* Keep side cards visually quiet so the active hairstyle remains the focus. */
-.signature-carousel__card.is-next .signature-carousel__card-meta,
-.signature-carousel__card.is-previous .signature-carousel__card-meta {
+.signature-carousel__card:not(.is-active) .signature-carousel__card-meta {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
