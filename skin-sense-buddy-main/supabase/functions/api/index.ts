@@ -261,10 +261,11 @@ function previewDiagnosis(diagnosis: Record<string, unknown> | null) {
     conditions: conditions.slice(0, 1).map((condition) => {
       if (!condition || typeof condition !== "object") return condition;
       const item = condition as Record<string, unknown>;
-      const name = !isPlaceholder(item.condition) ? item.condition : item.name;
+      const candidateName = !isPlaceholder(item.condition) ? item.condition : item.name;
+      const name = !isPlaceholder(candidateName) ? candidateName : primaryCondition;
       return {
-        condition: name || primaryCondition,
-        name: name || primaryCondition,
+        condition: name,
+        name,
         severity: item.severity,
         confidence: item.confidence,
         explanation: item.explanation,
