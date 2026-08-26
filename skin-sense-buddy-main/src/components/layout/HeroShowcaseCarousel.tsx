@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import { ArrowRight, Droplets, Leaf, MoveUpRight, ScanLine, Scissors, ShoppingBag } from "lucide-react";
+import { ArrowRight, Droplets, Leaf, MoveUpRight, ScanLine, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface StorySlide {
@@ -20,20 +20,6 @@ interface StorySlide {
 }
 
 const STORY_SLIDES: StorySlide[] = [
-  {
-    id: "scan",
-    eyebrow: "01 · Understand your texture",
-    title: "Your care story starts with seeing yourself clearly.",
-    description: "A guided hair and skin scan designed for deeper tones, textured hair, and real routines—not generic beauty advice.",
-    image: "/imstev-client-texture.jpeg",
-    objectPosition: "center 40%",
-    accent: "#d99745",
-    metric: "4A–4C",
-    metricLabel: "texture-aware",
-    action: "Begin your scan",
-    href: "/scan",
-    icon: ScanLine,
-  },
   {
     id: "hair-scan-video",
     eyebrow: "02 · See your hair clearly",
@@ -63,47 +49,6 @@ const STORY_SLIDES: StorySlide[] = [
     action: "BEGIN YOUR SKIN SCAN",
     href: "/scan",
     icon: Droplets,
-  },
-  {
-    id: "salon",
-    eyebrow: "04 · Be held by expertise",
-    title: "A salon ritual rooted in African beauty knowledge.",
-    description: "From wash day to protective styling, meet specialists who understand the patience, pride, and precision your hair deserves.",
-    image: "/imstev-client-profile.jpeg",
-    objectPosition: "center 34%",
-    accent: "#b9784a",
-    metric: "1:1",
-    metricLabel: "specialist care",
-    action: "Book the studio",
-    href: "/salon-booking",
-    icon: Scissors,
-  },
-  {
-    id: "skin",
-    eyebrow: "05 · Nurture your glow",
-    title: "Thoughtful skin care, made personal.",
-    description: "Turn observations into a gentle routine, then choose products and guidance that make sense for your skin and your climate.",
-    image: "/imstev-skin.jpg",
-    accent: "#c28b63",
-    metric: "360°",
-    metricLabel: "care perspective",
-    action: "Explore skin care",
-    href: "/shop",
-    icon: Droplets,
-  },
-  {
-    id: "community",
-    eyebrow: "06 · Grow together",
-    title: "A softer kind of beauty community.",
-    description: "Ask better questions, learn from lived experience, and find specialists who celebrate the full range of African beauty.",
-    image: "/imstev-community-braids.jpeg",
-    objectPosition: "center 46%",
-    accent: "#879b78",
-    metric: "24/7",
-    metricLabel: "shared wisdom",
-    action: "Enter the community",
-    href: "/community",
-    icon: Leaf,
   },
 ];
 
