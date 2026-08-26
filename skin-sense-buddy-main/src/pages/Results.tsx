@@ -315,7 +315,7 @@ www.imstevnaturals.com
 
       // Fetch IMSTEV products for hair analysis
       if (scanData?.scan_type === 'hair') {
-        const token = localStorage.getItem('glowsense_token');
+        const token = await getApiAuthToken();
         try {
           const response = await fetchWithTimeout(buildApiUrl('/products?category=Hair%20Care'), {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -533,7 +533,7 @@ www.imstevnaturals.com
                 {loadError || "We couldn't load your scan right now. Please try again."}
               </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button onClick={() => scanId && checkPaymentStatus(scanId)}>Retry</Button>
+              <Button onClick={() => { setLoading(true); void fetchResults(); }}>Retry</Button>
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 Back to Dashboard
               </Button>
