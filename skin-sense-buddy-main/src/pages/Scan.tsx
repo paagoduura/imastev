@@ -522,7 +522,7 @@ const Scan = () => {
     return payload;
   };
 
-  const runAnalysis = async (scan: ScanRecord, preview = false) => {
+  const runAnalysis = async (scan: ScanRecord, preview = false, captureInfo?: Record<string, unknown>, multiAngleUrls?: Record<string, string>) => {
     const token = await getApiAuthToken();
     if (!token) throw new Error('Authentication required to run analysis');
 
@@ -552,8 +552,8 @@ const Scan = () => {
             scanMode,
             ...(useDedicatedFunction ? {
               imageUrl: scan.image_url,
-              multiAngleUrls: scan.multi_angle_urls || {},
-              calibration: scan.capture_info || undefined,
+              multiAngleUrls: multiAngleUrls || scan.multi_angle_urls || {},
+              calibration: captureInfo || scan.capture_info || undefined,
             } : {}),
           }),
           signal: controller.signal,
@@ -599,6 +599,28 @@ const Scan = () => {
     const uploadedImages = uploadResults.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
 
     const frontAngle = angleConfig.required[0]?.id || 'front';
+    const captureInfo = {
+      scan_mode: analysisType,
+      required_angles: REQUIRED_ANGLES,
+      captured_angles: uploadedImages.map(i => i.angle),
+      original_image_urls: uploadedImages.reduce<Record<string, string>>((acc, image) => {
+        if (image.originalUrl) acc[image.angle] = image.originalUrl;
+        return acc;
+      }, {}),
+      quality_scores: uploadedImages.map(i => ({
+        angle: i.angle,
+        blur: i.quality.blurScore,
+        lighting: i.quality.lightingScore,
+        exposure: i.quality.exposureScore,
+        contrast: i.quality.contrastScore,
+        scan_quality: i.quality.scanQuality || null,
+      })),
+      porosity_test_result: porosityResult,
+    };
+    const multiAngleUrls = uploadedImages.reduce<Record<string, string>>((acc, img) => ({
+      ...acc,
+      [img.angle]: img.url,
+    }), {});
     const scanResponse = await fetch(buildApiUrl('/scans'), {
       method: 'POST',
       headers: {
@@ -609,41 +631,7 @@ const Scan = () => {
         image_url: uploadedImages.find(i => i.angle === frontAngle)?.url || uploadedImages[0].url,
         scan_type: analysisType,
         preview,
-        multi_angle_urls: uploadedImages.reduce<Record<string, string>>((acc, img) => ({
-          ...acc,
-          [img.angle]: img.url,
-        }), {}),
-        notes: JSON.stringify({
-          scanner_version: '2026.08',
-          original_images_retained: true,
-          processed_images_retained: true,
-          image_metadata: {
-            quality_scores: uploadedImages.map(i => i.quality.scanQuality || null),
-            dimensions: uploadedImages.map(i => ({
-              angle: i.angle,
-              width: Number(i.metadata?.width || 0),
-              height: Number(i.metadata?.height || 0),
-            })),
-          },
-          scan_capture: {
-            scan_mode: analysisType,
-            required_angles: REQUIRED_ANGLES,
-            captured_angles: uploadedImages.map(i => i.angle),
-            original_image_urls: uploadedImages.reduce<Record<string, string>>((acc, image) => {
-              if (image.originalUrl) acc[image.angle] = image.originalUrl;
-              return acc;
-            }, {}),
-            quality_scores: uploadedImages.map(i => ({
-              angle: i.angle,
-              blur: i.quality.blurScore,
-              lighting: i.quality.lightingScore,
-              exposure: i.quality.exposureScore,
-              contrast: i.quality.contrastScore,
-              scan_quality: i.quality.scanQuality || null,
-            })),
-            porosity_test_result: porosityResult,
-          },
-        }),
+
       }),
     });
     const scanPayload = await scanResponse.json().catch(() => ({}));
@@ -651,7 +639,7 @@ const Scan = () => {
       throw new Error(scanPayload?.error || `Unable to save scan (${scanResponse.status})`);
     }
 
-    return { scan: scanPayload as ScanRecord, uploadedImages };
+    return { scan: scanPayload as ScanRecord, uploadedImages, captureInfo, multiAngleUrls };
   };
 
   const handleOneTimePreview = async () => {
@@ -679,8 +667,8 @@ const Scan = () => {
         throw new Error(eligibility?.message || eligibility?.error || 'Your one-time scan preview has already been used. Unlock the complete analysis to continue.');
       }
 
-      const { scan } = await prepareScan(user, true);
-      await runAnalysis(scan, true);
+      const { scan, captureInfo, multiAngleUrls } = await prepareScan(user, true);
+      await runAnalysis(scan, true, captureInfo, multiAngleUrls);
       toast({
         title: "Your scan preview is ready",
         description: "Review the first care notes, then unlock the complete guidance when you are ready.",
@@ -738,9 +726,9 @@ const Scan = () => {
         (maxScans === null || (maxScans > 0 && scansUsed < maxScans));
 
       if (hasRemainingSubscriptionScans) {
-        const { scan } = await prepareScan(user, false);
+        const { scan, captureInfo, multiAngleUrls } = await prepareScan(user, false);
         await consumeSubscriptionScan();
-        await runAnalysis(scan);
+        await runAnalysis(scan, false, captureInfo, multiAngleUrls);
 
         toast({
           title: "Analysis Complete",
