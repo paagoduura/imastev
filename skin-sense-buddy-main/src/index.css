@@ -617,7 +617,7 @@ span[class*="bg-gradient-to-r"][class*="flex"][class*="items-center"][class*="ju
 .mobile-actionbar { display: none; }
 @media (max-width: 1023px) {
   body { padding-bottom: env(safe-area-inset-bottom, 0px); }
-  .mobile-actionbar { position: fixed; right: .75rem; bottom: max(.75rem, env(safe-area-inset-bottom)); left: .75rem; z-index: 45; display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; padding: .35rem; border: 1px solid rgba(36,22,13,.12); border-radius: 1.15rem; background: rgba(248,242,232,.93); box-shadow: 0 16px 35px rgba(36,22,13,.16); backdrop-filter: blur(18px); }
+  .mobile-actionbar { position: fixed; right: .75rem; bottom: max(.75rem, env(safe-area-inset-bottom)); left: .75rem; z-index: 45; display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; padding: .35rem; border: 1px solid rgba(36,22,13,.12); border-radius: 1.15rem; background: rgba(248,242,232,.93); box-shadow: 0 16px 35px rgba(36,22,13,.16); backdrop-filter: blur(18px); }
   .mobile-actionbar button { display: inline-flex; min-height: 2.8rem; align-items: center; justify-content: center; gap: .4rem; border: 0; border-radius: .85rem; background: transparent; color: #756253; font: inherit; font-size: .7rem; font-weight: 700; transition: background .2s ease, color .2s ease, transform .2s ease; }
   .mobile-actionbar button:active { transform: scale(.96); }
   .mobile-actionbar button.is-active, .mobile-actionbar button:hover { background: #24160d; color: #f8f2e8; }

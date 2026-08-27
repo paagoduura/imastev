@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE } from "@/lib/config";
 import { BRAND_IMAGES } from "@/lib/brandImages";
@@ -153,7 +154,8 @@ const Shop = () => {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload?.error || "Unable to add this product to your cart");
       }
-      toast({ title: "Added to your edit", description: "The product is waiting in your cart." });
+      window.dispatchEvent(new CustomEvent("cart-updated"));
+      toast({ title: "Added to your edit", description: "The product is waiting in your cart.", action: <ToastAction altText="View cart" onClick={() => navigate("/cart")}>View cart</ToastAction> });
       await fetchCartCount();
     } catch (error) {
       toast({ title: "Could not add product", description: getErrorMessage(error), variant: "destructive" });
@@ -243,7 +245,7 @@ const Shop = () => {
               <div className="relative w-full lg:max-w-xl"><Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#3b271b]/45" /><Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search by product, ingredient, or concern" className="h-12 rounded-full border-[#3b271b]/15 bg-[#f8f3ec] pl-11 text-[#3b271b] placeholder:text-[#3b271b]/40" />{searchQuery && <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3b271b]/45 hover:text-[#3b271b]"><X className="h-4 w-4" /></button>}</div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center"><div className="flex rounded-full bg-[#f8f3ec] p-1">{(["all", "skin", "hair"] as ProductTypeFilter[]).map((type) => <button key={type} type="button" onClick={() => setCareFilter(type)} className={`rounded-full px-4 py-2 text-xs font-semibold transition ${productTypeFilter === type ? "bg-[#3b271b] text-[#f8f3ec]" : "text-[#3b271b]/60 hover:text-[#3b271b]"}`}>{type === "all" ? "All" : type === "skin" ? "Skin" : "Hair"}</button>)}</div><label className="sr-only" htmlFor="shop-category">Filter by category</label><select id="shop-category" value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="h-11 w-full rounded-full border border-[#3b271b]/15 bg-[#f8f3ec] px-4 text-sm text-[#3b271b] outline-none transition focus:border-[#8b5e3c] sm:w-48">{categories.map((category) => <option key={category} value={category}>{category === "all" ? "All categories" : category}</option>)}</select></div>
             </div>
-            <div className="mt-4 flex flex-col gap-2 border-t border-[#3b271b]/10 pt-4 text-xs text-[#3b271b]/55 sm:flex-row sm:items-center sm:justify-between"><span>{filteredProducts.length} pieces in the current edit</span>{usingFallbackCatalog && <span className="inline-flex items-center gap-2 text-amber-800"><ShieldCheck className="h-3.5 w-3.5" /> Curated catalog mode</span>}{(searchQuery || selectedCategory !== "all") && <button type="button" onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }} className="font-semibold text-[#8b5e3c] hover:text-[#3b271b]">Reset filters</button>}</div>
+            <div className="mt-4 flex flex-col gap-2 border-t border-[#3b271b]/10 pt-4 text-xs text-[#3b271b]/55 sm:flex-row sm:items-center sm:justify-between"><span>{filteredProducts.length} pieces in the current edit</span><div className="flex flex-wrap items-center gap-3">{usingFallbackCatalog && <span className="inline-flex items-center gap-2 text-amber-800"><ShieldCheck className="h-3.5 w-3.5" /> Curated catalog mode</span>}{cartCount > 0 && <button type="button" onClick={() => navigate("/cart")} className="inline-flex items-center gap-1.5 rounded-full bg-[#3b271b] px-3 py-1.5 font-semibold text-[#f8f3ec] transition hover:bg-[#513622]"><ShoppingCart className="h-3.5 w-3.5" /> View cart ({cartCount})</button>}{(searchQuery || selectedCategory !== "all") && <button type="button" onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }} className="font-semibold text-[#8b5e3c] hover:text-[#3b271b]">Reset filters</button>}</div></div>
           </div>
         </section>
 
