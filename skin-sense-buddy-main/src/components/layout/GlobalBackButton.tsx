@@ -4,6 +4,16 @@ import { Button } from "@/components/ui/button";
 
 const HIDDEN_PATHS = new Set(["/"]);
 
+function getFallbackPath(pathname: string) {
+  if (pathname.startsWith("/results/")) return "/dashboard";
+  if (pathname === "/cart") return "/shop";
+  if (pathname === "/orders") return "/dashboard";
+  if (pathname === "/payment" || pathname === "/payment-callback") return "/dashboard";
+  if (pathname === "/forgot-password" || pathname === "/reset-password") return "/auth";
+  if (pathname === "/admin") return "/admin/login";
+  return "/";
+}
+
 export function GlobalBackButton() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,11 +23,16 @@ export function GlobalBackButton() {
   }
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    // BrowserRouter stores its in-app history position in history.state.idx.
+    // Only go back when a prior in-app entry exists; otherwise use a safe
+    // route fallback so a direct page visit never exits the IMSTEV website.
+    const historyIndex = window.history.state?.idx;
+    if (typeof historyIndex === "number" && historyIndex > 0) {
       navigate(-1);
       return;
     }
-    navigate("/");
+
+    navigate(getFallbackPath(location.pathname), { replace: true });
   };
 
   return (
