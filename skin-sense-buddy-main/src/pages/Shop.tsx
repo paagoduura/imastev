@@ -19,6 +19,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToastAction } from "@/components/ui/toast";
@@ -57,6 +58,7 @@ const Shop = () => {
   const [cartCount, setCartCount] = useState(0);
   const [usingFallbackCatalog, setUsingFallbackCatalog] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [showShippingPrompt, setShowShippingPrompt] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -155,6 +157,7 @@ const Shop = () => {
         throw new Error(payload?.error || "Unable to add this product to your cart");
       }
       window.dispatchEvent(new CustomEvent("cart-updated"));
+      setShowShippingPrompt(true);
       toast({ title: "Added to your edit", description: "The product is waiting in your cart.", action: <ToastAction altText="View cart" onClick={() => navigate("/cart")}>View cart</ToastAction> });
       await fetchCartCount();
     } catch (error) {
@@ -162,6 +165,11 @@ const Shop = () => {
     } finally {
       setAddingProductId(null);
     }
+  };
+
+  const handleShippingPrompt = () => {
+    setShowShippingPrompt(false);
+    navigate("/cart");
   };
 
   return (
@@ -280,6 +288,25 @@ const Shop = () => {
           </div>
         </section>
       </main>
+
+      <Dialog open={showShippingPrompt} onOpenChange={setShowShippingPrompt}>
+        <DialogContent className="max-w-md rounded-[28px] border-[#3b271b]/10 bg-[#fffaf5]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-3xl text-[#3b271b]">Where should we send it?</DialogTitle>
+            <DialogDescription className="text-sm leading-6 text-[#3b271b]/60">
+              Before payment, we need your shipping address and contact phone number so your order can reach you safely.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl border border-[#3b271b]/10 bg-[#f3e4d0] p-4 text-sm text-[#3b271b]/70">
+            <p className="font-semibold text-[#3b271b]">Shipping details required</p>
+            <p className="mt-1 leading-6">Continue to your cart to add your delivery address and phone number, then proceed securely to payment.</p>
+          </div>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => setShowShippingPrompt(false)} className="rounded-full border-[#3b271b]/20">Continue shopping</Button>
+            <Button type="button" onClick={handleShippingPrompt} className="rounded-full bg-[#3b271b] text-[#f8f3ec] hover:bg-[#513622]">Add shipping details</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
