@@ -284,7 +284,7 @@ export default function PaymentCallback() {
             },
             payment_method: 'quickteller',
             payment_status: 'paid',
-            shipping_fee_ngn: pending.shippingFee ?? 0,
+            shipping_quote_id: pending.shippingQuoteId,
             payment_reference: verifiedTransactionRef,
           }),
         });

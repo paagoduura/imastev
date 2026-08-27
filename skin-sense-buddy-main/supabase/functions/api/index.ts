@@ -1,5 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  assertShippingQuoteMatchesAddress,
+  assertShippingQuoteMatchesCart,
+  createShippingQuote,
+  getValidShippingQuote,
+  getValidatedOrderPaymentContext,
+  ShippingError,
+} from "../_shared/shipping.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,6 +57,13 @@ const PRODUCT_FIELDS = [
   "suitable_hair_types",
   "suitable_hair_concerns",
   "contraindications",
+  "shipping_weight_grams",
+  "shipping_length_cm",
+  "shipping_width_cm",
+  "shipping_height_cm",
+  "customs_description",
+  "hs_code",
+  "country_of_origin",
 ] as const;
 
 const TIME_SLOTS = [
@@ -1751,6 +1766,17 @@ serve(async (req) => {
       return json(data);
     }
 
+    if (route === "/shipping/quote" && req.method === "POST") {
+      const user = await requireUser(req, service);
+      try {
+        const shippingAddress = body.shipping_address || body.shippingAddress || body.address;
+        return json(await createShippingQuote(service, user.id, shippingAddress));
+      } catch (error) {
+        if (error instanceof ShippingError) return json({ error: error.message, code: error.code }, error.status);
+        throw error;
+      }
+    }
+
     if (route === "/cart" && req.method === "GET") {
       const user = await requireUser(req, service);
       const { data: cartItems, error } = await service.from("cart_items").select("*").eq("user_id", user.id);
@@ -2275,34 +2301,67 @@ serve(async (req) => {
 
     if (route === "/orders" && req.method === "POST") {
       const user = await requireUser(req, service);
-      const { data: cartItems } = await service.from("cart_items").select("*").eq("user_id", user.id);
-      if (!ensureArray(cartItems).length) return json({ error: "Cart is empty" }, 400);
-      const productIds = ensureArray(cartItems).map((item) => item.product_id);
-      const { data: products } = await service.from("products").select("id, price_ngn").in("id", productIds);
-      const priceMap = new Map(ensureArray(products).map((item) => [item.id, Number(item.price_ngn || 0)]));
-      const total = ensureArray(cartItems).reduce((sum, item) => sum + (priceMap.get(item.product_id) || 0) * Number(item.quantity || 0), 0);
-      const orderNumberRes = await service.rpc("generate_order_number");
-      const orderNumber = typeof orderNumberRes.data === "string" ? orderNumberRes.data : `ORD-${Date.now()}`;
-      const { data: order, error } = await service.from("orders").insert({
-        user_id: user.id,
-        order_number: orderNumber,
-        total_amount_ngn: total,
-        shipping_address: body.shipping_address || {},
-        payment_method: body.payment_method || null,
-        status: "pending",
-      }).select().single();
-      if (error) return json({ error: error.message }, 400);
-      const orderItems = ensureArray(cartItems).map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price_ngn: priceMap.get(item.product_id) || 0,
-      }));
-      if (orderItems.length) {
-        await service.from("order_items").insert(orderItems);
+      try {
+        const quote = await getValidShippingQuote(service, user.id, body.shipping_quote_id || body.shippingQuoteId);
+        await assertShippingQuoteMatchesAddress(quote, body.shipping_address || body.shippingAddress);
+        const context = await assertShippingQuoteMatchesCart(service, user.id, quote);
+        const paymentReference = typeof body.payment_reference === "string" ? body.payment_reference.trim() : "";
+        if (!paymentReference) return json({ error: "A verified payment reference is required before creating an order." }, 409);
+        const { data: transaction, error: transactionError } = await service
+          .from("payment_transactions")
+          .select("status, user_id, amount, payment_type")
+          .eq("transaction_ref", paymentReference)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (transactionError || !transaction || transaction.payment_type !== "order" || !isSuccessfulPayment(transaction.status)) {
+          return json({ error: "Payment verification is still pending. Your order has not been created." }, 409);
+        }
+
+        const shippingAmount = Number(quote.customer_amount_ngn || 0);
+        const total = Number((context.merchandiseSubtotalNgn + shippingAmount).toFixed(2));
+        if (!Number.isFinite(total) || total <= 0 || Math.abs(Number(transaction.amount || 0) - total) > 0.01) {
+          return json({ error: "The verified payment amount does not match the current order total. Please contact support." }, 409);
+        }
+
+        const orderNumberRes = await service.rpc("generate_order_number");
+        const orderNumber = typeof orderNumberRes.data === "string" ? orderNumberRes.data : `ORD-${Date.now()}`;
+        const shippingAddress = body.shipping_address || body.shippingAddress || quote.destination;
+        const { data: order, error } = await service.from("orders").insert({
+          user_id: user.id,
+          order_number: orderNumber,
+          total_amount_ngn: total,
+          shipping_address: shippingAddress,
+          payment_method: body.payment_method || "quickteller",
+          payment_status: "paid",
+          status: "pending",
+          shipping_quote_id: quote.id,
+          shipping_amount_ngn: shippingAmount,
+          shipping_provider: quote.provider,
+          shipping_carrier: quote.courier_name,
+          shipping_service: quote.service_code,
+          shipping_delivery_eta: quote.delivery_eta,
+          shipping_duties_mode: quote.duties_mode,
+        }).select().single();
+        if (error || !order) return json({ error: error?.message || "Unable to create order" }, 400);
+
+        const orderItems = context.lines.map((item) => ({
+          order_id: order.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price_ngn: item.product.price_ngn,
+        }));
+        const { error: itemError } = await service.from("order_items").insert(orderItems);
+        if (itemError) {
+          await service.from("orders").delete().eq("id", order.id).eq("user_id", user.id);
+          return json({ error: itemError.message }, 400);
+        }
+        await service.from("shipping_quotes").update({ status: "consumed" }).eq("id", quote.id).eq("user_id", user.id);
+        await service.from("cart_items").delete().eq("user_id", user.id);
+        return json(order);
+      } catch (error) {
+        if (error instanceof ShippingError) return json({ error: error.message, code: error.code }, error.status);
+        throw error;
       }
-      await service.from("cart_items").delete().eq("user_id", user.id);
-      return json(order);
     }
 
     if (route === "/diagnoses" && req.method === "GET") {
@@ -2794,6 +2853,24 @@ serve(async (req) => {
       let amount = Number(body.amount);
       let resolvedPlanId: string | null = null;
       let description = typeof body.description === "string" ? body.description : "";
+      let orderShippingQuoteId = "";
+
+      if (paymentType === "order") {
+        if (!optionalUser?.id) return json({ error: "Authentication is required for order payments" }, 401);
+        const paymentMetadata = normalizeMetadata(body.metadata);
+        orderShippingQuoteId = typeof paymentMetadata.shippingQuoteId === "string"
+          ? paymentMetadata.shippingQuoteId.trim()
+          : typeof paymentMetadata.shipping_quote_id === "string"
+            ? paymentMetadata.shipping_quote_id.trim()
+            : "";
+        try {
+          const orderContext = await getValidatedOrderPaymentContext(service, optionalUser.id, orderShippingQuoteId);
+          amount = orderContext.totalNgn;
+        } catch (error) {
+          if (error instanceof ShippingError) return json({ error: error.message, code: error.code }, error.status);
+          throw error;
+        }
+      }
       const scanId = typeof body.scanId === "string"
         ? body.scanId.trim()
         : typeof body.metadata?.scanId === "string"
@@ -2854,6 +2931,7 @@ serve(async (req) => {
       const metadata = {
         ...normalizeMetadata(body.metadata),
         ...(scanId ? { scanId } : {}),
+        ...(orderShippingQuoteId ? { shippingQuoteId: orderShippingQuoteId } : {}),
       };
 
       await service.from("payment_transactions").insert({
