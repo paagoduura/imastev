@@ -18,7 +18,7 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: v2.116.0
 
       - name: Deploy Edge Functions
         working-directory: skin-sense-buddy-main
