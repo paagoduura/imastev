@@ -126,6 +126,16 @@ function parseJsonResponse(payload: unknown): JsonRecord {
   return payload && typeof payload === "object" && !Array.isArray(payload) ? payload as JsonRecord : {};
 }
 
+function safeProviderMessage(payload: JsonRecord, fallback: string) {
+  const candidates = [payload.message, payload.error, payload.detail];
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim().slice(0, 240);
+    }
+  }
+  return fallback;
+}
+
 async function shipbubbleRequest(path: string, body: JsonRecord) {
   const apiKey = requiredEnv("SHIPBUBBLE_API_KEY");
   const response = await fetch(`https://api.shipbubble.com/v1${path}`, {
@@ -139,13 +149,22 @@ async function shipbubbleRequest(path: string, body: JsonRecord) {
   });
   const payload = parseJsonResponse(await response.json().catch(() => ({})));
   if (!response.ok) {
-    console.error(`[Shipbubble] ${path} failed with HTTP ${response.status}`);
-    throw new ShippingError("The shipping provider could not return a quote. Please try again.", 502, "shipping_provider_error");
+    const providerMessage = safeProviderMessage(payload, `HTTP ${response.status}`);
+    console.error(`[Shipbubble] ${path} failed with HTTP ${response.status}: ${providerMessage}`);
+    throw new ShippingError(`Shipping provider request failed (${response.status}). ${providerMessage}`, 502, "shipping_provider_error");
   }
   if (String(payload.status || "").toLowerCase() === "error") {
-    throw new ShippingError("The shipping provider could not return a quote. Please check the address and try again.", 502, "shipping_provider_error");
+    const providerMessage = safeProviderMessage(payload, "The provider returned an error response.");
+    console.error(`[Shipbubble] ${path} returned an error: ${providerMessage}`);
+    throw new ShippingError(`Shipping provider rejected the request. ${providerMessage}`, 502, "shipping_provider_error");
   }
   return payload;
+}
+
+function normalizeCurrency(value: unknown) {
+  const raw = String(value || "").trim();
+  if (raw === "₦" || raw.toUpperCase() === "NGN") return "NGN";
+  return raw.toUpperCase();
 }
 
 async function getCartLines(service: SupabaseClient, userId: string): Promise<CartLine[]> {
@@ -279,7 +298,7 @@ export async function createShippingQuote(service: SupabaseClient, userId: strin
     .map((courier) => ({
       courier,
       amount: Number(courier.total),
-      currency: String(courier.currency || courier.rate_card_currency || "").toUpperCase(),
+      currency: normalizeCurrency(courier.currency || courier.rate_card_currency),
     }))
     .filter((entry) => entry.currency === "NGN" && Number.isFinite(entry.amount) && entry.amount > 0 && normalizeText(entry.courier.courier_id) && normalizeText(entry.courier.service_code));
 
