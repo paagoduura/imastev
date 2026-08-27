@@ -117,6 +117,9 @@ export function parseShippingAddress(value: unknown): ShippingAddress {
   };
   const missing = ["name", "email", "phone", "address", "city", "state", "country", "zipCode"].filter((key) => !address[key as keyof ShippingAddress]);
   if (missing.length) throw new ShippingError(`Shipping address is incomplete: ${missing.join(", ")}.`, 422, "invalid_shipping_address");
+  if (!/^[\p{L}]+(?:\s+[\p{L}]+)+$/u.test(address.name)) {
+    throw new ShippingError("Enter your first and last name using letters and spaces only.", 422, "invalid_shipping_address");
+  }
   if (!/^\S+@\S+\.\S+$/.test(address.email)) throw new ShippingError("A valid shipping email is required.", 422, "invalid_shipping_address");
   if (normalizePhone(address.phone).length < 7) throw new ShippingError("A valid shipping phone number is required.", 422, "invalid_shipping_address");
   return address;
