@@ -1178,8 +1178,9 @@ serve(async (req) => {
       const signedIn = await anon.auth.signInWithPassword({ email, password });
       return json({
         user: { id: created.data.user.id, email: created.data.user.email, created_at: created.data.user.created_at },
-        token: signedIn.data.session?.access_token || null,
-      });
+          token: signedIn.data.session?.access_token || null,
+          refresh_token: signedIn.data.session?.refresh_token || null,
+        });
     }
 
     if (route === "/auth/signin" && req.method === "POST") {
@@ -1202,6 +1203,7 @@ serve(async (req) => {
         return json({
           user: { id: signedIn.data.user.id, email: signedIn.data.user.email, created_at: signedIn.data.user.created_at },
           token: signedIn.data.session.access_token,
+          refresh_token: signedIn.data.session.refresh_token,
         });
       }
 
@@ -1256,6 +1258,7 @@ serve(async (req) => {
       return json({
         user: { id: authUser.id, email: authUser.email, created_at: authUser.created_at },
         token: migrated.data.session.access_token,
+        refresh_token: migrated.data.session.refresh_token,
       });
     }
 
@@ -1325,7 +1328,8 @@ serve(async (req) => {
 
       return json({
         user: { id: authUser.id, email: authUser.email, created_at: authUser.created_at },
-        token: signedIn.data.session.access_token,
+          token: signedIn.data.session.access_token,
+          refresh_token: signedIn.data.session.refresh_token,
       });
     }
 
@@ -1343,6 +1347,18 @@ serve(async (req) => {
 
     if (route === "/auth/refresh" && req.method === "POST") {
       const token = getBearerToken(req);
+      const refreshToken = typeof body.refresh_token === "string" ? body.refresh_token.trim() : "";
+      if (refreshToken) {
+        const anon = createAnonClient();
+        const refreshed = await anon.auth.refreshSession({ refresh_token: refreshToken });
+        if (refreshed.error || !refreshed.data.session) {
+          return json({ error: "Session refresh failed" }, 401);
+        }
+        return json({
+          token: refreshed.data.session.access_token,
+          refresh_token: refreshed.data.session.refresh_token || refreshToken,
+        });
+      }
       const user = await getUserFromRequest(req, service);
       if (!user) return json({ error: "Invalid token" }, 401);
       return json({ token });

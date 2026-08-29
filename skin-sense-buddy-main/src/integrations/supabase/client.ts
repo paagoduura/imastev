@@ -26,6 +26,7 @@ export type StoredUser = {
 const USER_STORAGE_KEY = 'glowsense_user';
 const USER_EMAIL_STORAGE_KEY = 'user_email';
 const USER_NAME_STORAGE_KEY = 'user_name';
+const REFRESH_TOKEN_STORAGE_KEY = 'glowsense_refresh_token';
 
 const getDisplayNameFromEmail = (email: string) => {
   const localPart = email.split('@')[0] || 'User';
@@ -75,7 +76,8 @@ const getStoredUserFromToken = (): StoredUser | null => {
   if (!payload) return null;
 
   if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) {
-    setToken(null);
+    localStorage.removeItem('glowsense_token');
+    localStorage.removeItem('glowsense_last_activity');
     return null;
   }
 
@@ -119,6 +121,7 @@ const setToken = (token: string | null) => {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
     localStorage.removeItem(USER_NAME_STORAGE_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
   }
 };
 
@@ -148,10 +151,11 @@ const isSessionExpired = () => {
 let refreshPromise: Promise<void> | null = null;
 const refreshTokenIfNeeded = async () => {
   const token = getToken();
-  if (!token) return;
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+  if (!token && !refreshToken) return;
   
   // If session expired, clear and redirect (avoid loop if already on /auth)
-  if (isSessionExpired()) {
+  if (isSessionExpired() && !refreshToken) {
     logoutSession();
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
       window.location.href = '/auth';
@@ -172,14 +176,16 @@ const refreshTokenIfNeeded = async () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
+          body: JSON.stringify({ refresh_token: refreshToken || '' }),
         });
         
         if (response.ok) {
           const data = await response.json();
           if (data.token) {
             setToken(data.token);
+            if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, data.refresh_token);
           }
         } else if (response.status === 401 || response.status === 403) {
           // Token is invalid, clear and redirect (avoid loop if already on /auth)
@@ -550,7 +556,7 @@ export const supabase = {
         setStoredUser(data.user ?? null);
         
         // Notify listeners
-        const session = data.token ? { user: data.user, access_token: data.token } : null;
+        const session = data.token ? { user: data.user, access_token: data.token, refresh_token: data.refresh_token || null } : null;
         authListeners.forEach(cb => cb(data.token ? 'SIGNED_IN' : 'SIGNED_OUT', session));
 
         return { data: { user: data.user, session }, error: null };
@@ -574,10 +580,11 @@ export const supabase = {
 
         const data = await response.json();
         setToken(data.token);
+        if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, data.refresh_token);
         setStoredUser(data.user ?? null);
         
         // Notify listeners
-        const session = { user: data.user, access_token: data.token };
+        const session = { user: data.user, access_token: data.token, refresh_token: data.refresh_token || null };
         authListeners.forEach(cb => cb('SIGNED_IN', session));
 
         return { data: { user: data.user, session }, error: null };
@@ -601,9 +608,10 @@ export const supabase = {
 
         const data = await response.json();
         setToken(data.token);
+        if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, data.refresh_token);
         setStoredUser(data.user ?? null);
 
-        const session = { user: data.user, access_token: data.token };
+        const session = { user: data.user, access_token: data.token, refresh_token: data.refresh_token || null };
         authListeners.forEach(cb => cb('SIGNED_IN', session));
 
         return { data: { user: data.user, session }, error: null };
@@ -628,10 +636,11 @@ export const supabase = {
 
         if (data.token) {
           setToken(data.token);
+          if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, data.refresh_token);
         }
         setStoredUser(data.user ?? null);
 
-        const session = data.token ? { user: data.user, access_token: data.token } : null;
+        const session = data.token ? { user: data.user, access_token: data.token, refresh_token: data.refresh_token || null } : null;
         if (session) {
           authListeners.forEach(cb => cb('SIGNED_IN', session));
         }
