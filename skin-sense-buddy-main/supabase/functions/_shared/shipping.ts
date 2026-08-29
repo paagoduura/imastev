@@ -289,7 +289,7 @@ export async function createShippingQuote(service: SupabaseClient, userId: strin
       quantity: String(item.quantity),
     })),
     service_type: "pickup",
-    delivery_instructions: address.specialInstructions || "",
+    delivery_instructions: address.specialInstructions || "Handle with care. Personal care products.",
     package_dimension: context.parcel.dimensions,
   });
 
