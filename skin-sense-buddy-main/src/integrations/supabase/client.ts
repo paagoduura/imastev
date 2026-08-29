@@ -209,7 +209,7 @@ const refreshTokenIfNeeded = async () => {
 };
 
 // Fetch wrapper with auth
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   // Check session and refresh token if needed (skip for auth endpoints)
   if (!url.includes('/auth/')) {
     await refreshTokenIfNeeded();
