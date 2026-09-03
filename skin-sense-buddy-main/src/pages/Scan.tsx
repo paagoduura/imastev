@@ -5,7 +5,7 @@ import { Camera, Upload, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLe
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { preprocessImage } from "@/lib/imagePreprocessing";
 import { ImageQualityIndicator } from "@/components/scan/ImageQualityIndicator";
@@ -101,6 +101,16 @@ const Scan = () => {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const dedicatedMode = location.pathname === '/hair-scan' ? 'hair' : location.pathname === '/skin-scan' ? 'skin' : null;
+
+  useEffect(() => {
+    if (!dedicatedMode) return;
+    setAnalysisType(dedicatedMode);
+    setStep(dedicatedMode === 'hair' ? 'porosity' : 'capture');
+    setCaptures([]);
+    setCurrentAngle(getScanAngles(dedicatedMode).required[0]?.id || 'front');
+  }, [dedicatedMode]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;

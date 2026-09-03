@@ -38,6 +38,8 @@ const queryClient = new QueryClient();
 const PUBLIC_SEO: Record<string, SeoConfig> = {
   "/": { title: "IMSTEV NATURALS - Home of Nature's Beauty | Organic Hair Care & Salon", description: "Premium natural hair and skin care from Nigeria, with guided scans, specialist salon services, and personalized care plans for 4A-4C textures.", path: "/" },
   "/scan": { title: "Hair and Skin Scan | IMSTEV NATURALS", description: "Get personalized guidance for your hair, scalp, and skin with the IMSTEV NATURALS care scan.", path: "/scan" },
+  "/hair-scan": { title: "Hair Scan | IMSTEV NATURALS", description: "Understand your hair, scalp, and texture with personalized guidance from the IMSTEV NATURALS Hair Scan.", path: "/hair-scan" },
+  "/skin-scan": { title: "Skin Scan | IMSTEV NATURALS", description: "Understand your skin with personalized guidance from the IMSTEV NATURALS Skin Scan.", path: "/skin-scan" },
   "/salon-booking": { title: "Book a Salon Appointment | IMSTEV NATURALS", description: "Book specialist-led hair and beauty care at IMSTEV NATURALS in Bwari, Abuja.", path: "/salon-booking" },
   "/shop": { title: "Shop Natural Hair and Skin Care | IMSTEV NATURALS", description: "Explore Nigerian-made natural hair and skin care products selected for thoughtful, effective routines.", path: "/shop" },
   "/community": { title: "IMSTEV NATURALS Community", description: "Connect with a thoughtful community sharing natural hair, skin care, and beauty journeys.", path: "/community" },
@@ -117,6 +119,8 @@ function AppRoutes() {
         <Route path="/family" element={<FamilyAccounts />} />
         <Route path="/formulation" element={<CustomFormulation />} />
         <Route path="/clinician" element={<ClinicianDashboard />} />
+        <Route path="/hair-scan" element={<Scan />} />
+        <Route path="/skin-scan" element={<Scan />} />
         <Route path="/scan" element={<Scan />} />
         <Route path="/results/:id" element={<Results />} />
         <Route path="/timeline" element={<Timeline />} />

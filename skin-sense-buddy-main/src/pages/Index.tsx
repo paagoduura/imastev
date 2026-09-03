@@ -54,8 +54,8 @@ const careJourneys = [
 ];
 
 const serviceCards = [
-  { title: "Hair & scalp scan", body: "Texture-aware guidance for coils, locs, braids, and every stage between.", icon: ScanLine, href: "/scan" },
-  { title: "Skin care scan", body: "A calm starting point for understanding what your skin may need next.", icon: Droplets, href: "/scan" },
+  { title: "Hair & scalp scan", body: "Texture-aware guidance for coils, locs, braids, and every stage between.", icon: ScanLine, href: "/hair-scan" },
+  { title: "Skin care scan", body: "A calm starting point for understanding what your skin may need next.", icon: Droplets, href: "/skin-scan" },
   { title: "Salon care", body: "Expert styling and treatments in a warm, specialist-led studio.", icon: Scissors, href: "/salon-booking" },
   { title: "Video consultation", body: "Speak with a care professional when you want a human point of view.", icon: MessageCircle, href: "/telehealth" },
 ];
