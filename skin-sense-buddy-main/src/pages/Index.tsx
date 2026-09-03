@@ -90,9 +90,9 @@ export default function Index() {
           <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:gap-20">
             <div className="max-w-md">
               <p className="eyebrow">A better beauty beginning</p>
-              <h1 className="mt-4 text-4xl leading-[.98] tracking-[-.055em] sm:text-6xl">Your care should feel as considered as you are.</h1>
-              <p className="mt-6 text-base leading-8 text-[#6e5b4c]">IMSTEV brings together guided scans, expert hands, considered products, and a community that understands the beauty of African hair and skin.</p>
-              <button type="button" className="ink-button mt-8" onClick={() => navigate("/scan")}>Discover your care path <ArrowRight size={17} /></button>
+              <h1 className="mt-4 text-4xl leading-[.98] tracking-[-.055em] sm:text-6xl">Natural hair care in Abuja, with a more considered way to begin.</h1>
+              <p className="mt-6 text-base leading-8 text-[#6e5b4c]">IMSTEV NATURALS brings together natural hair care, styling, treatments, guided scans, specialist salon appointments, and considered products for African hair and skin.</p>
+              <button type="button" className="ink-button mt-8" onClick={() => navigate("/natural-hair-salon-abuja")}>Explore our Abuja salon <ArrowRight size={17} /></button>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {careJourneys.map((journey) => {

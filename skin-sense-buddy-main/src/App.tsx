@@ -24,6 +24,7 @@ const Cart = lazy(() => import("./pages/Cart"));
 const Orders = lazy(() => import("./pages/Orders"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const SalonBooking = lazy(() => import("./pages/SalonBooking"));
+const NaturalHairSalonAbuja = lazy(() => import("./pages/NaturalHairSalonAbuja"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const Payment = lazy(() => import("./pages/Payment"));
@@ -40,14 +41,15 @@ const PUBLIC_SEO: Record<string, SeoConfig> = {
   "/scan": { title: "Hair and Skin Scan | IMSTEV NATURALS", description: "Get personalized guidance for your hair, scalp, and skin with the IMSTEV NATURALS care scan.", path: "/scan" },
   "/hair-scan": { title: "Hair Scan | IMSTEV NATURALS", description: "Understand your hair, scalp, and texture with personalized guidance from the IMSTEV NATURALS Hair Scan.", path: "/hair-scan", schemaType: "Service", serviceName: "Hair and scalp scan" },
   "/skin-scan": { title: "Skin Scan | IMSTEV NATURALS", description: "Understand your skin with personalized guidance from the IMSTEV NATURALS Skin Scan.", path: "/skin-scan", schemaType: "Service", serviceName: "Skin care scan" },
-  "/salon-booking": { title: "Book a Salon Appointment | IMSTEV NATURALS", description: "Book specialist-led hair and beauty care at IMSTEV NATURALS in Bwari, Abuja.", path: "/salon-booking", schemaType: "Service", serviceName: "Salon appointment" },
+  "/salon-booking": { title: "Book a Natural Hair Appointment in Abuja | IMSTEV NATURALS", description: "Book specialist-led natural hair care, styling, and treatments at IMSTEV NATURALS in Bwari, Abuja.", path: "/salon-booking", schemaType: "Service", serviceName: "Natural hair salon appointment" },
+  "/natural-hair-salon-abuja": { title: "Natural Hair Salon in Abuja | IMSTEV NATURALS", description: "IMSTEV NATURALS is a natural hair salon in Bwari, Abuja, offering thoughtful hair care, styling, treatments, and protective styles for African hair textures.", path: "/natural-hair-salon-abuja", schemaType: "Service", serviceName: "Natural hair salon in Abuja" },
   "/shop": { title: "Shop Natural Hair and Skin Care | IMSTEV NATURALS", description: "Explore Nigerian-made natural hair and skin care products selected for thoughtful, effective routines.", path: "/shop", schemaType: "CollectionPage" },
   "/community": { title: "IMSTEV NATURALS Community", description: "Connect with a thoughtful community sharing natural hair, skin care, and beauty journeys.", path: "/community", schemaType: "CollectionPage" },
   "/terms": { title: "Terms and Conditions | IMSTEV NATURALS", description: "Read the terms and conditions governing use of the IMSTEV NATURALS website, services, and products.", path: "/terms" },
   "/consultation": { title: "Specialist Consultation | IMSTEV NATURALS", description: "Speak with an IMSTEV NATURALS specialist for personal guidance across your hair and skin care journey.", path: "/consultation", schemaType: "Service", serviceName: "Specialist consultation" },
   "/formulation": { title: "Custom Formulation | IMSTEV NATURALS", description: "Explore thoughtful custom formulation support for your hair and skin care needs at IMSTEV NATURALS.", path: "/formulation", schemaType: "Service", serviceName: "Custom formulation" },
   "/telehealth": { title: "Telehealth Consultation | IMSTEV NATURALS", description: "Access specialist-led hair and skin care guidance through an IMSTEV NATURALS telehealth consultation.", path: "/telehealth", schemaType: "Service", serviceName: "Telehealth consultation" },
-  "/family": { title: "Family Care | IMSTEV NATURALS", description: "Manage thoughtful hair and skin care support for the people who matter to you with IMSTEV NATURALS.", path: "/family", schemaType: "Service", serviceName: "Family care" },
+  "/family": { title: "Family Care | IMSTEV NATURALS", description: "Manage thoughtful hair and skin care support for the people who matter to you with IMSTEV NATURALS.", path: "/family" },
 };
 
 function ScrollToTop() {
@@ -130,6 +132,7 @@ function AppRoutes() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/inventory" element={<Inventory />} />
+        <Route path="/natural-hair-salon-abuja" element={<NaturalHairSalonAbuja />} />
         <Route path="/salon-booking" element={<SalonBooking />} />
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/payment" element={<Payment />} />

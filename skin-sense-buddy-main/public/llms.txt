@@ -1,39 +1,39 @@
 # IMSTEV NATURALS
 
-> IMSTEV NATURALS is a Nigeria-based natural hair and skin care brand and specialist-led care platform for African hair and skin.
+> IMSTEV NATURALS is a Nigeria-based natural hair and skin care brand with a specialist-led salon in Bwari, Abuja.
 
-## What IMSTEV NATURALS offers
+## Primary local service
 
-- Hair and scalp scans for texture-aware care guidance.
-- Skin scans for a clearer starting point for skin care.
-- Specialist consultations and telehealth care conversations.
-- Salon appointments in Bwari, Abuja.
-- Nigerian-made natural hair and skin care products.
-- A community for natural hair, skin care, and beauty journeys.
-- Custom formulation support and family care features.
+IMSTEV NATURALS provides natural hair care, styling, treatments, and protective styling for African hair textures. The salon serves clients in Bwari and the wider Abuja area through appointment-led care.
+
+## Salon details
+
+- Location: Bwari, Abuja, Federal Capital Territory, Nigeria.
+- Hours: Tuesday to Saturday, 8:00 AM to 6:00 PM; Sunday, 2:00 PM to 6:00 PM; Monday closed.
+- Booking: https://www.imstevnaturals.com/salon-booking
+- Local salon page: https://www.imstevnaturals.com/natural-hair-salon-abuja
+- Phone: +2348110523763
+
+## Other public services
+
+IMSTEV NATURALS offers Hair Scan, Skin Scan, combined care scans, specialist consultation, telehealth consultation, custom formulation support, family care, Nigerian-made natural hair and skin care products, and a community for beauty journeys.
 
 ## Public pages
 
-- Home: https://www.imstevnaturals.com/
-- Hair Scan: https://www.imstevnaturals.com/hair-scan
-- Skin Scan: https://www.imstevnaturals.com/skin-scan
-- Combined Scan: https://www.imstevnaturals.com/scan
-- Shop: https://www.imstevnaturals.com/shop
-- Salon Booking: https://www.imstevnaturals.com/salon-booking
-- Consultation: https://www.imstevnaturals.com/consultation
-- Telehealth: https://www.imstevnaturals.com/telehealth
-- Custom Formulation: https://www.imstevnaturals.com/formulation
-- Family Care: https://www.imstevnaturals.com/family
-- Community: https://www.imstevnaturals.com/community
-- Terms and Conditions: https://www.imstevnaturals.com/terms
+- https://www.imstevnaturals.com/
+- https://www.imstevnaturals.com/natural-hair-salon-abuja
+- https://www.imstevnaturals.com/salon-booking
+- https://www.imstevnaturals.com/hair-scan
+- https://www.imstevnaturals.com/skin-scan
+- https://www.imstevnaturals.com/scan
+- https://www.imstevnaturals.com/shop
+- https://www.imstevnaturals.com/community
+- https://www.imstevnaturals.com/consultation
+- https://www.imstevnaturals.com/telehealth
+- https://www.imstevnaturals.com/formulation
+- https://www.imstevnaturals.com/family
 
-## Location and contact
-
-- Dispatch and operating location: Bwari, Abuja, Federal Capital Territory, Nigeria.
-- Service area: Worldwide for eligible product shipping; salon services are location-specific.
-- Phone: +2348110523763
-
-## Machine-readable discovery
+## Discovery
 
 - Sitemap: https://www.imstevnaturals.com/sitemap.xml
 - Robots policy: https://www.imstevnaturals.com/robots.txt
