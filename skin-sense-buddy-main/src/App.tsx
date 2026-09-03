@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalBackButton } from "./components/layout/GlobalBackButton";
+import { SEO, type SeoConfig } from "./components/SEO";
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -33,6 +34,19 @@ const Terms = lazy(() => import("./pages/Terms"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
+
+const PUBLIC_SEO: Record<string, SeoConfig> = {
+  "/": { title: "IMSTEV NATURALS - Home of Nature's Beauty | Organic Hair Care & Salon", description: "Premium natural hair and skin care from Nigeria, with guided scans, specialist salon services, and personalized care plans for 4A-4C textures.", path: "/" },
+  "/scan": { title: "Hair and Skin Scan | IMSTEV NATURALS", description: "Get personalized guidance for your hair, scalp, and skin with the IMSTEV NATURALS care scan.", path: "/scan" },
+  "/salon-booking": { title: "Book a Salon Appointment | IMSTEV NATURALS", description: "Book specialist-led hair and beauty care at IMSTEV NATURALS in Bwari, Abuja.", path: "/salon-booking" },
+  "/shop": { title: "Shop Natural Hair and Skin Care | IMSTEV NATURALS", description: "Explore Nigerian-made natural hair and skin care products selected for thoughtful, effective routines.", path: "/shop" },
+  "/community": { title: "IMSTEV NATURALS Community", description: "Connect with a thoughtful community sharing natural hair, skin care, and beauty journeys.", path: "/community" },
+  "/terms": { title: "Terms and Conditions | IMSTEV NATURALS", description: "Read the terms and conditions governing use of the IMSTEV NATURALS website, services, and products.", path: "/terms" },
+  "/consultation": { title: "Specialist Consultation | IMSTEV NATURALS", description: "Speak with an IMSTEV NATURALS specialist for personal guidance across your hair and skin care journey.", path: "/consultation" },
+  "/formulation": { title: "Custom Formulation | IMSTEV NATURALS", description: "Explore thoughtful custom formulation support for your hair and skin care needs at IMSTEV NATURALS.", path: "/formulation" },
+  "/telehealth": { title: "Telehealth Consultation | IMSTEV NATURALS", description: "Access specialist-led hair and skin care guidance through an IMSTEV NATURALS telehealth consultation.", path: "/telehealth" },
+  "/family": { title: "Family Care | IMSTEV NATURALS", description: "Manage thoughtful hair and skin care support for the people who matter to you with IMSTEV NATURALS.", path: "/family" },
+};
 
 function ScrollToTop() {
   const location = useLocation();
@@ -86,6 +100,7 @@ function AppRoutes() {
 
   return (
     <>
+      {PUBLIC_SEO[location.pathname] ? <SEO {...PUBLIC_SEO[location.pathname]} /> : null}
       <ScrollToTop />
       <GlobalBackButton />
       <Suspense fallback={<RouteFallback />}>
