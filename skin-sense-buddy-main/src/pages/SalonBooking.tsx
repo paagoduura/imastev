@@ -491,7 +491,7 @@ export default function SalonBooking() {
                       <MapPin className="w-4 h-4 text-purple-600" />
                       <span className="font-medium text-purple-900">IMSTEV NATURALS Hair Specialist Salon</span>
                     </div>
-                    <p className="text-sm text-purple-700">40 Law School Road, Opp FirstBank, Bwari, Abuja</p>
+                    <p className="text-sm text-purple-700">Back of 234 stores, Law School Rd, adjacent First Bank, Bwari 900121, Federal Capital Territory</p>
                   </div>
 
                   <div className="flex flex-col gap-3 pt-4">

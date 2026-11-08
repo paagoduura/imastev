@@ -35,7 +35,7 @@ If you do not agree with these Terms, please do not use the Platform or purchase
 
 | Contact | Details |
 |---|---|
-| Studio | 40 Law School Road, Opp. FirstBank, Bwari, Abuja, Nigeria |
+| Studio | Back of 234 stores, Law School Rd, adjacent First Bank, Bwari 900121, Federal Capital Territory |
 | Phone | +234 903 350 5038 |
 | Customer support | contact@imstevnaturals.com |
 | Website | https://www.imstevnaturals.com |
@@ -206,7 +206,7 @@ You may not transfer your rights or obligations under these Terms without our wr
 For questions, support, privacy requests, complaints, product concerns, booking changes, or rights under these Terms, contact:
 
 **IMSTEV NATURALS**  
-40 Law School Road, Opp. FirstBank, Bwari, Abuja, Nigeria  
+Back of 234 stores, Law School Rd, adjacent First Bank, Bwari 900121, Federal Capital Territory  
 Email: contact@imstevnaturals.com  
 Phone: +234 903 350 5038  
 Website: https://www.imstevnaturals.com

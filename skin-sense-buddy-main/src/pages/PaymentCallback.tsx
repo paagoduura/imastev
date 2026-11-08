@@ -309,8 +309,11 @@ export default function PaymentCallback() {
       return;
     }
     try {
-      const response = await fetch(`${API_BASE}/payment/verify/${transactionRef}`);
-      const result = await response.json();
+      let result = await (await fetch(`${API_BASE}/payment/verify/${transactionRef}`)).json();
+      for (let attempt = 0; attempt < 4 && result.success && result.status === 'pending'; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        result = await (await fetch(`${API_BASE}/payment/verify/${transactionRef}`)).json();
+      }
       if (result.success) {
         setStatus(result.status);
         setPaymentType(sessionStorage.getItem('pendingPaymentType') || result.paymentType || null);

@@ -5007,7 +5007,7 @@ app.post('/api/checkout/send-details', authenticateToken, async (req: any, res) 
 
               <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
                 <p style="margin: 0; font-size: 12px; color: #999;">This is an automated message from IMSTEV NATURALS</p>
-                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">40 Law School Road, Opp FirstBank, Bwari, Abuja | +234 903 350 5038</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">Back of 234 stores, Law School Rd, adjacent First Bank, Bwari 900121, Federal Capital Territory | +234 903 350 5038</p>
               </div>
             </div>
           </div>
